@@ -15,7 +15,7 @@ PW_FILE=/var/mysql_password.txt
 SCRIPTS=/var/scripts
 HTML=/var/www
 OCPATH=$HTML/owncloud
-OCDATA=/var/data
+OCDATA=/var/ocdata
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 IP="/sbin/ip"
@@ -82,15 +82,10 @@ apt-get update
 # Set locales
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure locales
 
-# Show MySQL pass, and write it to a file in case the user fails to write it down
-echo
-echo -e "Your MySQL root password is: \e[32m$MYSQL_PASS\e[0m"
-echo "Please save this somewhere safe. The password is also saved in this file: $PW_FILE."
+# Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
 chmod 600 $PW_FILE
-echo -e "\e[32m"
-read -p "Press any key to continue..." -n1 -s
-echo -e "\e[0m"
+chown root:root $PW_FILE
 
 # Install MYSQL 5.6
 apt-get install software-properties-common -y

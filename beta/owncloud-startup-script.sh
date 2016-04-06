@@ -4,7 +4,7 @@
 
 WWW_ROOT=/var/www
 OCPATH=$WWW_ROOT/owncloud
-OCDATA=/var/data
+OCDATA=/var/ocdata
 SCRIPTS=/var/scripts
 PW_FILE=/var/mysql_password.txt # Keep in sync with owncloud_install_production.sh
 IP="/sbin/ip"

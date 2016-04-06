@@ -4,7 +4,7 @@
 
 WWW_ROOT=/var/www
 OCPATH=$WWW_ROOT/owncloud
-OCDATA=/var/data
+OCDATA=/var/ocdata
 SCRIPTS=/var/scripts
 PW_FILE=/var/mysql_password.txt # Keep in sync with owncloud_install_production.sh
 IP="/sbin/ip"
@@ -138,7 +138,7 @@ echo "| This script will configure your ownCloud and activate SSL.         |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Generate new SSH keys for the server                             |"
-echo "| - Change MySQL password						   |"
+echo "| - Generate new  MySQL password					   |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Upgrade your system to latest version                            |"
 echo "| - Set secure permissions to ownCloud                               |"
@@ -214,10 +214,10 @@ sleep 1
 rm -v /etc/ssh/ssh_host_*
 dpkg-reconfigure openssh-server
 
+# Generate new MySQL password
 echo
 bash $SCRIPTS/change_mysql_pass.sh
 rm $SCRIPTS/change_mysql_pass.sh
-clear
 
 # Install phpMyadmin
 bash $SCRIPTS/phpmyadmin_install.sh

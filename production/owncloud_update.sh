@@ -22,7 +22,6 @@ sudo -u www-data php $OCPATH/occ upgrade
 sudo -u www-data php $OCPATH/occ app:enable calendar
 sudo -u www-data php $OCPATH/occ app:enable contacts
 sudo -u www-data php $OCPATH/occ app:enable documents
-sudo -u www-data php $OCPATH/occ app:enable external
 
 # Disable maintenance mode
 sudo -u www-data php $OCPATH/occ maintenance:mode --off
