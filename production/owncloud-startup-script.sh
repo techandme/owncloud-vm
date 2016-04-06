@@ -94,6 +94,14 @@ fi
                 else
         wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
 fi
+		# Change MySQL password
+        if [ -f $SCRIPTS/change_mysql_pass.sh ];
+                then
+                rm $SCRIPTS/change_mysql_pass.sh
+                wget -q $STATIC/change_mysql_pass.sh
+                else
+        wget -q $STATIC/change_mysql_pass.sh -P $SCRIPTS
+fi
                 # Get figlet Tech and Me
         if [ -f $SCRIPTS/techandme.sh ];
                 then
@@ -130,6 +138,7 @@ echo "| This script will configure your ownCloud and activate SSL.         |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Generate new SSH keys for the server                             |"
+echo "| - Change MySQL password						   |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Upgrade your system to latest version                            |"
 echo "| - Set secure permissions to ownCloud                               |"
@@ -199,16 +208,21 @@ clear
 # Change Trusted Domain and CLI
 bash $SCRIPTS/trusted.sh
 
-echo
 echo "Generating new SSH keys for the server..."
 echo
 sleep 1
 rm -v /etc/ssh/ssh_host_*
 dpkg-reconfigure openssh-server
 
+echo
+bash $SCRIPTS/change_mysql_pass.sh
+rm $SCRIPTS/change_mysql_pass.sh
+clear
+
 # Install phpMyadmin
 bash $SCRIPTS/phpmyadmin_install.sh
 rm $SCRIPTS/phpmyadmin_install.sh
+clear
 
 # Set keyboard layout
 echo "Current keyboard layout is Swedish"
@@ -248,7 +262,8 @@ else
     sleep 2
 fi
 echo
-clear &&
+clear
+
 echo -e "\e[0m"
 echo "For better security, change the ownCloud password for [$UNIXUSER]"
 echo "The current password is [$UNIXPASS]"
@@ -266,9 +281,9 @@ clear
 else
 echo "Not changing password as you already changed <user> and <pass> in the script"
 fi
+clear
 
 # Upgrade system
-clear
 echo System will now upgrade...
 sleep 2
 echo

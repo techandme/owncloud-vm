@@ -21,6 +21,11 @@ SAVEPATH=""
         exit 1
 fi
 
+echo
+echo "Installing and securing phpMyadmin..."
+echo
+sleep 2
+
 # Check if unzip is installed
 if ! [ -x "$(command -v unzip)" ]; then
   apt-get install unzip -y -q
