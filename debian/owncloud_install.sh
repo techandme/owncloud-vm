@@ -4,7 +4,7 @@
 
 # Debian 8.3 Jessie
 
-export OCVERSION=owncloud-9.0.0.zip
+export OCVERSION=owncloud-9.0.1.zip
 export MYSQL_VERSION=5.7
 export SHUF=$(shuf -i 13-15 -n 1)
 export MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
