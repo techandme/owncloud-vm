@@ -6,9 +6,11 @@
 export SCRIPTS=/var/scripts
 export PW_FILE=/var/M-R_passwords.txt # Keep in sync with owncloud_install.sh
 export CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo aptitude -y purge)
-export IFACE="eth0"
+export IP="/sbin/ip"
+export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 export IFCONFIG="/sbin/ifconfig"
-export ADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
+export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
+export OCDATA=/var/ocdata
 
 # Check if root
 if [ "$(whoami)" != "root" ]; then
@@ -55,14 +57,14 @@ echo -e "\e[32m"
 read -p "Press any key to set static IP..." -n1 -s
 clear
 echo -e "\e[0m"
-ifdown eth0
+ifdown $IFACE
 sleep 2
-ifup eth0
+ifup $IFACE
 sleep 2
 bash $SCRIPTS/ip.sh
-ifdown eth0
+ifdown $IFACE
 sleep 2
-ifup eth0
+ifup $IFACE
 sleep 2
 echo
 echo "Testing if network is OK..."
@@ -79,9 +81,9 @@ echo -e "\e[0m"
 nano /etc/network/interfaces
 clear &&
 echo "Testing if network is OK..."
-ifdown eth0
+ifdown $IFACE
 sleep 2
-ifup eth0
+ifup $IFACE
 sleep 2
 echo
 bash $SCRIPTS/test_connection.sh
@@ -158,7 +160,7 @@ fi
 clear
 echo
 echo "The MySQL & ROOT passwords are:"
-echo -e "\e[32m"
+echo -e "\e[1m"
 cat $PW_FILE
 echo -e "\e[0m"
 echo "Please note that this will not change, this is your last chance to save it!"
@@ -225,7 +227,8 @@ rm $SCRIPTS/update-config*
 rm $SCRIPTS/owncloud_install*
 rm $SCRIPTS/trusted*
 rm $SCRIPTS/owncloud-startup-script*
-rm /var/www/html/owncloud/data/owncloud.log*
+rm $OCDATA/owncloud.log*
+sed -i "s|instruction.sh|techandme.sh|g" /home/ocadmin/.bash_profile
 cat /dev/null > ~/.bash_history
 cat /dev/null > /var/spool/mail/root
 cat /dev/null > /var/spool/mail/ocadmin
@@ -288,6 +291,8 @@ unset CLEARBOOT
 unset IFACE
 unset IFCONFIG
 unset ADDRESS
+unset OCDATA
+unset IP
 
 # Reboot
 reboot

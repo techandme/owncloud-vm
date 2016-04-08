@@ -4,7 +4,13 @@
 
 # Debian 8.3 Jessie
 
-export OCVERSION=owncloud-9.0.1.zip
+export CONVER=v1.1.0.0
+export CONVER_FILE=contacts.tar.gz
+export CONVER_REPO=https://github.com/owncloud/contacts/releases/download
+export CALVER=v1.0
+export CALVER_FILE=calendar.tar.gz
+export CALVER_REPO=https://github.com/owncloud/calendar/releases/download
+export OCDATA=/var/ocdata
 export MYSQL_VERSION=5.7
 export SHUF=$(shuf -i 13-15 -n 1)
 export MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
@@ -14,8 +20,9 @@ export SCRIPTS=/var/scripts
 export HTML=/var/www/html
 export OCPATH=$HTML/owncloud
 export SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
-export IFACE="eth0"
-export ADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
+export IP="/sbin/ip"
+export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
+export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
 # Check if root
         if [ "$(whoami)" != "root" ]; then
@@ -28,6 +35,8 @@ fi
 # Change DNS
 echo "nameserver 8.26.56.26" > /etc/resolv.conf
 echo "nameserver 8.20.247.20" >> /etc/resolv.conf
+
+sudo usermod -a -G sudo ocadmin
 
 # Check network
 ifdown $IFACE && ifup $IFACE
@@ -164,22 +173,25 @@ aptitude install -y \
         libsm6 \
         libsmbclient
 
-# Download $OCVERSION
-wget https://download.owncloud.org/community/$OCVERSION -P $HTML
-aptitude install unzip -y
-unzip -q $HTML/$OCVERSION -d $HTML
-rm $HTML/$OCVERSION
+# Download and install ownCloud
+wget -nv https://download.owncloud.org/download/repositories/stable/Debian_8.0/Release.key -O Release.key
+apt-key add - < Release.key && rm Release.key
+sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Debian_8.0/ /' >> /etc/apt/sources.list.d/owncloud.list"
+apt-get update && apt-get install owncloud-files -y
+
+mkdir -p $OCDATA
 
 # Create data folder, occ complains otherwise
-mkdir -p $OCPATH/data
+mkdir -p $OCDATA
 
 # Secure permissions
-wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/debian//setup_secure_permissions_owncloud.sh -P $SCRIPTS
+wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static/setup_secure_permissions_owncloud.sh -P $SCRIPTS
+chmod +x $SCRIPTS/setup_secure_permissions_owncloud.sh
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
 # Install ownCloud
 cd $OCPATH
-su -s /bin/sh -c 'php occ maintenance:install --database "mysql" --database-name "owncloud_db" --database-user "root" --database-pass "$MYSQL_PASS" --admin-user "ocadmin" --admin-pass "owncloud"' www-data
+su -s /bin/sh -c 'php occ maintenance:install --data-dir "$OCDATA" --database "mysql" --database-name "owncloud_db" --database-user "root" --database-pass "$MYSQL_PASS" --admin-user "ocadmin" --admin-pass "owncloud"' www-data
 echo
 echo "ownCloud version:"
 su -s /bin/sh -c 'php $OCPATH/occ status' www-data
@@ -187,7 +199,7 @@ echo
 sleep 3
 
 # Set trusted domain
-wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/debian//update-config.php -P $SCRIPTS
+wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static//update-config.php -P $SCRIPTS
 chmod a+x $SCRIPTS/update-config.php
 php $SCRIPTS/update-config.php $OCPATH/config/config.php 'trusted_domains[]' localhost ${ADDRESS[@]} $(hostname) $(hostname --fqdn) 2>&1 >/dev/null
 php $SCRIPTS/update-config.php $OCPATH/config/config.php overwrite.cli.url https://$ADDRESS/owncloud 2>&1 >/dev/null
@@ -220,7 +232,7 @@ else
 ### YOUR SERVER ADDRESS ###
 #    ServerAdmin admin@example.com
 #    ServerName example.com
-#    ServerAlias subdomain.example.com 
+#    ServerAlias subdomain.example.com
 ### SETTINGS ###
     DocumentRoot $OCPATH
 
@@ -228,7 +240,7 @@ else
     Options Indexes FollowSymLinks
     AllowOverride All
     Require all granted
-    Satisfy Any 
+    Satisfy Any
     </Directory>
 
     Alias /owncloud "$OCPATH/"
@@ -236,6 +248,11 @@ else
     <IfModule mod_dav.c>
     Dav off
     </IfModule>
+
+    <Directory "$OCDATA">
+    # just in case if .htaccess gets disabled
+    Require all denied
+    </Directory>
 
     SetEnv HOME $OCPATH
     SetEnv HTTP_HOME $OCPATH
@@ -278,7 +295,7 @@ apt-get install --no-install-recommends libreoffice-writer -y
 if [ -d $OCPATH/apps/documents ]; then
 sleep 1
 else
-wget https://github.com/owncloud/documents/archive/master.zip -P $OCPATH/apps
+wget -q https://github.com/owncloud/documents/archive/master.zip -P $OCPATH/apps
 cd $OCPATH/apps
 unzip -q master.zip
 rm master.zip
@@ -287,42 +304,39 @@ fi
 
 # Enable documents
 if [ -d $OCPATH/apps/documents ]; then
-su -s /bin/sh -c 'php $OCPATH/occ app:enable documents' www-data
-su -s /bin/sh -c 'php $OCPATH/occ config:system:set preview_libreoffice_path --value="/usr/bin/libreoffice"' www-data
+sudo -u www-data php $OCPATH/occ app:enable documents
+sudo -u www-data php $OCPATH/occ config:system:set preview_libreoffice_path --value="/usr/bin/libreoffice"
 fi
 
 # Download and install Contacts
 if [ -d $OCPATH/apps/contacts ]; then
 sleep 1
 else
-wget https://github.com/owncloud/contacts/archive/master.zip -P $OCPATH/apps
-unzip -q $OCPATH/apps/master.zip -d $OCPATH/apps
+wget -q $CONVER_REPO/$CONVER/$CONVER_FILE -P $OCPATH/apps
+tar -zxf $OCPATH/apps/$CONVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
-rm master.zip
-mv contacts-master/ contacts/
+rm $CONVER_FILE
 fi
 
 # Enable Contacts
 if [ -d $OCPATH/apps/contacts ]; then
-su -s /bin/sh -c 'php $OCPATH/occ app:enable contacts' www-data
+sudo -u www-data php $OCPATH/occ app:enable contacts
 fi
 
 # Download and install Calendar
 if [ -d $OCPATH/apps/calendar ]; then
 sleep 1
 else
-wget https://github.com/owncloud/calendar/archive/master.zip -P $OCPATH/apps
-unzip -q $OCPATH/apps/master.zip -d $OCPATH/apps
+wget -q $CALVER_REPO/$CALVER/$CALVER_FILE -P $OCPATH/apps
+tar -zxf $OCPATH/apps/$CALVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
-rm master.zip
-mv calendar-master/ calendar/
+rm $CALVER_FILE
 fi
 
 # Enable Calendar
 if [ -d $OCPATH/apps/calendar ]; then
-su -s /bin/sh -c 'php $OCPATH/occ app:enable calendar' www-data
+sudo -u www-data php $OCPATH/occ app:enable calendar
 fi
-
 
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
@@ -343,5 +357,13 @@ unset SSL_CONF
 unset IFACE
 unset ADDRESS
 unset ROOT_PASS
+unset IP
+unset CONVER
+unset CONVER_FILE
+unset CONVER_REPO
+unset CALVER
+unset CALVER_FILE
+unset CALVER_REPO
+unset OCDATA
 
 exit 0

@@ -7,7 +7,7 @@
 SCRIPTS=/var/scripts
 HTML=/var/www/html
 OCPATH=/var/www/owncloud
-DATA=$OCPATH/data
+DATA=/var/ocdata
 SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
 OCVERSION=9.0.1
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
@@ -26,8 +26,8 @@ else
 fi
 
 # System Upgrade
-sudo apt-get update
-sudo aptitude full-upgrade -y
+apt-get update
+aptitude full-upgrade -y
 
 # Enable maintenance mode
 sudo -u www-data php $OCPATH/occ maintenance:mode --on
@@ -94,14 +94,6 @@ else
    exit 1
 fi
 
-# Enable Apps
-sudo -u www-data php $OCPATH/occ app:enable calendar
-sudo -u www-data php $OCPATH/occ app:enable contacts
-sudo -u www-data php $OCPATH/occ app:enable documents
-sudo -u www-data php $OCPATH/occ app:enable external
-
-# Second run (to make sure everything is updated, somtimes apps needs a second run)
-sudo -u www-data php $OCPATH/occ upgrade
 # Enable Apps
 sudo -u www-data php $OCPATH/occ app:enable calendar
 sudo -u www-data php $OCPATH/occ app:enable contacts

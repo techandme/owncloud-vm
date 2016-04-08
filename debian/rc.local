@@ -15,6 +15,7 @@ SCRIPTS="/var/scripts"
 HTML="/var/www/html"
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/debian"
 LETS_ENC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt"
+STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 
       	# Create dir
 if 		[ -d $SCRIPTS ];
@@ -25,6 +26,14 @@ if 		[ -d $SCRIPTS ];
 fi
 
 echo
+echo "Generating new SSH keys for the server..."
+echo
+sleep 1
+rm -v /etc/ssh/ssh_host_*
+dpkg-reconfigure openssh-server
+
+
+echo
 echo "Getting all the latest scripts from GitHub..."
 echo
 
@@ -33,7 +42,7 @@ echo
                 then
                 echo "update-config.php exists"
                 else
-        	wget -q $GITHUB_REPO/update-config.php -P $SCRIPTS
+        	wget -q $STATIC/update-config.php -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -65,7 +74,7 @@ if 		[ -f $SCRIPTS/trusted.sh ];
         then
                 echo "trusted.sh exists"
         else
-        	wget -q $GITHUB_REPO/trusted.sh -P $SCRIPTS
+        	wget -q $STATIC/trusted.sh -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -129,7 +138,7 @@ if 		[ -f $SCRIPTS/ip.sh ];
         then
                 echo "ip.sh exists"
         else
-      		wget -q $GITHUB_REPO/ip.sh -P $SCRIPTS
+      		wget -q $STATIC/ip.sh -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -145,7 +154,7 @@ if 		[ -f $SCRIPTS/test_connection.sh ];
         then
                 echo "test_connection.sh exists"
         else
-        	wget -q $GITHUB_REPO/test_connection.sh -P $SCRIPTS
+        	wget -q $STATIC/test_connection.sh -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -161,7 +170,7 @@ if 		[ -f $SCRIPTS/instruction.sh ];
         then
                 echo "instruction.sh exists"
         else
-        	wget -q $GITHUB_REPO/instruction.sh -P $SCRIPTS
+        	wget -q $STATIC/instruction.sh -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -177,7 +186,7 @@ if 		[ -f $SCRIPTS/history.sh ];
         then
                 echo "history.sh exists"
         else
-        	wget -q $GITHUB_REPO/history.sh -P $SCRIPTS
+        	wget -q $STATIC/history.sh -P $SCRIPTS
 fi
 if [[ $? > 0 ]]
 then
@@ -236,6 +245,15 @@ else
 	echo "Downloaded owncloud-startup-script.sh."
 	sleep 1
 fi
+                # Get figlet Tech and Me
+        if [ -f $SCRIPTS/techandme.sh ];
+                then
+                rm $SCRIPTS/techandme.sh
+                wget -q $STATIC/techandme.sh -P $SCRIPTS
+                else
+        wget -q $STATIC/techandme.sh -P $SCRIPTS
+fi
+
 # Make $SCRIPTS excutable
         	chmod +x -R $SCRIPTS
         	chown root:root -R $SCRIPTS
@@ -243,6 +261,7 @@ fi
 # Allow ocadmin to run theese scripts
         	chown ocadmin:ocadmin $SCRIPTS/instruction.sh
         	chown ocadmin:ocadmin $SCRIPTS/history.sh
+		chown ocadmin:ocadmin $SCRIPTS/techandme.sh
 
 # Get the Welcome Screen when http://$ADDRESS
 if 		[ -f $HTML/index.php ];

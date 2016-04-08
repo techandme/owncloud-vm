@@ -7,7 +7,7 @@
 export SCRIPTS=/var/scripts
 export HTML=/var/www/html
 export OCPATH=$HTML/owncloud
-export DATA=$OCPATH/data
+export DATA=/var/ocdata
 export SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
 export THEME_NAME=""
 
@@ -92,14 +92,6 @@ else
    exit 1
 fi
 
-# Enable Apps
-su -s /bin/sh -c 'php $OCPATH/occ app:enable calendar' www-data
-su -s /bin/sh -c 'php $OCPATH/occ app:enable contacts' www-data
-su -s /bin/sh -c 'php $OCPATH/occ app:enable documents' www-data
-su -s /bin/sh -c 'php $OCPATH/occ app:enable external' www-data
-
-# Second run (to make sure everything is updated, somtimes apps needs a second run)
-su -s /bin/sh -c 'php $OCPATH/occ upgrade' www-data
 # Enable Apps
 su -s /bin/sh -c 'php $OCPATH/occ app:enable calendar' www-data
 su -s /bin/sh -c 'php $OCPATH/occ app:enable contacts' www-data

@@ -15,8 +15,8 @@ cat <<-IPCONFIG > "$INTERFACES"
         iface lo inet loopback
 
         iface $IFACE inet static
-	        pre-up /sbin/ethtool -K $IFACE tso off
-        	pre-up /sbin/ethtool -K $IFACE gso off
+		pre-up /sbin/ethtool -K $IFACE tso off
+		pre-up /sbin/ethtool -K $IFACE gso off
 
                 address $ADDRESS
                 netmask $NETMASK

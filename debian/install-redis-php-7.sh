@@ -3,6 +3,10 @@
 # Tech and Me - www.techandme.se - ©2016
 
 SCRIPTS=/var/scripts
+OCPATH=/var/www/html/owncloud
+REDIS_CONF=/etc/redis/6379.conf
+REDIS_INIT=/etc/init.d/redis_6379
+REDIS_SOCK=/var/run/redis.sock
 
 # Must be root
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }
@@ -92,15 +96,69 @@ cat <<ADD_TO_CONFIG>> /var/www/html/owncloud/config/config.php
   'memcache.locking' => '\\OC\\Memcache\\Redis',
   'redis' =>
   array (
-  'host' => 'localhost',
-  'port' => 6379,
+  'host' => '$REDIS_SOCK',
+  'port' => 0,
   'timeout' => 0,
   'dbindex' => 0,
   ),
 );
 ADD_TO_CONFIG
 
+# Redis performance tweaks
+if	grep -Fxq "vm.overcommit_memory = 1" /etc/sysctl.conf
+then
+	echo "vm.overcommit_memory correct"
+else
+	echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+fi
+sed -i "s|# unixsocket /tmp/redis.sock|unixsocket $REDIS_SOCK|g" $REDIS_CONF
+sed -i "s|# unixsocketperm 700|unixsocketperm 777|g" $REDIS_CONF
+sed -i "s|port 6379|port 0|g" $REDIS_CONF
+sed -i "s|###############|SOCKET='$REDIS_SOCK'|g" $REDIS_INIT
+sed -i "s|REDISPORT shutdown|SOCKET shutdown|g" $REDIS_INIT
+sed -i "s|CLIEXEC -p|CLIEXEC -s|g" $REDIS_INIT
+redis-cli SHUTDOWN
+
 # Cleanup
-aptitude purge git -y
+aptitude purge -q -y \
+	git \
+	php7.0-dev \
+	binutils \
+	build-essential \
+	cpp \
+	cpp-4.8 \
+	dpkg-dev \
+	fakeroot \
+	g++ \
+	g++-4.8 \
+	gcc \
+	gcc-4.8 \
+	libalgorithm-diff-perl \
+	libalgorithm-diff-xs-perl \
+	libalgorithm-merge-perl \
+	libasan0 \
+	libatomic1 \
+	libc-dev-bin \
+	libc6-dev \
+	libcloog-isl4 \
+	libdpkg-perl \
+	libfakeroot \
+	libfile-fcntllock-perl \
+	libgcc-4.8-dev \
+	libgmp10 libgomp1 \
+	libisl10 \
+	libitm1 \
+	libmpc3 \
+	libmpfr4 \
+	libquadmath0 \
+	libstdc++-4.8-dev \
+	libtsan0 \
+	linux-libc-dev \
+	make \
+	manpages-dev
+
+aptitude update
+aptitude autoremove -q -y
+aptitude autoclean
 
 exit 0
