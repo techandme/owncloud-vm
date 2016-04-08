@@ -11,7 +11,8 @@ export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -
 export IFCONFIG="/sbin/ifconfig"
 export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 export OCDATA=/var/ocdata
-export OCPATH=/var/www/owncloud
+export HTML=/var/www
+export OCPATH=$HTML/owncloud
 
 # Check if root
 if [ "$(whoami)" != "root" ]; then
@@ -192,13 +193,15 @@ echo System will now upgrade...
 sleep 2
 echo
 echo
-aptitude update
-aptitude full-upgrade -y
+bash $SCRIPTS/owncloud_update.sh
 
 # Cleanup 1
 aptitude autoclean
 echo "$CLEARBOOT"
 clear
+
+# Change 000-default to $WEB_ROOT
+sed -i "s|DocumentRoot /var/www/html|DocumentRoot $HTML|g" /etc/apache2/sites-available/000-default.conf
 
 ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print $2 }')
 # Success!
@@ -231,7 +234,7 @@ rm $SCRIPTS/owncloud_install*
 rm $SCRIPTS/trusted*
 rm $SCRIPTS/owncloud-startup-script*
 rm $OCDATA/owncloud.log*
-sed -i "s|instruction.sh|techandme.sh|g" /home/ocadmin/.bash_profile
+sed -i "s|instruction.sh|techandme.sh|g" /home/ocadmin/.profile
 cat /dev/null > ~/.bash_history
 cat /dev/null > /var/spool/mail/root
 cat /dev/null > /var/spool/mail/ocadmin
@@ -297,6 +300,7 @@ unset ADDRESS
 unset OCDATA
 unset IP
 unset OCPATH
+unset HTML
 
 # Reboot
 reboot

@@ -12,7 +12,7 @@
 # By default this script does nothing.
 
 SCRIPTS="/var/scripts"
-HTML="/var/www/html"
+HTML="/var/www"
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/debian"
 LETS_ENC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
@@ -269,7 +269,7 @@ if 		[ -f $HTML/index.php ];
  		rm $HTML/index.php
  		wget -q $GITHUB_REPO/index.php -P $HTML
  		chmod 750 $HTML/index.php && chown www-data:www-data $HTML/index.php
- 	else	
+ 	else
 		wget -q $GITHUB_REPO/index.php -P $HTML
 		chmod 750 $HTML/index.php && chown www-data:www-data $HTML/index.php
 fi
