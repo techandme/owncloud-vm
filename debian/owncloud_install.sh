@@ -152,7 +152,8 @@ apt-key add dotdeb.gpg
 rm dotdeb.gpg
 aptitude update
 aptitude install -y \
-        php7.0 \
+        software-properties-common \
+	php7.0 \
         php7.0-common \
         php7.0-mysql \
         php7.0-intl \
@@ -286,6 +287,9 @@ su -s /bin/sh -c 'php $OCPATH/occ config:system:set mail_smtppassword --value="t
 echo -ne '\n' | apt-add-repository ppa:libreoffice/libreoffice-4-4
 aptitude update
 apt-get install --no-install-recommends libreoffice-writer -y
+
+# Install unzip
+aptitude install unzip -y
 
 # Download and install Documents
 if [ -d $OCPATH/apps/documents ]; then

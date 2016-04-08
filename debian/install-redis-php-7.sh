@@ -18,7 +18,7 @@ else mkdir -p $SCRIPTS
 fi
 
 # Get packages to be able to install Redis
-aptitude update && sudo aptitude install build-essential -q -y
+aptitude update &&  aptitude install build-essential -q -y
 aptitude install tcl8.5 -q -y
 aptitude install php-pear php7.0-dev -q -y
 
@@ -27,8 +27,7 @@ aptitude install git -y -q
 git clone -b php7 https://github.com/phpredis/phpredis.git
 
 # Build Redis PHP module
-aptitude install php7.0-dev -y
-sudo mv phpredis/ /etc/ && cd /etc/phpredis
+mv phpredis/ /etc/ && cd /etc/phpredis
 phpize
 ./configure
 make && make install
@@ -42,9 +41,8 @@ else
     echo "PHP module installation OK!"
     echo -e "\e[0m"
 fi
-echo 'extension=redis.so' >> /etc/php/7.0/apache2/php.ini
-touch /etc/php/mods-available/redis.ini
-echo 'extension=redis.so' > /etc/php/mods-available/redis.ini
+touch /etc/php/7.0/mods-available/redis.ini
+echo 'extension=redis.so' > /etc/php/7.0/mods-available/redis.ini
 phpenmod redis
 service apache2 restart
 cd ..
@@ -55,16 +53,15 @@ wget -q http://download.redis.io/releases/redis-stable.tar.gz -P $SCRIPTS && tar
 mv $SCRIPTS/redis-stable $SCRIPTS/redis
 
 # Test Redis
-cd $SCRIPTS/redis && make && taskset -c 1 make test
-if [[ $? > 0 ]]
-then
-    echo "Test failed."
-    sleep 5
-    exit 1
-else
-		echo -e "\e[32m"
-    echo "Redis test OK!"
-    echo -e "\e[0m"
+cd $SCRIPTS/redis && make
+# Check if taskset need to be run
+grep -c ^processor /proc/cpuinfo > /tmp/cpu.txt
+if grep -Fxq "1" /tmp/cpu.txt
+then echo "Not running taskset"
+make test
+else echo "Running taskset limit to 1 proccessor"
+taskset -c 1 make test
+rm /tmp/cpu.txt
 fi
 
 # Install Redis
@@ -86,10 +83,10 @@ rm -rf $SCRIPTS/redis
 rm $SCRIPTS/redis-stable.tar.gz
 
 # Prepare for adding redis configuration
-sed -i "s|);||g" /var/www/html/owncloud/config/config.php
+sed -i "s|);||g" $OCPATH/config/config.php
 
 # Add the needed config to ownClouds config.php
-cat <<ADD_TO_CONFIG>> /var/www/html/owncloud/config/config.php
+cat <<ADD_TO_CONFIG>> $OCPATH/config/config.php
   'memcache.local' => '\\OC\\Memcache\\Redis',
   'filelocking.enabled' => 'true',
   'memcache.distributed' => '\\OC\\Memcache\\Redis',
@@ -120,45 +117,14 @@ sed -i "s|CLIEXEC -p|CLIEXEC -s|g" $REDIS_INIT
 redis-cli SHUTDOWN
 
 # Cleanup
-aptitude purge -q -y \
+aptitude purge -y \
 	git \
 	php7.0-dev \
-	binutils \
-	build-essential \
-	cpp \
-	cpp-4.8 \
-	dpkg-dev \
-	fakeroot \
-	g++ \
-	g++-4.8 \
-	gcc \
-	gcc-4.8 \
-	libalgorithm-diff-perl \
-	libalgorithm-diff-xs-perl \
-	libalgorithm-merge-perl \
-	libasan0 \
-	libatomic1 \
-	libc-dev-bin \
-	libc6-dev \
-	libcloog-isl4 \
-	libdpkg-perl \
-	libfakeroot \
-	libfile-fcntllock-perl \
-	libgcc-4.8-dev \
-	libgmp10 libgomp1 \
-	libisl10 \
-	libitm1 \
-	libmpc3 \
-	libmpfr4 \
-	libquadmath0 \
-	libstdc++-4.8-dev \
-	libtsan0 \
-	linux-libc-dev \
 	make \
-	manpages-dev
+	tcl8.5 \
+	build-essential
 
 aptitude update
-aptitude autoremove -q -y
 aptitude autoclean
 
 exit 0

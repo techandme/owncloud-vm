@@ -11,6 +11,7 @@ export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -
 export IFCONFIG="/sbin/ifconfig"
 export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 export OCDATA=/var/ocdata
+export OCPATH=/var/www/owncloud
 
 # Check if root
 if [ "$(whoami)" != "root" ]; then
@@ -62,6 +63,8 @@ sleep 2
 ifup $IFACE
 sleep 2
 bash $SCRIPTS/ip.sh
+sed -i "s|pre-up|#pre-up|g" /etc/network/interfaces
+
 ifdown $IFACE
 sleep 2
 ifup $IFACE
@@ -149,10 +152,10 @@ echo "The current password is [owncloud]"
 echo -e "\e[32m"
 read -p "Press any key to change password for ownCloud... " -n1 -s
 echo -e "\e[0m"
-su -s /bin/sh -c 'php /var/www/html/owncloud/occ user:resetpassword ocadmin' www-data
+su -s /bin/sh -c 'php $OCPATH/occ user:resetpassword ocadmin' www-data
 if [[ $? > 0 ]]
 then
-    su -s /bin/sh -c 'php /var/www/html/owncloud/occ user:resetpassword ocadmin' www-data
+    su -s /bin/sh -c 'php $OCPATH/occ user:resetpassword ocadmin' www-data
 else
     sleep 2
 fi
@@ -217,7 +220,7 @@ echo -e "\e[0m"
 echo
 
 # Cleanup 2
-su -s /bin/sh -c 'php /var/www/html/owncloud/occ maintenance:repair' www-data
+su -s /bin/sh -c 'php $OCPATH/occ maintenance:repair' www-data
 rm $SCRIPTS/ip*
 rm $SCRIPTS/test_connection*
 rm $SCRIPTS/change-ocadmin-profile*
@@ -293,6 +296,7 @@ unset IFCONFIG
 unset ADDRESS
 unset OCDATA
 unset IP
+unset OCPATH
 
 # Reboot
 reboot
