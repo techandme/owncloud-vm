@@ -17,7 +17,7 @@ export MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | 
 export ROOT_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
 export PW_FILE=/var/M-R_passwords.txt
 export SCRIPTS=/var/scripts
-export HTML=/var/www/html
+export HTML=/var/www
 export OCPATH=$HTML/owncloud
 export SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 export IP="/sbin/ip"
@@ -36,8 +36,6 @@ fi
 echo "nameserver 8.26.56.26" > /etc/resolv.conf
 echo "nameserver 8.20.247.20" >> /etc/resolv.conf
 
-sudo usermod -a -G sudo ocadmin
-
 # Check network
 ifdown $IFACE && ifup $IFACE
 nslookup google.com
@@ -54,8 +52,7 @@ aptitude update
 
 # Install Sudo
 aptitude install sudo -y
-# If you want to add ocadmin as sudo user
-# adduser ocadmin sudo
+adduser ocadmin sudo
 
 # Install Rsync
 aptitude install rsync -y
@@ -168,9 +165,8 @@ aptitude install -y \
         php7.0-json \
         php7.0-sqlite3 \
         php7.0-curl \
-        php7.0-xml \
-        php7.0-zip \
-        libsm6 \
+        php7.0-xmlrpc \
+	libsm6 \
         libsmbclient
 
 # Download and install ownCloud

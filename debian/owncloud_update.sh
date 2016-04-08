@@ -5,7 +5,7 @@
 # Tested on Ubuntu Server 14.04.
 #
 export SCRIPTS=/var/scripts
-export HTML=/var/www/html
+export HTML=/var/www
 export OCPATH=$HTML/owncloud
 export DATA=/var/ocdata
 export SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"

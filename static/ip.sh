@@ -1,7 +1,7 @@
 #!/bin/sh
 
-IFCONFIG="/sbin/ifconfig"
-IP="/sbin/ip"
+IFCONFIG="ifconfig"
+IP="ip"
 INTERFACES="/etc/network/interfaces"
 
 IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
