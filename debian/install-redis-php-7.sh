@@ -123,7 +123,9 @@ aptitude purge -y \
 	php7.0-dev \
 	make \
 	tcl8.5 \
-	build-essential
+	build-essential \
+	debhelper \
+	dpkg-dev
 
 aptitude update
 aptitude autoclean

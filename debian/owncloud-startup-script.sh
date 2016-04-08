@@ -181,11 +181,6 @@ clear
 
 # Install Redis
 bash $SCRIPTS/install-redis-php-7.sh
-echo
-echo Testing Redis: PING
-redis-cli ping
-echo
-sleep 3
 
 # Upgrade system
 clear
