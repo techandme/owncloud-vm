@@ -3,7 +3,7 @@
 # Tech and Me - www.techandme.se - ©2016
 
 SCRIPTS=/var/scripts
-OCPATH=/var/www/html/owncloud
+OCPATH=/var/www/owncloud
 REDIS_CONF=/etc/redis/6379.conf
 REDIS_INIT=/etc/init.d/redis_6379
 REDIS_SOCK=/var/run/redis.sock
