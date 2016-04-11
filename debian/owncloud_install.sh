@@ -179,8 +179,6 @@ apt-key add - < Release.key && rm Release.key
 sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Debian_8.0/ /' >> /etc/apt/sources.list.d/owncloud.list"
 apt-get update && apt-get install owncloud-files -y
 
-mkdir -p $OCDATA
-
 # Create data folder, occ complains otherwise
 mkdir -p $OCDATA
 
