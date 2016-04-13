@@ -6,7 +6,7 @@
 CONVER=v1.1.0.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
-CALVER=v1.0
+CALVER=v1.1
 CALVER_FILE=calendar.tar.gz
 CALVER_REPO=https://github.com/owncloud/calendar/releases/download
 SHUF=$(shuf -i 13-15 -n 1)
