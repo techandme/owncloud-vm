@@ -32,6 +32,27 @@ export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
         exit 1
 fi
 
+# Check if it's a clean server
+if dpkg --list mysql-server | egrep -q ^ii; then
+        echo "MySQL is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list apache2 | egrep -q ^ii; then
+        echo "Apache2 is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list php | egrep -q ^ii; then
+        echo "PHP is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list owncloud | egrep -q ^ii; then
+        echo "ownCloud is installed, it must be a clean server."
+        exit 1
+fi
+
 # Change DNS
 echo "nameserver 8.26.56.26" > /etc/resolv.conf
 echo "nameserver 8.20.247.20" >> /etc/resolv.conf

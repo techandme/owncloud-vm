@@ -2,7 +2,11 @@
 
 # Tech and Me, ©2016 - www.techandme.se
 #
-# This install from ownCloud repos with PHP 7
+# This install from ownCloud repos with PHP 7, MySQL 5.7 and Apche 2.4.
+# Ubuntu 16.04 is required.
+
+set -e
+
 CONVER=v1.1.0.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
@@ -33,6 +37,27 @@ UNIXPASS=owncloud
         echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud_install_production.sh"
         echo
         exit 1
+fi
+
+# Check if it's a clean server
+if dpkg --list mysql-server | egrep -q ^ii; then
+        echo "MySQL is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list apache2 | egrep -q ^ii; then
+        echo "Apache2 is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list php | egrep -q ^ii; then
+        echo "PHP is installed, it must be a clean server."
+        exit 1
+fi
+
+if dpkg --list owncloud | egrep -q ^ii; then
+	echo "ownCloud is installed, it must be a clean server."
+	exit 1
 fi
 
 # Create $UNIXUSER if not existing
@@ -70,37 +95,39 @@ sudo ifdown $IFACE && sudo ifup $IFACE
 nslookup google.com
 if [[ $? > 0 ]]
 then
-    echo "Network NOT OK. You must have a working Network connection to run this script."
-    exit
+	echo "Network NOT OK. You must have a working Network connection to run this script."
+        exit 1
 else
-    echo "Network OK."
+	echo "Network OK."
 fi
 
 # Update system
 apt-get update
 
 # Set locales
-sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure locales
+sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
 chmod 600 $PW_FILE
 chown root:root $PW_FILE
 
-# Install MYSQL 5.6
+# Install MYSQL 5.7
 apt-get install software-properties-common -y
-echo "mysql-server-5.6 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
-echo "mysql-server-5.6 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
-apt-get install mysql-server-5.6 -y
+echo "mysql-server-5.7 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
+echo "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
+apt-get install mysql-server-5.7 -y
 
 # mysql_secure_installation
-aptitude -y install expect
+apt-get -y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
+expect \"Enter current password for root:\"
 send \"$MYSQL_PASS\r\"
-expect \"Change the root password?\"
+expect \"Would you like to setup VALIDATE PASSWORD plugin?\"
+send \"n\r\"
+expect \"Change the password for root ?\"
 send \"n\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
@@ -113,7 +140,7 @@ send \"y\r\"
 expect eof
 ")
 echo "$SECURE_MYSQL"
-aptitude -y purge expect
+apt-get -y purge expect
 
 # Install Apache
 apt-get install apache2 -y
@@ -131,31 +158,19 @@ sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
 # Install PHP 7.0
-apt-get install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
 apt-get update
 apt-get install -y \
-        libapache2-mod-php7.0 \
-        php7.0-common \
-        php7.0-mysql \
-        php7.0-intl \
-        php7.0-mcrypt \
-        php7.0-ldap \
-        php7.0-imap \
-        php7.0-cli \
-        php7.0-gd \
-        php7.0-pgsql \
-        php7.0-json \
-        php7.0-sqlite3 \
-        php7.0-curl \
-	php7.0-xml \
-	php7.0-zip \
+        php \
+	php-mcrypt \
+	php-pear \
+	php-ldap \
         php-smbclient
 
 # Download and install ownCloud
-wget -nv https://download.owncloud.org/download/repositories/stable/Ubuntu_14.04/Release.key -O Release.key
+wget -nv https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04/Release.key -O Release.key
 apt-key add - < Release.key && rm Release.key
-sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Ubuntu_14.04/ /' >> /etc/apt/sources.list.d/owncloud.list"
-apt-get update && apt-get install owncloud-files -y
+sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Ubuntu_16.04/ /' >> /etc/apt/sources.list.d/owncloud.list"
+apt-get update && apt-get install owncloud -y
 
 mkdir -p $OCDATA
 
@@ -305,8 +320,8 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.en
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="techandme_se"
 
 # Install Libreoffice Writer to be able to read MS documents.
-echo -ne '\n' | sudo apt-add-repository ppa:libreoffice/libreoffice-4-4
-apt-get update
+# echo -ne '\n' | sudo apt-add-repository ppa:libreoffice/libreoffice-4-4
+# apt-get update
 sudo apt-get install --no-install-recommends libreoffice-writer -y
 
 # Install packages for Webmin
@@ -432,11 +447,11 @@ else
 fi
 
 # Get script for Redis
-        if [ -f $SCRIPTS/install-redis-php-7.sh ];
+        if [ -f $SCRIPTS/redis-server-ubuntu16.sh ];
                 then
-                echo "install-redis-php-7.sh exists"
+                echo "redis-server-ubuntu16.sh exists"
                 else
-        wget -q $STATIC/install-redis-php-7.sh -P $SCRIPTS
+        wget -q $STATIC/redis-server-ubuntu16.sh -P $SCRIPTS
 fi
 
 # Make $SCRIPTS excutable
@@ -448,8 +463,8 @@ chown $UNIXUSER:$UNIXUSER $SCRIPTS/instruction.sh
 chown $UNIXUSER:$UNIXUSER $SCRIPTS/history.sh
 
 # Install Redis
-bash $SCRIPTS/install-redis-php-7.sh
-rm $SCRIPTS/install-redis-php-7.sh
+bash $SCRIPTS/redis-server-ubuntu16.sh
+rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
 aptitude full-upgrade -y
