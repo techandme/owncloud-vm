@@ -216,7 +216,7 @@ aptitude install -y \
 # Download and install ownCloud
 wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
-sh -c "echo 'deb OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
+sh -c "echo 'deb $OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
 apt-get update && apt-get install owncloud-files -y
 
 # Create data folder, occ complains otherwise
