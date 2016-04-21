@@ -89,7 +89,7 @@ then
 else
 	echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
 fi
-sed -i "s|# unixsocket /tmp/redis.sock|unixsocket $REDIS_SOCK|g" $REDIS_CONF
+sed -i "s|# unixsocket /var/run/redis/redis.sock|unixsocket $REDIS_SOCK|g" $REDIS_CONF
 sed -i "s|# unixsocketperm 700|unixsocketperm 777|g" $REDIS_CONF
 sed -i "s|port 6379|port 0|g" $REDIS_CONF
 redis-cli SHUTDOWN

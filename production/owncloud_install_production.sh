@@ -26,8 +26,10 @@ IP="/sbin/ip"
 IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
-GITHUB_REPO=https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production
-STATIC=https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static
+GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production"
+STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+OCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
+OCREPOKEY="$OCREPO/Release.key"
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
 
@@ -39,8 +41,24 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Check if repo is availible
+if wget -q --spider "$OCREPO" > /dev/null; then
+        echo "ownCloud repo OK"
+else
+        echo "ownCloud repo is not availible, exiting..."
+        exit 1
+fi
+
+if wget -q --spider "$OCREPOKEY" > /dev/null; then
+        echo "ownCloud repo key OK"
+else
+        echo "ownCloud repo key is not availible, exiting..."
+        exit 1
+fi
+
 # Check if it's a clean server
-if dpkg --list mysql-server | egrep -q ^ii; then
+echo "Checking if it's a clean server..."
+if dpkg --list mysql-common | egrep -q ^ii; then
         echo "MySQL is installed, it must be a clean server."
         exit 1
 fi
@@ -167,9 +185,9 @@ apt-get install -y \
         php-smbclient
 
 # Download and install ownCloud
-wget -nv https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04/Release.key -O Release.key
+wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
-sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Ubuntu_16.04/ /' >> /etc/apt/sources.list.d/owncloud.list"
+sh -c "echo 'deb $OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
 apt-get update && apt-get install owncloud -y
 
 mkdir -p $OCDATA
@@ -467,7 +485,7 @@ bash $SCRIPTS/redis-server-ubuntu16.sh
 rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
-aptitude full-upgrade -y
+apt-get full-upgrade -y
 
 # Cleanup
 echo "$CLEARBOOT"

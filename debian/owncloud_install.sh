@@ -23,6 +23,9 @@ export SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.co
 export IP="/sbin/ip"
 export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
+export OCREPO="https://download.owncloud.org/download/repositories/stable/Debian_8.0"
+export OCREPOKEY="$OCREPO/Release.key"
+
 
 # Check if root
         if [ "$(whoami)" != "root" ]; then
@@ -32,8 +35,24 @@ export ADDRESS=$(hostname -I | cut -d ' ' -f 1)
         exit 1
 fi
 
+# Check if repo is availible
+if wget -q --spider "$OCREPO" > /dev/null; then
+        echo "ownCloud repo OK"
+else
+        echo "ownCloud repo is not availible, exiting..."
+        exit 1
+fi
+
+if wget -q --spider "$OCREPOKEY" > /dev/null; then
+        echo "ownCloud repo key OK"
+else
+        echo "ownCloud repo key is not availible, exiting..."
+        exit 1
+fi
+
 # Check if it's a clean server
-if dpkg --list mysql-server | egrep -q ^ii; then
+echo "Checking if it's a clean server..."
+if dpkg --list mysql-common | egrep -q ^ii; then
         echo "MySQL is installed, it must be a clean server."
         exit 1
 fi
@@ -195,9 +214,9 @@ aptitude install -y \
         libsmbclient
 
 # Download and install ownCloud
-wget -nv https://download.owncloud.org/download/repositories/stable/Debian_8.0/Release.key -O Release.key
+wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
-sh -c "echo 'deb http://download.owncloud.org/download/repositories/stable/Debian_8.0/ /' >> /etc/apt/sources.list.d/owncloud.list"
+sh -c "echo 'deb OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
 apt-get update && apt-get install owncloud-files -y
 
 # Create data folder, occ complains otherwise
