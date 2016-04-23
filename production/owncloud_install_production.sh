@@ -7,7 +7,7 @@
 
 set -e
 
-CONVER=v1.1.0.0
+CONVER=v1.2.0.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
 CALVER=v1.1
@@ -488,7 +488,7 @@ bash $SCRIPTS/redis-server-ubuntu16.sh
 rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
-apt-get full-upgrade -y
+aptitude full-upgrade -y
 
 # Cleanup
 echo "$CLEARBOOT"

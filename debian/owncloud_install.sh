@@ -4,7 +4,7 @@
 
 # Debian 8.3 Jessie
 
-export CONVER=v1.1.0.0
+export CONVER=v1.2.0.0
 export CONVER_FILE=contacts.tar.gz
 export CONVER_REPO=https://github.com/owncloud/contacts/releases/download
 export CALVER=v1.1
