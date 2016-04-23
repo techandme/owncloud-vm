@@ -125,6 +125,9 @@ apt-get update
 # Set locales
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
+# Install aptitude
+apt-get install aptitude -y
+
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
 chmod 600 $PW_FILE
@@ -343,7 +346,7 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="te
 sudo apt-get install --no-install-recommends libreoffice-writer -y
 
 # Install packages for Webmin
-apt-get install --force-yes -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+apt-get install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
 
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
