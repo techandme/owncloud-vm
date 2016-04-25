@@ -7,7 +7,6 @@ WANIP=$(dig +short myip.opendns.com @resolver1.opendns.com)
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
 PW_FILE=$(cat /var/mysql_password.txt)
-BLOWFISH=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 25 | head -1)
 UPLOADPATH=""
 SAVEPATH=""
 
@@ -119,17 +118,8 @@ a2enconf phpmyadmin
 
 # Secure phpMyadmin even more
 CONFIG=/var/lib/phpmyadmin/config.inc.php
-if [ -f $CONFIG ];
-        then
-        rm $CONIG
-fi
-        touch "$CONFIG"
-        chmod 644 $CONFIG
-        chown root:root $CONFIG
- cat << CONFIG_CREATE > "$CONFIG"
- <?php
-\$cfg['blowfish_secret'] = '$BLOWFISH';
-
+cat << CONFIG_CREATE >> "$CONFIG"
+<?php
 \$i = 0;
 \$i++;
 \$cfg['Servers'][\$i]['host'] = 'localhost';
