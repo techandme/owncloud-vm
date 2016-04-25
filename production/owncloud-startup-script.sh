@@ -29,12 +29,12 @@ fi
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
         # phpMyadmin
-        if [ -f $SCRIPTS/phpmyadmin_install.sh ];
+        if [ -f $SCRIPTS/phpmyadmin_install_ubuntu16.sh ];
                 then
-                rm $SCRIPTS/phpmyadmin_install.sh
-                wget -q $STATIC/phpmyadmin_install.sh -P $SCRIPTS
+                rm $SCRIPTS/phpmyadmin_install_ubuntu16.sh
+                wget -q $STATIC/phpmyadmin_install_ubuntu16.sh -P $SCRIPTS
                 else
-        wget -q $STATIC/phpmyadmin_install.sh -P $SCRIPTS
+        wget -q $STATIC/phpmyadmin_install_ubuntu16.sh -P $SCRIPTS
 fi
 	# Update Config
         if [ -f $SCRIPTS/update-config.php ];
@@ -219,8 +219,8 @@ bash $SCRIPTS/change_mysql_pass.sh
 rm $SCRIPTS/change_mysql_pass.sh
 
 # Install phpMyadmin
-bash $SCRIPTS/phpmyadmin_install.sh
-rm $SCRIPTS/phpmyadmin_install.sh
+bash $SCRIPTS/phpmyadmin_install_ubuntu16.sh
+rm $SCRIPTS/phpmyadmin_install_ubuntu16.sh
 clear
 
 # Set keyboard layout
