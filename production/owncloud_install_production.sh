@@ -78,6 +78,13 @@ if dpkg --list owncloud | egrep -q ^ii; then
 	exit 1
 fi
 
+if dpkg --list tasksel | egrep -q ^ii; then
+        echo "tasksel is not installed, this doesn't seem to be a server."
+        apt-get install tasksel -y
+	echo "'tasksel' is no installed. Please restart this script"
+	exit 1
+fi
+
 # Create $UNIXUSER if not existing
 getent passwd $UNIXUSER  > /dev/null
 if [ $? -eq 0 ]
@@ -105,10 +112,27 @@ fi
 fi
 
 # Change DNS
+if ! [ -x "$(command -v resolvconf)" ]; then
+	apt-get install resolvconf -y -q
+	dpkg-reconfigure resolvconf
+else
+	echo 'reolvconf is installed.' >&2
+fi
+
 echo "nameserver 8.26.56.26" > /etc/resolvconf/resolv.conf.d/base
 echo "nameserver 8.20.247.20" >> /etc/resolvconf/resolv.conf.d/base
 
 # Check network
+if ! [ -x "$(command -v nslookup)" ]; then
+	apt-get install dnsutils -y -q
+else
+	echo 'dnsutils is installed.' >&2
+fi
+if ! [ -x "$(command -v ifupdown)" ]; then
+	apt-get install ifupdown -y -q
+else
+	echo 'ifupdown is installed.' >&2
+fi
 sudo ifdown $IFACE && sudo ifup $IFACE
 nslookup google.com
 if [[ $? > 0 ]]
@@ -123,6 +147,7 @@ fi
 apt-get update
 
 # Set locales
+apt-get install language-pack-en-base -y
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 # Install aptitude

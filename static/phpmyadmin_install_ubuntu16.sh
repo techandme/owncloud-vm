@@ -113,9 +113,6 @@ Alias /phpmyadmin $PHPMYADMINDIR
 </Directory>
 CONF_CREATE
 
-# Activate new config
-a2enconf phpmyadmin
-
 # Secure phpMyadmin even more
 CONFIG=/var/lib/phpmyadmin/config.inc.php
 cat << CONFIG_CREATE >> "$CONFIG"
@@ -130,7 +127,7 @@ cat << CONFIG_CREATE >> "$CONFIG"
 \$cfg['UploadDir'] = '$SAVEPATH';
 \$cfg['SaveDir'] = '$UPLOADPATH';
 \$cfg['BZipDump'] = false;
-\$cfg['DefaultLang'] = 'en';
+\$cfg['Lang'] = 'en';
 \$cfg['ServerDefault'] = 1;
 \$cfg['ShowPhpInfo'] = true;
 \$cfg['Export']['lock_tables'] = true;
