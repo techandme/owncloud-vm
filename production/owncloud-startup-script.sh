@@ -358,7 +358,7 @@ cat << LETSENC
 |  Ok, now the last part - a proper SSL cert.   |
 |                                               |
 |  The following script will install a trusted  |
-|  SSL certificate through Let's encrypt.       |
+|  SSL certificate through Let's Encrypt.       |
 +-----------------------------------------------+
 LETSENC
 

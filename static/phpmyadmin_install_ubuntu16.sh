@@ -6,7 +6,7 @@ PHPMYADMINDIR=/usr/share/phpmyadmin
 WANIP=$(dig +short myip.opendns.com @resolver1.opendns.com)
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
-MYSQL_PASS=cat /var/mysql_password.txt
+PW_FILE=$(cat /var/mysql_password.txt)
 BLOWFISH=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 25 | head -1)
 UPLOADPATH=""
 SAVEPATH=""
@@ -26,13 +26,13 @@ sleep 2
 
 # Install phpmyadmin
 echo 'phpmyadmin phpmyadmin/dbconfig-install boolean true' | debconf-set-selections
-echo 'phpmyadmin phpmyadmin/app-password-confirm password $MYSQL_PASS' | debconf-set-selections
-echo 'phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PASS' | debconf-set-selections
-echo 'phpmyadmin phpmyadmin/mysql/app-pass password $MYSQL_PASS' | debconf-set-selections
+echo 'phpmyadmin phpmyadmin/app-password-confirm password $PW_FILE' | debconf-set-selections
+echo 'phpmyadmin phpmyadmin/mysql/admin-pass password $PW_FILE' | debconf-set-selections
+echo 'phpmyadmin phpmyadmin/mysql/app-pass password $PW_FILE' | debconf-set-selections
 echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
 apt-get update
 apt-get install -y -q \
-	php-gettext
+	php-gettext \
 	phpmyadmin
 
 # Secure phpMyadmin
