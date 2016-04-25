@@ -67,17 +67,15 @@ Alias /phpmyadmin $PHPMYADMINDIR
         php_admin_value open_basedir /usr/share/phpmyadmin/:/etc/phpmyadmin/:/var/lib/phpmyadmin/:/usr/share/php/php-gettext/:/usr/share/javascript/:/usr/share/php/tcpdf/:/usr/share/doc/phpm$
     </IfModule>
 
-</Directory>
-
-        <IfModule mod_authz_core.c>
+    <IfModule mod_authz_core.c>
 # Apache 2.4
-        <RequireAny>
+      <RequireAny>
         Require ip $WANIP
 	Require ip $ADDRESS
         Require ip 127.0.0.1
         Require ip ::1
-        </RequireAny>
-        </IfModule>
+      </RequireAny>
+    </IfModule>
 
         <IfModule !mod_authz_core.c>
 # Apache 2.2
@@ -120,7 +118,7 @@ CONF_CREATE
 a2enconf phpmyadmin
 
 # Secure phpMyadmin even more
-CONFIG=$PHPMYADMINDIR/config.inc.php
+CONFIG=/var/lib/phpmyadmin/config.inc.php
 if [ -f $CONFIG ];
         then
         rm $CONIG
@@ -136,7 +134,7 @@ fi
 \$i++;
 \$cfg['Servers'][\$i]['host'] = 'localhost';
 \$cfg['Servers'][\$i]['extension'] = 'mysql';
-\$cfg['Servers'][\$i]['connect_type'] = 'tcp';
+\$cfg['Servers'][\$i]['connect_type'] = 'socket';
 \$cfg['Servers'][\$i]['compress'] = false;
 \$cfg['Servers'][\$i]['auth_type'] = 'cookie';
 \$cfg['UploadDir'] = '$SAVEPATH';
