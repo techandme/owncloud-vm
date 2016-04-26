@@ -73,18 +73,6 @@ if dpkg --list php | egrep -q ^ii; then
         exit 1
 fi
 
-if dpkg --list owncloud | egrep -q ^ii; then
-	echo "ownCloud is installed, it must be a clean server."
-	exit 1
-fi
-
-if dpkg --list tasksel | egrep -q ^ii; then
-        echo "tasksel is not installed, this doesn't seem to be a server."
-        apt-get install tasksel -y
-	echo "'tasksel' is no installed. Please restart this script"
-	exit 1
-fi
-
 # Create $UNIXUSER if not existing
 getent passwd $UNIXUSER  > /dev/null
 if [ $? -eq 0 ]
@@ -128,7 +116,7 @@ if ! [ -x "$(command -v nslookup)" ]; then
 else
 	echo 'dnsutils is installed.' >&2
 fi
-if ! [ -x "$(command -v ifupdown)" ]; then
+if ! [ -x "$(command -v ifup)" ]; then
 	apt-get install ifupdown -y -q
 else
 	echo 'ifupdown is installed.' >&2
