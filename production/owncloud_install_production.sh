@@ -51,6 +51,8 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Check Ubuntu version
+
 if [ $DISTRO -eq 1 ]
 then
         echo "Ubuntu 16.04 LTS OK!"
@@ -77,24 +79,39 @@ fi
 
 # Check if it's a clean server
 echo "Checking if it's a clean server..."
-if dpkg --list mysql-common | egrep -q ^ii; then
+if [ $(dpkg-query -W -f='${Status}' mysql-common 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
         echo "MySQL is installed, it must be a clean server."
         exit 1
 fi
 
-if dpkg --list apache2 | egrep -q ^ii; then
+if [ $(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
         echo "Apache2 is installed, it must be a clean server."
         exit 1
 fi
 
-if dpkg --list php | egrep -q ^ii; then
+if [ $(dpkg-query -W -f='${Status}' php 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
         echo "PHP is installed, it must be a clean server."
         exit 1
 fi
 
+if [ $(dpkg-query -W -f='${Status}' owncloud 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+	echo "ownCloud is installed, it must be a clean server."
+	exit 1
+fi
+
+if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+        echo "'ubuntu-server' is not installed, this doesn't seem to be a server."
+        echo "Please install the server version of Ubuntu and restart the script"
+        exit 1 
+fi
+
 # Create $UNIXUSER if not existing
-getent passwd $UNIXUSER  > /dev/null
-if [ $? -eq 0 ]
+if id "$UNIXUSER" >/dev/null 2>&1
 then
         echo "$UNIXUSER already exists!"
 else
