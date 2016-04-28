@@ -7,29 +7,39 @@
 
 set -e
 
+# Ubuntu version
+DISTRO=$(grep -ic "Ubuntu 16.04 LTS" /etc/lsb-release)
+# ownCloud apps
 CONVER=v1.2.0.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
 CALVER=v1.1
 CALVER_FILE=calendar.tar.gz
 CALVER_REPO=https://github.com/owncloud/calendar/releases/download
+# Passwords
 SHUF=$(shuf -i 13-15 -n 1)
 MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
 PW_FILE=/var/mysql_password.txt
+# Directories
 SCRIPTS=/var/scripts
 HTML=/var/www
 OCPATH=$HTML/owncloud
 OCDATA=/var/ocdata
+# Apache vhosts
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
+# Network
 IP="/sbin/ip"
 IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
-CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
+# Repositories
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 OCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
 OCREPOKEY="$OCREPO/Release.key"
+# Commands
+CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
+# Linux user, and ownCloud user
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
 
@@ -38,6 +48,15 @@ UNIXPASS=owncloud
         echo
         echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud_install_production.sh"
         echo
+        exit 1
+fi
+
+if [ $DISTRO -eq 1 ]
+then
+        echo "Ubuntu 16.04 LTS OK!"
+else
+        echo "Ubuntu 16.04 LTS is required to run this script."
+        echo "Please install that distro and try again."
         exit 1
 fi
 
