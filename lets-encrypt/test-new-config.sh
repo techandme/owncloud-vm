@@ -45,8 +45,12 @@ fi
 systemctl restart apache2.service
 CRONTAB
 
+# Makeletsencryptrenew.sh executable
+chmod +x $SCRIPTS/letsencryptrenew.sh
+
 # Cleanup
 rm $SCRIPTS/test-new-config.sh
+rm $SCRIPTS/activate-ssl.sh
 
 else
 # If it fails, revert changes back to normal
