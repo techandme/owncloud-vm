@@ -43,7 +43,7 @@ if ! /etc/letsencrypt/letsencrypt-auto renew > /var/log/letsencrypt/renew.log 2>
 fi
 
 systemctl restart apache2.service
-       CRONTAB
+CRONTAB
 
 # Cleanup
 rm $SCRIPTS/test-new-config.sh
