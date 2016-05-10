@@ -1,7 +1,6 @@
 #!/bin/bash
 
-HTML=/var/www
-OCPATH=$HTML/owncloud
+OCPATH=/var/www/owncloud
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 SCRIPTS=/var/scripts
 
@@ -10,6 +9,6 @@ php $SCRIPTS/update-config.php $OCPATH/config/config.php 'trusted_domains[]' loc
 php $SCRIPTS/update-config.php $OCPATH/config/config.php overwrite.cli.url https://$ADDRESS/ 2>&1 >/dev/null
 
 # Change .htaccess accordingly
-sed -i "s|RewriteBase /owncloud|RewriteBase /|g" /var/www/owncloud/.htaccess
+sed -i "s|RewriteBase /owncloud|RewriteBase /|g" $OCPATH/.htaccess
 
 exit 0
