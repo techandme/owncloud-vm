@@ -22,7 +22,7 @@ If you want to change the default user to your own, you have to change $UNIXUSER
 
 #### HOW TO SETUP THE BETA VM (PRE-PRODUCTION)
 
-- Create a clean Ubuntu Server 14.04 VM with VMware Workstation or VirtualBox
+- Create a clean Ubuntu Server 16.04 VM with VMware Workstation or VirtualBox
 - Edit rc.local likes this:
 
 ```
