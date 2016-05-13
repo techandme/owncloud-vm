@@ -3,6 +3,7 @@
 # Tech and Me - www.techandme.se - ©2016
 # Ubuntu 16.04 with php 7
 
+DISTRO=$(grep -ic "Ubuntu 16.04 LTS" /etc/lsb-release)
 SCRIPTS=/var/scripts
 OCPATH=/var/www/owncloud
 REDIS_CONF=/etc/redis/redis.conf
@@ -10,6 +11,17 @@ REDIS_SOCK=/var/run/redis/redis.sock
 
 # Must be root
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }
+
+# Check Ubuntu version
+
+if [ $DISTRO -eq 1 ]
+then
+        echo "Ubuntu 16.04 LTS OK!"
+else
+        echo "Ubuntu 16.04 LTS is required to run this script."
+        echo "Please install that distro and try again."
+        exit 1
+fi
 
 # Check if dir exists
 if [ -d $SCRIPTS ];

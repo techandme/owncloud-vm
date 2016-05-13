@@ -26,6 +26,22 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Check network
+echo "Testing of Network is OK..."
+sleep 2
+sudo ifdown $IFACE && sudo ifup $IFACE
+wget -q --spider http://github.com
+	if [ $? -eq 0 ]; then
+    		echo -e "\e[32mOnline!\e[0m"
+	else
+		echo
+		echo "Network NOT OK. You must have a working Network connection to run this script."
+		echo "You could try to change network settings of this VM to 'Bridged Mode'".
+		echo "If that doesn't help, please try to un-check 'Replicate physical host' in"
+		echo "the network settings of the VM."
+	       	exit 1
+	fi
+
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
         # phpMyadmin
