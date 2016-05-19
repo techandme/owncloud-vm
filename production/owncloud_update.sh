@@ -2,10 +2,12 @@
 #
 ## Tech and Me ## - ©2016, https://www.techandme.se/
 #
-# Tested on Ubuntu Server 14.04.
+# Tested on Ubuntu Server 14.04 & 16.04.
 #
 
+# Put your theme name here:
 THEME_NAME=""
+
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 SCRIPTS=/var/scripts
 OCPATH=/var/www/owncloud
@@ -13,18 +15,26 @@ OCPATH=/var/www/owncloud
 # Must be root
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }
 
+# Check if aptitude is installed
+if [ $(dpkg-query -W -f='${Status}' aptitude 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+        echo "Aptitude installed"
+else
+	apt-get install aptitude -y
+fi
+
 # System Upgrade
 sudo apt-get update
 sudo aptitude full-upgrade -y
 sudo -u www-data php $OCPATH/occ upgrade
 
+# Disable maintenance mode
+sudo -u www-data php $OCPATH/occ maintenance:mode --off
+
 # Enable Apps
 sudo -u www-data php $OCPATH/occ app:enable calendar
 sudo -u www-data php $OCPATH/occ app:enable contacts
 sudo -u www-data php $OCPATH/occ app:enable documents
-
-# Disable maintenance mode
-sudo -u www-data php $OCPATH/occ maintenance:mode --off
 
 # Increase max filesize (expects that changes are made in /etc/php5/apache2/php.ini)
 # Here is a guide: https://www.techandme.se/increase-max-file-size/
@@ -78,6 +88,9 @@ echo ownCloud version:
 sudo -u www-data php $OCPATH/occ status
 echo
 echo
+
+# Disable maintenance mode again just to be sure
+sudo -u www-data php $OCPATH/occ maintenance:mode --off
 
 ## Un-hash this if you want the system to reboot
 # sudo reboot
