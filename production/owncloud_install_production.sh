@@ -543,9 +543,14 @@ aptitude full-upgrade -y
 echo "$CLEARBOOT"
 apt-get autoremove -y
 apt-get autoclean
-if [ -f /home/$UNIXUSER/owncloud_install_production.sh ];
+if [ -f /home/$UNIXUSER/*.sh ];
 then
-	rm /home/$UNIXUSER/owncloud_install_production.sh
+	rm /home/$UNIXUSER/*.sh
+fi
+
+if [ -f /root/*.sh ];
+then
+	rm /root/*.sh
 fi
 
 # Reboot

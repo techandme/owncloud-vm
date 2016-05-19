@@ -27,7 +27,7 @@ UNIXPASS=owncloud
 fi
 
 # Check network
-echo "Testing of Network is OK..."
+echo "Testing if network is OK..."
 sleep 2
 sudo ifdown $IFACE && sudo ifup $IFACE
 wget -q --spider http://github.com
