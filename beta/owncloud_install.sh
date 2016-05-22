@@ -4,7 +4,7 @@
 
 ## THIS IS FOR TESTING ##
 
-OCVERSION=9.0.2RC2
+OCVERSION=9.0.3RC1
 DOWNLOADREPO=https://download.owncloud.org/community/testing/owncloud-$OCVERSION
 # DOWNLOADREPODEB=https://download.owncloud.org/
 CONVER=v1.2.0.0
@@ -299,15 +299,13 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtpauth --value="1"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpport --value="465"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtphost --value="smtp.gmail.com"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpauthtype --value="LOGIN"
-sudo -u www-data php $OCPATH/occ config:system:set mail_from_address --value="www.en0ch.se"
+sudo -u www-data php $OCPATH/occ config:system:set mail_from_address --value="www.techandme.se"
 sudo -u www-data php $OCPATH/occ config:system:set mail_domain --value="gmail.com"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpsecure --value="ssl"
-sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.en0ch.se@gmail.com"
+sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.techandme.se@gmail.com"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="techandme_se"
 
 # Install Libreoffice Writer to be able to read MS documents.
-echo -ne '\n' | sudo apt-add-repository ppa:libreoffice/libreoffice-4-4
-apt-get update
 sudo apt-get install --no-install-recommends libreoffice-writer -y
 
 # Download and install Documents
