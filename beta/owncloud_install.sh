@@ -4,7 +4,7 @@
 
 ## THIS IS FOR TESTING ##
 
-OCVERSION=9.0.3RC1
+OCVERSION=9.1.0beta1
 DOWNLOADREPO=https://download.owncloud.org/community/testing/owncloud-$OCVERSION
 # DOWNLOADREPODEB=https://download.owncloud.org/
 CONVER=v1.2.0.0
