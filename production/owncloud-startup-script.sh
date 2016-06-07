@@ -27,6 +27,10 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Set correct interface
+sed -i "s|ens33|$IFACE|g" /etc/network/interfaces
+service networking restart
+
 # Check network
 echo "Testing if network is OK..."
 sleep 2
