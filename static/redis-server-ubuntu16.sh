@@ -81,7 +81,7 @@ sed -i "s|);||g" $OCPATH/config/config.php
 # Add the needed config to ownClouds config.php
 cat <<ADD_TO_CONFIG>> $OCPATH/config/config.php
   'memcache.local' => '\\OC\\Memcache\\Redis',
-  'filelocking.enabled' => 'true',
+  'filelocking.enabled' => true,
   'memcache.distributed' => '\\OC\\Memcache\\Redis',
   'memcache.locking' => '\\OC\\Memcache\\Redis',
   'redis' =>
