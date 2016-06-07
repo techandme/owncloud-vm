@@ -29,8 +29,7 @@ OCDATA=/var/ocdata
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 # Network
-IP="/sbin/ip"
-IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
+IFACE=$(lshw -c network | grep "logical name" | awk '{print $3}')
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 # Repositories
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production"
