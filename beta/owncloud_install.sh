@@ -4,10 +4,10 @@
 
 ## THIS IS FOR TESTING ##
 
-OCVERSION=9.1.0beta1
+OCVERSION=9.1.0beta2
 DOWNLOADREPO=https://download.owncloud.org/community/testing/owncloud-$OCVERSION
 # DOWNLOADREPODEB=https://download.owncloud.org/
-CONVER=v1.2.0.0
+CONVER=v1.3.1.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
 CALVER=v1.2.2
