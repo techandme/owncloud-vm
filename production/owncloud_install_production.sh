@@ -2,7 +2,7 @@
 
 # Tech and Me, ©2016 - www.techandme.se
 #
-# This install from ownCloud repos with PHP 7, MySQL 5.7 and Apche 2.4.
+# This install from ownCloud repos with PHP 7, MySQL 5.7 and Apache 2.4.
 # Ubuntu 16.04 is required.
 
 set -e
