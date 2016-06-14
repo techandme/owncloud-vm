@@ -167,7 +167,7 @@ else
 fi
 
 # Update system
-apt-get update
+apt-get update -q2
 
 # Set locales
 apt-get install language-pack-en-base -y
@@ -227,7 +227,7 @@ sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
 # Install PHP 7.0
-apt-get update
+apt-get update -q2
 apt-get install -y \
         php \
 	php-mcrypt \
@@ -239,7 +239,7 @@ apt-get install -y \
 wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
 sh -c "echo 'deb $OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
-apt-get update && apt-get install owncloud -y
+apt-get update -q2 && apt-get install owncloud -y
 
 mkdir -p $OCDATA
 
@@ -397,7 +397,7 @@ apt-get install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
 wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
-apt-get update
+apt-get update -q2
 apt-get install webmin -y
 
 # Add extra security

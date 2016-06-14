@@ -6,7 +6,7 @@
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }
 
 # Get packages to be able to install Redis
-apt-get update && sudo apt-get install build-essential -q -y
+apt-get update -q2 && sudo apt-get install build-essential -q -y
 apt-get install tcl8.5 -q -y
 apt-get install php-pear php5-dev -q -y
 

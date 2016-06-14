@@ -44,7 +44,7 @@ else
 fi
 
 # Update system
-apt-get update
+apt-get update -q2
 
 # Set locales
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure locales
@@ -104,7 +104,7 @@ service apache2 restart
 
 # Install PHP 7
 apt-get install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
-apt-get update
+apt-get update -q2
 apt-get install -y \
         libapache2-mod-php7.0 \
         php7.0-common \
@@ -235,7 +235,7 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="te
 
 # Install Libreoffice Writer to be able to read MS documents.
 echo -ne '\n' | sudo apt-add-repository ppa:libreoffice/libreoffice-4-4
-apt-get update
+apt-get update -q2
 sudo apt-get install --no-install-recommends libreoffice-writer -y
 
 # Intsall Unzip

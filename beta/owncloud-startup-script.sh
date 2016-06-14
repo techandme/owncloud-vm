@@ -220,7 +220,7 @@ apt-get install --force-yes -y zip perl libnet-ssleay-perl openssl libauthen-pam
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
 wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
-apt-get update
+apt-get update -q2
 apt-get install webmin -y
 echo
 echo "Webmin is installed, access it from your browser: https://$ADDRESS:10000"
@@ -290,7 +290,7 @@ echo System will now upgrade...
 sleep 2
 echo
 echo
-apt-get update
+apt-get update -q2
 apt-get upgrade -y
 
 # Cleanup 1

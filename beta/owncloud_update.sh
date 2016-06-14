@@ -26,7 +26,7 @@ else
 fi
 
 # System Upgrade
-apt-get update
+apt-get update -q2
 aptitude full-upgrade -y
 
 # Enable maintenance mode

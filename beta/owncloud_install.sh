@@ -71,7 +71,7 @@ else
 fi
 
 # Update system
-apt-get update
+apt-get update -q2
 
 # Install figlet
 apt-get install figlet -y
@@ -134,7 +134,7 @@ service apache2 restart
 
 # Install PHP 7
 apt-get install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
-apt-get update
+apt-get update -q2
 apt-get install -y \
 	libapache2-mod-php7.0 \
         php7.0-common \
@@ -165,7 +165,7 @@ rm $HTML/owncloud-$OCVERSION.zip
 #apt-key add - < Release.key
 #rm Release.key
 #sh -c "echo 'deb $DOWNLOADREPODEB/ /' >> /etc/apt/sources.list.d/owncloud.list"
-#apt-get update
+#apt-get update -q2
 #apt-get install owncloud -y
 
 # Create data folder, occ complains otherwise

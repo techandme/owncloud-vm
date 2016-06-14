@@ -24,7 +24,7 @@ else
     fi
 
 # System Upgrade
-sudo apt-get update
+sudo apt-get update -q2
 sudo aptitude full-upgrade -y
 
 # Backup data
