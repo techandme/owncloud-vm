@@ -386,7 +386,7 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_from_address --value="ww
 sudo -u www-data php $OCPATH/occ config:system:set mail_domain --value="gmail.com"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpsecure --value="ssl"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.techandme.se@gmail.com"
-sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="techandme_se"
+sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="vinr vhpa jvbh hovy"
 
 # Install Libreoffice Writer to be able to read MS documents.
 sudo apt-get install --no-install-recommends libreoffice-writer -y

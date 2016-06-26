@@ -27,6 +27,25 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Set correct interface
+{ sed '/# The primary network interface/q' /etc/network/interfaces; printf 'auto %s\niface %s inet dhcp\n# This is an autoconfigured IPv6 interface\niface %s inet6 auto\n' "$IFACE" "$IFACE" $
+mv /etc/network/interfaces.new /etc/network/interfaces
+service networking restart
+
+# Check network
+echo "Testing if network is OK..."
+sleep 2
+sudo ifdown $IFACE && sudo ifup $IFACE
+wget -q --spider http://github.com
+        if [ $? -eq 0 ]; then
+                echo -e "\e[32mOnline!\e[0m"
+        else
+                echo
+                echo "Network NOT OK. You must have a working Network connection to run this script."
+                echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new".
+                exit 1
+        fi
+
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
         # phpMyadmin
