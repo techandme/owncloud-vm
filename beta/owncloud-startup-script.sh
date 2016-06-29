@@ -47,6 +47,14 @@ ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
+        # MySQL Password
+        if [ -f $SCRIPTS/change_mysql_pass.sh ];
+                then
+                rm $SCRIPTS/change_mysql_pass.sh
+                wget -q $STATIC/change_mysql_pass.sh -P $SCRIPTS
+                else
+        wget -q $STATIC/change_mysql_pass.sh -P $SCRIPTS
+fi
         # phpMyadmin
         if [ -f $SCRIPTS/phpmyadmin_install.sh ];
                 then
