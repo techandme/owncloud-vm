@@ -117,7 +117,7 @@ fi
         if [ -f $SCRIPTS/setup_secure_permissions_owncloud.sh ];
                 then
                 rm $SCRIPTS/setup_secure_permissions_owncloud.sh
-                wget -q $STATIC/setup_secure_permissions_owncloud.sh
+                wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
                 else
         wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
 fi
