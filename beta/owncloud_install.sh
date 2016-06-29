@@ -151,6 +151,7 @@ apt-get install -y \
         php7.0-curl \
         php7.0-xml \
         php7.0-zip \
+        php7.0-mbstring \
         libsm6 \
         libsmbclient
 
