@@ -7,11 +7,8 @@ OCPATH=$WWW_ROOT/owncloud
 OCDATA=/var/ocdata
 SCRIPTS=/var/scripts
 PW_FILE=/var/mysql_password.txt # Keep in sync with owncloud_install_production.sh
-IP="/sbin/ip"
-IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
-ADDRESS=$(hostname -I | cut -d ' ' -f 1)
+IFACE=$(lshw -c network | grep "logical name" | awk '{print $3}')
 CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
-WANIP=$(dig +short myip.opendns.com @resolver1.opendns.com)
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
@@ -28,7 +25,7 @@ UNIXPASS=owncloud
 fi
 
 # Set correct interface
-{ sed '/# The primary network interface/q' /etc/network/interfaces; printf 'auto %s\niface %s inet dhcp\n# This is an autoconfigured IPv6 interface\niface %s inet6 auto\n' "$IFACE" "$IFACE" $
+{ sed '/# The primary network interface/q' /etc/network/interfaces; printf 'auto %s\niface %s inet dhcp\n# This is an autoconfigured IPv6 interface\niface %s inet6 auto\n' "$IFACE" "$IFACE" "$IFACE"; } > /etc/network/interfaces.new
 mv /etc/network/interfaces.new /etc/network/interfaces
 service networking restart
 
@@ -37,14 +34,16 @@ echo "Testing if network is OK..."
 sleep 2
 sudo ifdown $IFACE && sudo ifup $IFACE
 wget -q --spider http://github.com
-        if [ $? -eq 0 ]; then
-                echo -e "\e[32mOnline!\e[0m"
-        else
-                echo
-                echo "Network NOT OK. You must have a working Network connection to run this script."
-                echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new".
-                exit 1
-        fi
+	if [ $? -eq 0 ]; then
+    		echo -e "\e[32mOnline!\e[0m"
+	else
+		echo
+		echo "Network NOT OK. You must have a working Network connection to run this script."
+		echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new".
+	       	exit 1
+	fi
+
+ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
@@ -120,6 +119,7 @@ fi
                 else
         wget -q $STATIC/techandme.sh -P $SCRIPTS
 fi
+
         # Get the Welcome Screen when http://$address
         if [ -f $SCRIPTS/index.php ];
                 then
@@ -147,6 +147,8 @@ echo "| This script will configure your ownCloud and activate SSL.         |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Activate a Virtual Host for your ownCloud install                |"
+echo "| - Generate new SSH keys for the server                             |"
+echo "| - Generate new MySQL password                                      |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Install Webmin                                                   |"
 echo "| - Upgrade your system to latest version                            |"
@@ -229,9 +231,21 @@ sleep 3
 echo
 service apache2 reload
 
+echo "Generating new SSH keys for the server..."
+echo
+sleep 1
+rm -v /etc/ssh/ssh_host_*
+dpkg-reconfigure openssh-server
+
+# Generate new MySQL password
+echo
+bash $SCRIPTS/change_mysql_pass.sh
+rm $SCRIPTS/change_mysql_pass.sh
+
 # Install phpMyadmin
 bash $SCRIPTS/phpmyadmin_install.sh
 rm $SCRIPTS/phpmyadmin_install.sh
+clear
 
 # Install packages for Webmin
 apt-get install --force-yes -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
@@ -284,7 +298,8 @@ else
     sleep 2
 fi
 echo
-clear &&
+clear
+
 echo -e "\e[0m"
 echo "For better security, change the ownCloud password for [$UNIXUSER]"
 echo "The current password is [$UNIXPASS]"
@@ -302,6 +317,7 @@ clear
 else
 echo "Not changing password as you already changed <user> and <pass> in the script"
 fi
+clear
 
 # Upgrade system
 clear
@@ -385,10 +401,9 @@ cat << LETSENC
 |  Ok, now the last part - a proper SSL cert.   |
 |                                               |
 |  The following script will install a trusted  |
-|  SSL certificate through Let's encrypt.       |
+|  SSL certificate through Let's Encrypt.       |
 +-----------------------------------------------+
 LETSENC
-
 
 # Let's Encrypt
 function ask_yes_or_no() {
