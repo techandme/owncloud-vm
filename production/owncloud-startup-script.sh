@@ -24,6 +24,7 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+echo "Setting correct interface..."
 # Set correct interface
 { sed '/# The primary network interface/q' /etc/network/interfaces; printf 'auto %s\niface %s inet dhcp\n# This is an autoconfigured IPv6 interface\niface %s inet6 auto\n' "$IFACE" "$IFACE" "$IFACE"; } > /etc/network/interfaces.new
 mv /etc/network/interfaces.new /etc/network/interfaces
@@ -47,6 +48,15 @@ ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
+       # Get security script
+        if [ -f $SCRIPTS/security.sh ];
+                then
+                rm $SCRIPTS/security.sh
+                wget -q $STATIC/security.sh -P $SCRIPTS
+                else
+        wget -q $STATIC/security.sh -P $SCRIPTS
+	fi
+
        # Get the latest owncloud_update.sh
         if [ -f $SCRIPTS/update.sh ];
                 then
@@ -54,7 +64,7 @@ echo "Getting scripts from GitHub to be able to run the first setup..."
                 wget -q $STATIC/update.sh -P $SCRIPTS
                 else
         wget -q $STATIC/update.sh -P $SCRIPTS
-fi
+	fi
 
         # phpMyadmin
         if [ -f $SCRIPTS/phpmyadmin_install_ubuntu16.sh ];
@@ -63,7 +73,7 @@ fi
                 wget -q $STATIC/phpmyadmin_install_ubuntu16.sh -P $SCRIPTS
                 else
         wget -q $STATIC/phpmyadmin_install_ubuntu16.sh -P $SCRIPTS
-fi
+	fi
 	# Update Config
         if [ -f $SCRIPTS/update-config.php ];
                 then
@@ -71,7 +81,7 @@ fi
                 wget -q $STATIC/update-config.php -P $SCRIPTS
                 else
        	wget -q $STATIC/update-config.php -P $SCRIPTS
-fi
+	fi
 
         # Activate SSL
         if [ -f $SCRIPTS/activate-ssl.sh ];
@@ -80,7 +90,7 @@ fi
                 wget -q $LETS_ENC/activate-ssl.sh -P $SCRIPTS
                 else
         wget -q $LETS_ENC/activate-ssl.sh -P $SCRIPTS
-fi
+	fi
         # The update script
         if [ -f $SCRIPTS/owncloud_update.sh ];
                 then
@@ -88,7 +98,7 @@ fi
                 wget -q $GITHUB_REPO/owncloud_update.sh -P $SCRIPTS
                 else
         wget -q $GITHUB_REPO/owncloud_update.sh -P $SCRIPTS
-fi
+	fi
         # Sets trusted domain in when owncloud-startup-script.sh is finished
         if [ -f $SCRIPTS/trusted.sh ];
                 then
@@ -96,7 +106,7 @@ fi
                 wget -q $STATIC/trusted.sh -P $SCRIPTS
                 else
         wget -q $STATIC/trusted.sh -P $SCRIPTS
-fi
+	fi
                 # Sets static IP to UNIX
         if [ -f $SCRIPTS/ip.sh ];
                 then
@@ -104,7 +114,7 @@ fi
                 wget -q $STATIC/ip.sh -P $SCRIPTS
                 else
       	wget -q $STATIC/ip.sh -P $SCRIPTS
-fi
+	fi
                 # Tests connection after static IP is set
         if [ -f $SCRIPTS/test_connection.sh ];
                 then
@@ -112,7 +122,7 @@ fi
                 wget -q $STATIC/test_connection.sh -P $SCRIPTS
                 else
         wget -q $STATIC/test_connection.sh -P $SCRIPTS
-fi
+	fi
                 # Sets secure permissions after upgrade
         if [ -f $SCRIPTS/setup_secure_permissions_owncloud.sh ];
                 then
@@ -120,7 +130,7 @@ fi
                 wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
                 else
         wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
-fi
+	fi
 		# Change MySQL password
         if [ -f $SCRIPTS/change_mysql_pass.sh ];
                 then
@@ -128,7 +138,7 @@ fi
                 wget -q $STATIC/change_mysql_pass.sh
                 else
         wget -q $STATIC/change_mysql_pass.sh -P $SCRIPTS
-fi
+	fi
                 # Get figlet Tech and Me
         if [ -f $SCRIPTS/techandme.sh ];
                 then
@@ -136,7 +146,7 @@ fi
                 wget -q $STATIC/techandme.sh -P $SCRIPTS
                 else
         wget -q $STATIC/techandme.sh -P $SCRIPTS
-fi
+	fi
 
         # Get the Welcome Screen when http://$address
         if [ -f $SCRIPTS/index.php ];
@@ -145,7 +155,7 @@ fi
                 wget -q $GITHUB_REPO/index.php -P $SCRIPTS
                 else
         wget -q $GITHUB_REPO/index.php -P $SCRIPTS
-fi
+	fi
         mv $SCRIPTS/index.php $WWW_ROOT/index.php && rm -f $WWW_ROOT/html/index.html
         chmod 750 $WWW_ROOT/index.php && chown www-data:www-data $WWW_ROOT/index.php
 
@@ -250,6 +260,26 @@ rm $SCRIPTS/change_mysql_pass.sh
 bash $SCRIPTS/phpmyadmin_install_ubuntu16.sh
 rm $SCRIPTS/phpmyadmin_install_ubuntu16.sh
 clear
+
+# Add extra security
+function ask_yes_or_no() {
+    read -p "$1 ([y]es or [N]o): "
+    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
+        y|yes) echo "yes" ;;
+        *)     echo "no" ;;
+    esac
+}
+if [[ "yes" == $(ask_yes_or_no "Do you want to add extra security, based on this: http://goo.gl/gEJHi7 ?") ]]
+then
+	bash $SCRIPTS/security.sh
+	rm $SCRIPTS/security.sh
+else
+echo
+    echo "OK, but if you want to run it later, just type: sudo bash $SCRIPTS/security.sh"
+    echo -e "\e[32m"
+    read -p "Press any key to continue... " -n1 -s
+    echo -e "\e[0m"
+fi
 
 # Set keyboard layout
 echo "Current keyboard layout is Swedish"
