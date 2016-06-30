@@ -280,6 +280,7 @@ echo
     read -p "Press any key to continue... " -n1 -s
     echo -e "\e[0m"
 fi
+clear
 
 # Set keyboard layout
 echo "Current keyboard layout is Swedish"
