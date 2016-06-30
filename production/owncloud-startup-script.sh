@@ -51,6 +51,15 @@ echo "Getting scripts from GitHub to be able to run the first setup..."
        # Get security script
         if [ -f $SCRIPTS/security.sh ];
                 then
+                rm $SCRIPTS/temporary-fix.sh
+                wget -q $STATIC/temporary-fix.sh -P $SCRIPTS
+                else
+        wget -q $STATIC/temporary-fix.sh -P $SCRIPTS
+        fi
+
+       # Get security script
+        if [ -f $SCRIPTS/security.sh ];
+                then
                 rm $SCRIPTS/security.sh
                 wget -q $STATIC/security.sh -P $SCRIPTS
                 else
@@ -347,6 +356,10 @@ sleep 2
 echo
 echo
 bash $SCRIPTS/update.sh
+
+# Add temporary fix if needed
+bash $SCRIPTS/temporary-fix.sh
+rm  $SCRIPTS/temporary-fix.sh
 
 # Cleanup 1
 apt-get autoremove -y

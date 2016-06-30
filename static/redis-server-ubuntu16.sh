@@ -34,15 +34,8 @@ apt-get update -q2 && sudo apt-get install build-essential -q -y
 apt-get install tcl8.5 -q -y
 apt-get install php-pear php7.0-dev -q -y
 
-# Install Git and clone repo
-apt-get install git -y -q
-git clone -b php7 https://github.com/phpredis/phpredis.git
-
-# Build Redis PHP module
-sudo mv phpredis/ /etc/ && cd /etc/phpredis
-phpize
-./configure
-make && make install
+# Install PHPmodule
+pecl install -Z redis
 if [[ $? > 0 ]]
 then
     echo "PHP module installation failed"
