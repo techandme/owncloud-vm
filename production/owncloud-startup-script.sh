@@ -48,8 +48,8 @@ ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
 echo "Getting scripts from GitHub to be able to run the first setup..."
 
-       # Get security script
-        if [ -f $SCRIPTS/security.sh ];
+       # Get script for temporary fixes
+        if [ -f $SCRIPTS/temporary-fix.sh ];
                 then
                 rm $SCRIPTS/temporary-fix.sh
                 wget -q $STATIC/temporary-fix.sh -P $SCRIPTS
