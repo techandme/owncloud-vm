@@ -169,9 +169,6 @@ fi
 # Update system
 apt-get update -q2
 
-# Remove LXD (always shows up as failed during boot)
-apt-get purge lxd -y
-
 # Set locales
 apt-get install language-pack-en-base -y
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
@@ -538,6 +535,9 @@ rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
 aptitude full-upgrade -y
+
+# Remove LXD (always shows up as failed during boot)
+apt-get purge lxd -y
 
 # Cleanup
 echo "$CLEARBOOT"

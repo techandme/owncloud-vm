@@ -50,8 +50,6 @@ touch /etc/php/7.0/mods-available/redis.ini
 echo 'extension=redis.so' > /etc/php/7.0/mods-available/redis.ini
 phpenmod redis
 service apache2 restart
-cd ..
-rm -rf phpredis
 
 # Install Redis
 apt-get install redis-server -y
