@@ -359,7 +359,7 @@ bash $SCRIPTS/update.sh
 
 # Add temporary fix if needed
 bash $SCRIPTS/temporary-fix.sh
-rm  $SCRIPTS/temporary-fix.sh
+rm $SCRIPTS/temporary-fix.sh
 
 # Cleanup 1
 apt-get autoremove -y
