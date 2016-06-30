@@ -46,9 +46,13 @@ else
     echo "PHP module installation OK!"
     echo -e "\e[0m"
 fi
-touch /etc/php/7.0/mods-available/redis.ini
-echo 'extension=redis.so' > /etc/php/7.0/mods-available/redis.ini
-phpenmod redis
+
+# Set globally doesn't work for some reason
+# touch /etc/php/7.0/mods-available/redis.ini
+# echo 'extension=redis.so' > /etc/php/7.0/mods-available/redis.ini
+# phpenmod redis
+# Setting direct to apache2 works if 'libapache2-mod-php7.0' is installed
+echo 'extension=redis.so' >> /etc/php/7.0/apache2/php.ini
 service apache2 restart
 
 # Install Redis
