@@ -18,7 +18,7 @@ Tell us what should happen
 ### Actual behaviour
 Tell us what happens instead
 
-### Insert prinscreens here
+### Insert printscreens here:
 
 
 ### Logs
