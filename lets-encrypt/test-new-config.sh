@@ -36,13 +36,14 @@ then
 cat << CRONTAB > "/var/scripts/letsencryptrenew.sh"
 #!/bin/sh
 set -e
+systemctl stop apache2.service
 if ! /etc/letsencrypt/letsencrypt-auto renew > /var/log/letsencrypt/renew.log 2>&1 ; then
    	echo Automated renewal failed:
    	cat /var/log/letsencrypt/renew.log
    	exit 1
 fi
 
-systemctl restart apache2.service
+systemctl start apache2.service
 CRONTAB
 
 # Makeletsencryptrenew.sh executable
