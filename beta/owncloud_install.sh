@@ -4,13 +4,13 @@
 
 ## THIS IS FOR TESTING ##
 
-OCVERSION=9.1.0RC2
+OCVERSION=9.1.0RC3
 DOWNLOADREPO=https://download.owncloud.org/community/testing/owncloud-$OCVERSION
 # DOWNLOADREPODEB=https://download.owncloud.org/
 CONVER=v1.3.1.0
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
-CALVER=v1.2.2
+CALVER=v1.3.1
 CALVER_FILE=calendar.tar.gz
 CALVER_REPO=https://github.com/owncloud/calendar/releases/download
 SHUF=$(shuf -i 10-15 -n 1)
