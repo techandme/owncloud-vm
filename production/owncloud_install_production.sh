@@ -10,7 +10,7 @@ set -e
 # Ubuntu version
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
 DISTRO=$(grep -ic "16.04" /etc/lsb-release)
-DISTRO2=$(grep -ic "16.04.1" /etc/lsb-release)
+DISTRO2=$(grep -ic "16.04.4" /etc/lsb-release)
 # ownCloud apps
 CONVER=v1.3.1.0
 CONVER_FILE=contacts.tar.gz
