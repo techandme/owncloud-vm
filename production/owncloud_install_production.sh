@@ -9,8 +9,6 @@ set -e
 
 # Ubuntu version
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
-DISTRO=$(grep -ic "16.04" /etc/lsb-release)
-DISTRO2=$(grep -ic "16.04.4" /etc/lsb-release)
 # ownCloud apps
 CONVER=v1.3.1.0
 CONVER_FILE=contacts.tar.gz
@@ -63,13 +61,24 @@ else
         exit 1
 fi
 
-if [ $DISTRO -gt $DISTRO2 ]
-then
-        sleep 1
-else
-        echo "Ubuntu 16.04.X LTS is required to run this script."
-        echo "Please install that distro and try again."
-        exit 1
+DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
+version(){
+    local h t v
+
+    [[ $2 = "$1" || $2 = "$3" ]] && return 0
+
+    v=$(printf '%s\n' "$@" | sort -V)
+    h=$(head -n1 <<<"$v")
+    t=$(tail -n1 <<<"$v")
+
+    [[ $2 != "$h" && $2 != "$t" ]]
+}
+
+if ! version 16.04 "$DISTRO" 16.04.4; then
+    echo "Ubuntu version seems to be $DISTRO"
+    echo "It must be between 16.04 - 16.04.4"
+    echo "Please install that version and try again."
+    exit 1
 fi
 
 # Check if repo is availible
