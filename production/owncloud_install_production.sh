@@ -10,10 +10,10 @@ set -e
 # Ubuntu version
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
 # ownCloud apps
-CONVER=v1.3.1.0
+CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
 CONVER_FILE=contacts.tar.gz
 CONVER_REPO=https://github.com/owncloud/contacts/releases/download
-CALVER=v1.3.1
+CALVER=$(wget -q https://raw.githubusercontent.com/owncloud/calendar/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
 CALVER_FILE=calendar.tar.gz
 CALVER_REPO=https://github.com/owncloud/calendar/releases/download
 # Passwords
@@ -445,7 +445,7 @@ fi
 if [ -d $OCPATH/apps/contacts ]; then
 sleep 1
 else
-wget -q $CONVER_REPO/$CONVER/$CONVER_FILE -P $OCPATH/apps
+wget -q $CONVER_REPO/v$CONVER/$CONVER_FILE -P $OCPATH/apps
 tar -zxf $OCPATH/apps/$CONVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
 rm $CONVER_FILE
@@ -460,7 +460,7 @@ fi
 if [ -d $OCPATH/apps/calendar ]; then
 sleep 1
 else
-wget -q $CALVER_REPO/$CALVER/$CALVER_FILE -P $OCPATH/apps
+wget -q $CALVER_REPO/v$CALVER/$CALVER_FILE -P $OCPATH/apps
 tar -zxf $OCPATH/apps/$CALVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
 rm $CALVER_FILE
