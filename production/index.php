@@ -17,7 +17,6 @@ body {
 	background: #1d2d44; /* Old browsers */
 	background-image: url('https://raw.githubusercontent.com/owncloud/core/master/core/img/background.jpg');
 	background-size: cover;
-
 }
 div.logotext   {
 	width: 50%;
