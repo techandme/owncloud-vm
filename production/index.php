@@ -79,7 +79,7 @@ a:active {
 <br>
 <div class="information">
 <p>Thank you for downloading the pre-configured ownCloud VM! If you see this page, you have successfully mounted the  ownCloud VM on the computer that will act as host for ownCloud.</p>
-<pWe have set everything up for you and the only thing you have to do now is to login. You can find login details in the middle of this page. You can find login details in the middle of this page.
+<p>We have set everything up for you and the only thing you have to do now is to login. You can find login details in the middle of this page. You can find login details in the middle of this page.</p>
 <p>Don't hesitate to ask if you have any questions. My email is: <a href="mailto:daniel@techandme.se?Subject=Before%20login%20-%20ownCloud%20VM" target="_top">daniel@techandme.se</a> You can also check the <a href="https://www.techandme.se/complete-install-instructions-owncloud/" target="_blank">complete install instructions</a>.</p>
 <p>Please <a href="https://www.techandme.se/thank_you">donate</a> if you like it. All the donations will go to server costs and developing, making this VM even better.</p>
 
