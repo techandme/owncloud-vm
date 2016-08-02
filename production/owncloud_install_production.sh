@@ -256,6 +256,10 @@ apt-get install -y \
 	libapache2-mod-php7.0 \
         php-smbclient
 
+# Enable SMB client
+echo '# This enables php-smbclient' >> /etc/php/7.0/apache2/php.ini
+echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
+
 # Download and install ownCloud
 wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
