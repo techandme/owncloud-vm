@@ -5,17 +5,13 @@
 # This install from ownCloud repos with PHP 7, MySQL 5.7 and Apache 2.4.
 # Ubuntu 16.04 is required.
 
-set -e
+# Check for errors + debug code and abort if something isn't right
+# 1 = ON
+# 0 = OFF
+DEBUG=0
 
 # Ubuntu version
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
-# ownCloud apps
-CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
-CONVER_FILE=contacts.tar.gz
-CONVER_REPO=https://github.com/owncloud/contacts/releases/download
-CALVER=$(wget -q https://raw.githubusercontent.com/owncloud/calendar/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
-CALVER_FILE=calendar.tar.gz
-CALVER_REPO=https://github.com/owncloud/calendar/releases/download
 # Passwords
 SHUF=$(shuf -i 13-15 -n 1)
 MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
@@ -41,6 +37,15 @@ CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cu
 # Linux user, and ownCloud user
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
+
+# DEBUG mode
+if [ $DEBUG -eq 1 ]
+then
+    set -e
+    set -x
+else
+    sleep 1
+fi
 
 # Check if root
         if [ "$(whoami)" != "root" ]; then
@@ -429,6 +434,14 @@ apt-get install webmin -y
 
 # Install Unzip
 apt-get install unzip -y
+
+# ownCloud apps
+CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" in$
+CONVER_FILE=contacts.tar.gz
+CONVER_REPO=https://github.com/owncloud/contacts/releases/download
+CALVER=$(wget -q https://raw.githubusercontent.com/nextcloud/calendar/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" i$
+CALVER_FILE=calendar.tar.gz
+CALVER_REPO=https://github.com/nextcloud/calendar/releases/download
 
 # Download and install Documents
 if [ -d $OCPATH/apps/documents ]; then

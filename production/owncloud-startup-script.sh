@@ -254,6 +254,14 @@ clear
 # Change Trusted Domain and CLI
 bash $SCRIPTS/trusted.sh
 
+# Pretty URLs
+echo "Setting RewriteBase to "/" in config.php..."
+chown www-data:www-data $OCPATH/config/config.php
+sudo -u www-data php $OCPATH/occ config:system:set htaccess.RewriteBase --value="/"
+sudo -u www-data php $OCPATH/occ maintenance:update:htaccess
+
+bash $SCRIPTS/setup_secure_permissions_owncloud.sh
+
 echo "Generating new SSH keys for the server..."
 echo
 sleep 1
