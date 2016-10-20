@@ -38,14 +38,14 @@ fi
 systemctl start apache2.service
 if [[ $? == 0 ]]
 then
-        echo "Let's Encrypt SUCCESS!"--$(date +%Y-%m-%d_%H:%M) >> /var/log/letsencrypt/cronjob.log
+        echo "Let's Encrypt SUCCESS!--date+%Y-%m-%d_%H:%M" >> /var/log/letsencrypt/cronjob.log
 else
-        echo "Let's Encrypt FAILED!"--$(date +%Y-%m-%d_%H:%M) >> /var/log/letsencrypt/cronjob.log
+        echo "Let's Encrypt FAILED!--date+%Y-%m-%d_%H:%M" >> /var/log/letsencrypt/cronjob.log
         reboot
 fi
 CRONTAB
 
-# Makeletsencryptrenew.sh executable
+# Make letsencryptrenew.sh executable
 chmod +x $SCRIPTS/letsencryptrenew.sh
 
 # Cleanup
