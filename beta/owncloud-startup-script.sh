@@ -66,15 +66,6 @@ echo "Getting scripts from GitHub to be able to run the first setup..."
         wget -q $STATIC/security.sh -P $SCRIPTS
 	fi
 
-       # Get the latest owncloud_update.sh
-        if [ -f $SCRIPTS/update.sh ];
-                then
-                rm $SCRIPTS/update.sh
-                wget -q $STATIC/update.sh -P $SCRIPTS
-                else
-        wget -q $STATIC/update.sh -P $SCRIPTS
-	fi
-
         # phpMyadmin
         if [ -f $SCRIPTS/phpmyadmin_install.sh ];
                 then
@@ -362,8 +353,8 @@ clear
 echo System will now upgrade...
 sleep 2
 echo
-echo
-bash $SCRIPTS/update.sh
+apt-get update -q
+aptitude full-upgrade -y
 
 # Add temporary fix if needed
 bash $SCRIPTS/temporary-fix.sh
@@ -398,6 +389,7 @@ echo
 sudo -u www-data php $OCPATH/occ maintenance:repair
 rm $SCRIPTS/ip.sh
 rm $SCRIPTS/trusted.sh
+rm $SCRIPTS/owncloud_install.sh
 rm $SCRIPTS/test_connection.sh
 rm $SCRIPTS/update-config.php
 rm $SCRIPTS/instruction.sh
