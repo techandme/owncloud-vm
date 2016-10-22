@@ -12,6 +12,7 @@ THEME_NAME=""
 
 # Static values
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+DOWNLOADREPO="https://download.owncloud.org/community/testing"
 SCRIPTS=/var/scripts
 OCPATH=/var/www/owncloud
 BACKUP=/var/OCBACKUP
@@ -36,15 +37,28 @@ echo
 echo "System is now upgraded, now the script will upgrade ownCloud."
 echo "Which version do you want to upgrade to? Type it like this: '9.1.2RC1'"
 read OCVERSION
-
+wget -q --spider $DOWNLOADREPO/owncloud-$OCVERSION.tar.bz2
+if [ $? -eq 0 ]; then
+    echo -e "\e[32m$OCVERSION exists!\e[0m"
+    else
+    echo
+    echo "$OCVERSION doesn't exist. Please check available versions here:"
+    echo "$DOWNLOADREPO"
+    echo
+    exit 1
+fi
 echo "Upgrading to $OCVERSION in 15 seconds... Press CTRL+C to abort."
-echo "Disclamer: Tech and Me or ownCloud is not responsible for any dataloss"
-echo "Config files are backed up and $OCDATA isn't removed, but things could go wrong."
+echo "Disclamer: Tech and Me or ownCloud are not responsible for any dataloss."
+echo "Config files are backed up to $BACKUP and $OCDATA aren't removed, but things could go wrong."
+echo
 sleep 15
 
 # Backup data
-rm -R $BACKUP
-mkdir -p $BACKUP
+if [ -d $BACKUP ]
+then
+    rm -R $BACKUP
+    mkdir -p $BACKUP
+fi
 echo "Backing up data..."
 rsync -Aax $OCPATH/config $BACKUP
 rsync -Aax $OCPATH/themes $BACKUP
