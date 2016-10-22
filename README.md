@@ -56,11 +56,9 @@ exit 0
 
 ----------------------------------------------------------------------------------------------------------------------------
 
-### TEST A LIVE VERSION
+### TEST A DEMO VERSION
 
-You can test the VM [here](https://owncloudphp7.techandme.se/).
-- User: testuser
-- Pass: testingphp7
+You can test ownCloud [here](https://demo.owncloud.org/).
 
 ----------------------------------------------------------------------------------------------------------------------------
 *Send me an email if you have any questions: daniel [a] techandme.se*
