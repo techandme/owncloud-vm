@@ -56,3 +56,63 @@ else
 	echo "Downloaded owncloud_install.sh."
 	sleep 3
 fi
+
+# Change roots .bash_profile
+if 		[ -f $SCRIPTS/change-root-profile.sh ];
+        then
+                echo "change-root-profile.sh exists"
+        else
+        	wget -q $STATIC/change-root-profile.sh -P $SCRIPTS
+		sed -i "s|owncloud-startup-script.sh|owncloud_install.sh|g" $SCRIPTS/change-root-profile.sh
+fi
+if [[ $? > 0 ]]
+then
+	echo "Download of scripts failed. System will reboot in 10 seconds..."
+	sleep 10
+	reboot
+else
+	echo "Downloaded change-root-profile.sh."
+	sleep 1
+fi
+
+# Change $UNIXUSER .bash_profile
+if 		[ -f $SCRIPTS/change-ocadmin-profile.sh ];
+        then
+        	echo "change-ocadmin-profile.sh  exists"
+        else
+        	wget -q $STATIC/change-ocadmin-profile.sh -P $SCRIPTS
+fi
+if [[ $? > 0 ]]
+then
+	echo "Download of scripts failed. System will reboot in 10 seconds..."
+	sleep 10
+	reboot
+else
+	echo "Downloaded change-ocadmin-profile.sh."
+	sleep 1
+fi
+
+
+# Change root profile
+        	bash $SCRIPTS/change-root-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-root-profile.sh were not executed correctly. System will reboot in 10 seconds..."
+	sleep 10
+	reboot
+else
+	echo "change-root-profile.sh script executed OK."
+	sleep 1
+fi
+# Change $UNIXUSER profile
+        	bash $SCRIPTS/change-ocadmin-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-ocadmin-profile.sh were not executed correctly. System will reboot in 10 seconds..."
+	sleep 10
+	reboot
+else
+	echo "change-ocadmin-profile.sh executed OK."
+	sleep 1
+fi
+
