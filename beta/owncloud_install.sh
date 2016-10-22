@@ -550,10 +550,16 @@ rm $SCRIPTS/install-redis-php-7.sh
 # Upgrade
 aptitude full-upgrade -y
 
+cat << TMPMSG > "$SCRIPTS/tempmsg.sh"
+clear
+echo "The default password is 'owncloud'."
+echo
+TMPMSG
+
 # Prepare for startup-script after reboot
 sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
 sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
-sed -i "s|bash /var/scripts/instruction.sh|clear && echo 'Default password is: owncloud.'|g" $SCRIPTS/change-ocadmin-profile.sh
+sed -i "s|bash /var/scripts/instruction.sh|bash $SCRIPTS/tempmsg.sh|g" $SCRIPTS/change-ocadmin-profile.sh
 
 # Change root profile
 bash $SCRIPTS/change-root-profile.sh
