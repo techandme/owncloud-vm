@@ -527,18 +527,6 @@ fi
         wget -q $STATIC/history.sh -P $SCRIPTS
 fi
 
-# Change $UNIXUSER profile
-        	bash $SCRIPTS/change-ocadmin-profile.sh
-if [[ $? > 0 ]]
-then
-	echo "change-ocadmin-profile.sh were not executed correctly."
-	sleep 10
-else
-	echo "change-ocadmin-profile.sh executed OK."
-	rm $SCRIPTS/change-ocadmin-profile.sh
-	sleep 2
-fi
-
 # Get script for Redis
         if [ -f $SCRIPTS/install-redis-php-7.sh ];
                 then
@@ -565,6 +553,7 @@ aptitude full-upgrade -y
 # Prepare for startup-script after reboot
 sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
 sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
+sed -i "s|bash /var/scripts/instruction.sh||g" $SCRIPTS/change-ocadmin-profile.sh
 
 # Change root profile
 bash $SCRIPTS/change-root-profile.sh
@@ -575,6 +564,18 @@ then
 else
 	echo "change-root-profile.sh script executed OK."
 	rm $SCRIPTS/change-root-profile.sh
+	sleep 2
+fi
+
+# Change $UNIXUSER profile
+bash $SCRIPTS/change-ocadmin-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-ocadmin-profile.sh were not executed correctly."
+	sleep 10
+else
+	echo "change-ocadmin-profile.sh executed OK."
+	rm $SCRIPTS/change-ocadmin-profile.sh
 	sleep 2
 fi
 
