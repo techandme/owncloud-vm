@@ -57,17 +57,6 @@ fi
         exit 1
 fi
 
-# Check Ubuntu version
-echo "Checking server OS and version..."
-if [ $OS -eq 1 ]
-then
-        sleep 1
-else
-        echo "Ubuntu Server is required to run this script."
-        echo "Please install that distro and try again."
-        exit 1
-fi
-
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
 version(){
     local h t v
@@ -599,5 +588,3 @@ fi
 
 # Reboot
 reboot
-
-exit 0
