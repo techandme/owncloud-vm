@@ -268,7 +268,7 @@ apt-get install -y \
         php7.0-zip \
         php7.0-mbstring \
         libsm6 \
-	php7.0-smbclient
+	php-smbclient
 
 # Enable SMB client
 echo '# This enables php-smbclient' >> /etc/php/7.0/apache2/php.ini
@@ -553,7 +553,7 @@ aptitude full-upgrade -y
 # Prepare for startup-script after reboot
 sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
 sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
-sed -i "s|bash /var/scripts/instruction.sh|clear && echo "Default password is 'owncloud'."|g" $SCRIPTS/change-ocadmin-profile.sh
+sed -i "s|bash /var/scripts/instruction.sh|clear && echo "Default password is 'owncloud'.|g" $SCRIPTS/change-ocadmin-profile.sh
 
 # Change root profile
 bash $SCRIPTS/change-root-profile.sh
