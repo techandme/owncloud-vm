@@ -553,7 +553,7 @@ aptitude full-upgrade -y
 # Prepare for startup-script after reboot
 sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
 sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
-sed -i "s|bash /var/scripts/instruction.sh||g" $SCRIPTS/change-ocadmin-profile.sh
+sed -i "s|bash /var/scripts/instruction.sh|clear && echo "Default password is 'owncloud'."|g" $SCRIPTS/change-ocadmin-profile.sh
 
 # Change root profile
 bash $SCRIPTS/change-root-profile.sh
