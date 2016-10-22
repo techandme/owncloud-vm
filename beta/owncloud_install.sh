@@ -110,13 +110,6 @@ then
 	exit 1
 fi
 
-if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
-then
-        echo "'ubuntu-server' is not installed, this doesn't seem to be a server."
-        echo "Please install the server version of Ubuntu and restart the script"
-        exit 1 
-fi
-
 # Create $UNIXUSER if not existing
 if id "$UNIXUSER" >/dev/null 2>&1
 then
@@ -192,13 +185,27 @@ chmod 600 $PW_FILE
 chown root:root $PW_FILE
 
 # Install MYSQL 5.7
-wget http://dev.mysql.com/get/mysql-apt-config_0.6.0-1_all.deb
-echo -ne '\n' | dpkg -i mysql-apt-config_0.6.0-1_all.deb
-rm mysql-apt-config_0.6.0-1_all.deb
-sudo apt-get update
-echo "mysql-server-5.7 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
-echo "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
-apt-get install mysql-server-5.6 -y
+apt-get install debconf-utils --force-yes -y
+export DEBIAN_FRONTEND=noninteractive
+sudo apt-get purge mysql.* --force-yes -y
+sudo apt-get autoremove --force-yes -y
+sudo apt-get autoclean --force-yes -y
+sudo rm -rf /var/lib/mysql
+sudo rm -rf /var/log/mysql
+
+cat << SOURCES > "/etc/apt/sources.list.d/mysql.list"
+deb http://repo.mysql.com/apt/ubuntu/ trusty mysql-5.7
+deb-src http://repo.mysql.com/apt/ubuntu/ trusty mysql-5.7
+SOURCES
+
+echo "mysql-apt-config mysql-apt-config/repo-distro select ubuntu" | debconf-set-selections
+echo "mysql-apt-config mysql-apt-config/repo-codename select trusty" | debconf-set-selections
+echo "mysql-apt-config mysql-apt-config/select-server select mysql-5.7" | debconf-set-selections
+echo "mysql-community-server mysql-community-server/root-pass password $MYSQL_PASS" | debconf-set-selections
+echo "mysql-community-server mysql-community-server/re-root-pass password $MYSQL_PASS" | debconf-set-selections
+
+sudo apt-get update -q
+sudo apt-get install -q -y mysql-community-server
 
 # mysql_secure_installation
 apt-get -y install expect
@@ -489,13 +496,6 @@ fi
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
-# Change roots .bash_profile
-        if [ -f $SCRIPTS/change-root-profile.sh ];
-                then
-                echo "change-root-profile.sh exists"
-                else
-        wget -q $STATIC/change-root-profile.sh -P $SCRIPTS
-fi
 # Change $UNIXUSER .bash_profile
         if [ -f $SCRIPTS/change-ocadmin-profile.sh ];
                 then
@@ -526,17 +526,6 @@ fi
         wget -q $STATIC/history.sh -P $SCRIPTS
 fi
 
-# Change root profile
-        	bash $SCRIPTS/change-root-profile.sh
-if [[ $? > 0 ]]
-then
-	echo "change-root-profile.sh were not executed correctly."
-	sleep 10
-else
-	echo "change-root-profile.sh script executed OK."
-	rm $SCRIPTS/change-root-profile.sh
-	sleep 2
-fi
 # Change $UNIXUSER profile
         	bash $SCRIPTS/change-ocadmin-profile.sh
 if [[ $? > 0 ]]
@@ -572,9 +561,24 @@ rm $SCRIPTS/install-redis-php-7.sh
 # Upgrade
 aptitude full-upgrade -y
 
+# Prepare for startup-script after reboot
+sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
+sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
+
+# Change root profile
+bash $SCRIPTS/change-root-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-root-profile.sh were not executed correctly."
+	sleep 10
+else
+	echo "change-root-profile.sh script executed OK."
+	rm $SCRIPTS/change-root-profile.sh
+	sleep 2
+fi
+
 # Clean up rc.local
 echo "Writes to rc.local..."
-
 cat << RCLOCAL > "/etc/rc.local"
 #!/bin/sh -e
 #
