@@ -353,7 +353,7 @@ clear
 echo System will now upgrade...
 sleep 2
 echo
-apt-get update -q
+apt-get update -q2
 aptitude full-upgrade -y
 
 # Add temporary fix if needed
