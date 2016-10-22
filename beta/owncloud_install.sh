@@ -57,17 +57,6 @@ fi
         exit 1
 fi
 
-# Check Ubuntu version
-echo "Checking server OS and version..."
-if [ $OS -eq 1 ]
-then
-        sleep 1
-else
-        echo "Ubuntu Server is required to run this script."
-        echo "Please install that distro and try again."
-        exit 1
-fi
-
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
 version(){
     local h t v
@@ -583,6 +572,27 @@ rm $SCRIPTS/install-redis-php-7.sh
 # Upgrade
 aptitude full-upgrade -y
 
+# Clean up rc.local
+echo "Writes to rc.local..."
+
+cat << RCLOCAL > "/etc/rc.local"
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+exit 0
+
+RCLOCAL
+
 # Cleanup
 echo "$CLEARBOOT"
 apt-get autoremove -y
@@ -599,5 +609,3 @@ fi
 
 # Reboot
 reboot
-
-exit 0
