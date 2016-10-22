@@ -390,12 +390,13 @@ sudo -u www-data php $OCPATH/occ maintenance:repair
 rm $SCRIPTS/ip.sh
 rm $SCRIPTS/trusted.sh
 rm $SCRIPTS/owncloud_install.sh
+rm $SCRIPTS/tempmsg.sh
 rm $SCRIPTS/test_connection.sh
 rm $SCRIPTS/update-config.php
 rm $SCRIPTS/instruction.sh
 rm $OCDATA/owncloud.log
 rm $SCRIPTS/owncloud-startup-script.sh
-sed -i "s|instruction.sh|techandme.sh|g" /home/$UNIXUSER/.bash_profile
+sed -i "s|tempmsg.sh|techandme.sh|g" /home/$UNIXUSER/.bash_profile
 cat /dev/null > ~/.bash_history
 cat /dev/null > /var/spool/mail/root
 cat /dev/null > /var/spool/mail/$UNIXUSER
