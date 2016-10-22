@@ -54,12 +54,15 @@ echo
 sleep 15
 
 # Backup data
+echo "Backing up data..."
+DATE=`date +%Y-%m-%d-%H%M%S`
 if [ -d $BACKUP ]
 then
+    mkdir -p $BACKUP_OLD/$DATE
+    mv $BACKUP/* $BACKUP_OLD/$DATE
     rm -R $BACKUP
     mkdir -p $BACKUP
 fi
-echo "Backing up data..."
 rsync -Aax $OCPATH/config $BACKUP
 rsync -Aax $OCPATH/themes $BACKUP
 rsync -Aax $OCPATH/apps $BACKUP
