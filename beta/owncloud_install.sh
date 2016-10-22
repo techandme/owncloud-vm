@@ -1,32 +1,53 @@
 #!/bin/bash
 
 # Tech and Me, ©2016 - www.techandme.se
+#
+# This install from ownCloud repos with PHP 7, MySQL 5.6 and Apache 2.4.
 
 ## THIS IS FOR TESTING ##
 
+# Check for errors + debug code and abort if something isn't right
+# 1 = ON
+# 0 = OFF
+DEBUG=0
+
+# ownCloud version
 OCVERSION=9.1.2RC1
-DOWNLOADREPO=https://download.owncloud.org/community/testing/owncloud-$OCVERSION
-# DOWNLOADREPODEB=https://download.owncloud.org/
-CONVER=v1.3.1.0
-CONVER_FILE=contacts.tar.gz
-CONVER_REPO=https://github.com/owncloud/contacts/releases/download
-CALVER=v1.3.1
-CALVER_FILE=calendar.tar.gz
-CALVER_REPO=https://github.com/owncloud/calendar/releases/download
-SHUF=$(shuf -i 10-15 -n 1)
+# Ubuntu version
+OS=$(grep -ic "Ubuntu" /etc/issue.net)
+# Passwords
+SHUF=$(shuf -i 13-15 -n 1)
 MYSQL_PASS=$(cat /dev/urandom | tr -dc "a-zA-Z0-9@#*=" | fold -w $SHUF | head -n 1)
 PW_FILE=/var/mysql_password.txt
+# Directories
 SCRIPTS=/var/scripts
 HTML=/var/www
 OCPATH=$HTML/owncloud
 OCDATA=/var/ocdata
+# Apache vhosts
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
-IP="/sbin/ip"
-IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
+# Network
+IFACE=$(lshw -c network | grep "logical name" | awk '{print $3; exit}')
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
+# Repositories
+GITHUB_REPO="https://raw.gFithubusercontent.com/enoch85/ownCloud-VM/master/beta"
+STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+DOWNLOADREPO="https://download.owncloud.org/community/testing/owncloud-$OCVERSION"
+# Commands
+CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
+# Linux user, and ownCloud user
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
+
+# DEBUG mode
+if [ $DEBUG -eq 1 ]
+then
+    set -e
+    set -x
+else
+    sleep 1
+fi
 
 # Check if root
         if [ "$(whoami)" != "root" ]; then
@@ -36,73 +57,170 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Check Ubuntu version
+echo "Checking server OS and version..."
+if [ $OS -eq 1 ]
+then
+        sleep 1
+else
+        echo "Ubuntu Server is required to run this script."
+        echo "Please install that distro and try again."
+        exit 1
+fi
+
+DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
+version(){
+    local h t v
+
+    [[ $2 = "$1" || $2 = "$3" ]] && return 0
+
+    v=$(printf '%s\n' "$@" | sort -V)
+    h=$(head -n1 <<<"$v")
+    t=$(tail -n1 <<<"$v")
+
+    [[ $2 != "$h" && $2 != "$t" ]]
+}
+
+if ! version 14.04 "$DISTRO" 16.04.4; then
+    echo "Ubuntu version seems to be $DISTRO"
+    echo "It must be between 14.04 - 16.04.4"
+    echo "Please install that version and try again."
+    exit 1
+fi
+
+if wget -q --spider "$DOWNLOADREPO.zip" > /dev/null; then
+        echo "ownCloud download file OK"
+else
+        echo "ownCloud download file is not availible, exiting..."
+        exit 1
+fi
+
+# Check if it's a clean server
+echo "Checking if it's a clean server..."
+if [ $(dpkg-query -W -f='${Status}' mysql-common 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+        echo "MySQL is installed, it must be a clean server."
+        exit 1
+fi
+
+if [ $(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+        echo "Apache2 is installed, it must be a clean server."
+        exit 1
+fi
+
+if [ $(dpkg-query -W -f='${Status}' php 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+        echo "PHP is installed, it must be a clean server."
+        exit 1
+fi
+
+if [ $(dpkg-query -W -f='${Status}' owncloud 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+	echo "ownCloud is installed, it must be a clean server."
+	exit 1
+fi
+
+if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+        echo "'ubuntu-server' is not installed, this doesn't seem to be a server."
+        echo "Please install the server version of Ubuntu and restart the script"
+        exit 1 
+fi
+
 # Create $UNIXUSER if not existing
-getent passwd $UNIXUSER  > /dev/null
-if [ $? -eq 0 ]
+if id "$UNIXUSER" >/dev/null 2>&1
 then
         echo "$UNIXUSER already exists!"
 else
-        adduser --disabled-password --gecos "" $UNIXUSER
+	adduser --disabled-password --gecos "" $UNIXUSER
         echo -e "$UNIXUSER:$UNIXPASS" | chpasswd
         usermod -aG sudo $UNIXUSER
 fi
 
 if [ -d /home/$UNIXUSER ];
 then
-        echo "$UNIXUSER OK!"
+	echo "$UNIXUSER OK!"
 else
-        echo "Something went wrong when creating the user... Script will exit."
-        exit 1
+	echo "Something went wrong when creating the user... Script will exit."
+	exit 1
+fi
+
+# Create $SCRIPTS dir
+      	if [ -d $SCRIPTS ]; then
+      		sleep 1
+      		else
+      	mkdir -p $SCRIPTS
 fi
 
 # Change DNS
+if ! [ -x "$(command -v resolvconf)" ]; then
+	apt-get install resolvconf -y -q
+	dpkg-reconfigure resolvconf
+else
+	echo 'reolvconf is installed.' >&2
+fi
+
 echo "nameserver 8.26.56.26" > /etc/resolvconf/resolv.conf.d/base
 echo "nameserver 8.20.247.20" >> /etc/resolvconf/resolv.conf.d/base
 
+service networking restart
+
 # Check network
-ifdown $IFACE && sudo ifup $IFACE
+if ! [ -x "$(command -v nslookup)" ]; then
+	apt-get install dnsutils -y -q
+else
+	echo 'dnsutils is installed.' >&2
+fi
+if ! [ -x "$(command -v ifup)" ]; then
+	apt-get install ifupdown -y -q
+else
+	echo 'ifupdown is installed.' >&2
+fi
+sudo ifdown $IFACE && sudo ifup $IFACE
 nslookup google.com
 if [[ $? > 0 ]]
 then
-    echo "Network NOT OK. You must have a working Network connection to run this script."
-    exit
+	echo "Network NOT OK. You must have a working Network connection to run this script."
+        exit 1
 else
-    echo "Network OK."
+	echo "Network OK."
 fi
 
 # Update system
 apt-get update -q2
 
-# Install figlet
-apt-get install figlet -y
-
 # Set locales
-sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure locales
+apt-get install language-pack-en-base -y
+sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
-# Show MySQL pass, and write it to a file in case the user fails to write it down
-echo
-echo -e "Your MySQL root password is: \e[32m$MYSQL_PASS\e[0m"
-echo "Please save this somewhere safe. The password is also saved in this file: $PW_FILE."
+# Install aptitude
+apt-get install aptitude -y
+
+# Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
 chmod 600 $PW_FILE
-echo -e "\e[32m"
-read -p "Press any key to continue..." -n1 -s
-echo -e "\e[0m"
+chown root:root $PW_FILE
 
-# Install MYSQL 5.6
-apt-get install software-properties-common -y
-echo "mysql-server-5.6 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
-echo "mysql-server-5.6 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
+# Install MYSQL 5.7
+wget http://dev.mysql.com/get/mysql-apt-config_0.6.0-1_all.deb
+echo -ne '\n' | dpkg -i mysql-apt-config_0.6.0-1_all.deb
+rm mysql-apt-config_0.6.0-1_all.deb
+sudo apt-get update
+echo "mysql-server-5.7 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
+echo "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
 apt-get install mysql-server-5.6 -y
 
 # mysql_secure_installation
-aptitude -y install expect
+apt-get -y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
+expect \"Enter current password for root:\"
 send \"$MYSQL_PASS\r\"
-expect \"Change the root password?\"
+expect \"Would you like to setup VALIDATE PASSWORD plugin?\"
+send \"n\r\"
+expect \"Change the password for root ?\"
 send \"n\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
@@ -115,7 +233,7 @@ send \"y\r\"
 expect eof
 ")
 echo "$SECURE_MYSQL"
-aptitude -y purge expect
+apt-get -y purge expect
 
 # Install Apache
 apt-get install apache2 -y
@@ -132,7 +250,7 @@ sudo sh -c "echo 'ServerName owncloud' >> /etc/apache2/apache2.conf"
 sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
-# Install PHP 7
+# Install PHP 7.0
 apt-get install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
 apt-get update -q2
 apt-get install -y \
@@ -153,27 +271,22 @@ apt-get install -y \
         php7.0-zip \
         php7.0-mbstring \
         libsm6 \
-        libsmbclient
+	php7.0-smbclient
 
-# Download $OCVERSION
+# Enable SMB client
+echo '# This enables php-smbclient' >> /etc/php/7.0/apache2/php.ini
+echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
+
+# Download and install ownCloud
 wget $DOWNLOADREPO.zip -P $HTML
 apt-get install unzip -y
 unzip -q $HTML/owncloud-$OCVERSION.zip -d $HTML
 rm $HTML/owncloud-$OCVERSION.zip
 
-# Download from DEB
-#wget -nv $DOWNLOADREPODEB/Release.key -O Release.key
-#apt-key add - < Release.key
-#rm Release.key
-#sh -c "echo 'deb $DOWNLOADREPODEB/ /' >> /etc/apt/sources.list.d/owncloud.list"
-#apt-get update -q2
-#apt-get install owncloud -y
-
-# Create data folder, occ complains otherwise
 mkdir -p $OCDATA
 
 # Secure permissions
-wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static/setup_secure_permissions_owncloud.sh -P $SCRIPTS
+wget -q $STATIC/setup_secure_permissions_owncloud.sh -P $SCRIPTS
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
 # Install ownCloud
@@ -186,7 +299,6 @@ echo
 sleep 3
 
 # Prepare cron.php to be run every 15 minutes
-# The user still has to activate it in the settings GUI
 crontab -u www-data -l | { cat; echo "*/15  *  *  *  * php -f $OCPATH/cron.php > /dev/null 2>&1"; } | crontab -u www-data -
 
 # Change values in php.ini (increase max file size)
@@ -200,6 +312,9 @@ sed -i "s|memory_limit = 128M|memory_limit = 512M|g" /etc/php/7.0/apache2/php.in
 sed -i "s|post_max_size = 8M|post_max_size = 1100M|g" /etc/php/7.0/apache2/php.ini
 # upload_max
 sed -i "s|upload_max_filesize = 2M|upload_max_filesize = 1000M|g" /etc/php/7.0/apache2/php.ini
+
+# Install Figlet
+apt-get install figlet -y
 
 # Generate $HTTP_CONF
 if [ -f $HTTP_CONF ];
@@ -255,10 +370,12 @@ else
 <VirtualHost *:443>
     Header add Strict-Transport-Security: "max-age=15768000;includeSubdomains"
     SSLEngine on
+
 ### YOUR SERVER ADDRESS ###
 #    ServerAdmin admin@example.com
 #    ServerName example.com
 #    ServerAlias subdomain.example.com
+
 ### SETTINGS ###
     DocumentRoot $OCPATH
 
@@ -282,6 +399,7 @@ else
 
     SetEnv HOME $OCPATH
     SetEnv HTTP_HOME $OCPATH
+
 ### LOCATION OF CERT FILES ###
     SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
     SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
@@ -290,6 +408,12 @@ SSL_CREATE
 echo "$SSL_CONF was successfully created"
 sleep 3
 fi
+
+# Enable new config
+a2ensite owncloud_ssl_domain_self_signed.conf
+a2ensite owncloud_http_domain_self_signed.conf
+a2dissite default-ssl
+service apache2 restart
 
 ## Set config values
 # Experimental apps
@@ -304,16 +428,33 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_from_address --value="ww
 sudo -u www-data php $OCPATH/occ config:system:set mail_domain --value="gmail.com"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpsecure --value="ssl"
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.techandme.se@gmail.com"
-sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="techandme_se"
+sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="vinr vhpa jvbh hovy"
 
 # Install Libreoffice Writer to be able to read MS documents.
 sudo apt-get install --no-install-recommends libreoffice-writer -y
+
+# Install packages for Webmin
+apt-get install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+
+# Install Webmin
+sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
+wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
+apt-get update -q2
+apt-get install webmin -y
+
+# ownCloud apps
+CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
+CONVER_FILE=contacts.tar.gz
+CONVER_REPO=https://github.com/owncloud/contacts/releases/download
+CALVER=$(wget -q https://raw.githubusercontent.com/nextcloud/calendar/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
+CALVER_FILE=calendar.tar.gz
+CALVER_REPO=https://github.com/nextcloud/calendar/releases/download
 
 # Download and install Documents
 if [ -d $OCPATH/apps/documents ]; then
 sleep 1
 else
-wget https://github.com/owncloud/documents/archive/master.zip -P $OCPATH/apps
+wget -q https://github.com/owncloud/documents/archive/master.zip -P $OCPATH/apps
 cd $OCPATH/apps
 unzip -q master.zip
 rm master.zip
@@ -330,7 +471,7 @@ fi
 if [ -d $OCPATH/apps/contacts ]; then
 sleep 1
 else
-wget -q $CONVER_REPO/$CONVER/$CONVER_FILE -P $OCPATH/apps
+wget -q $CONVER_REPO/v$CONVER/$CONVER_FILE -P $OCPATH/apps
 tar -zxf $OCPATH/apps/$CONVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
 rm $CONVER_FILE
@@ -345,7 +486,7 @@ fi
 if [ -d $OCPATH/apps/calendar ]; then
 sleep 1
 else
-wget -q $CALVER_REPO/$CALVER/$CALVER_FILE -P $OCPATH/apps
+wget -q $CALVER_REPO/v$CALVER/$CALVER_FILE -P $OCPATH/apps
 tar -zxf $OCPATH/apps/$CALVER_FILE -C $OCPATH/apps
 cd $OCPATH/apps
 rm $CALVER_FILE
@@ -359,34 +500,73 @@ fi
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
-# Install Redis
-bash $SCRIPTS/install-redis-php-7.sh
+# Change roots .bash_profile
+        if [ -f $SCRIPTS/change-root-profile.sh ];
+                then
+                echo "change-root-profile.sh exists"
+                else
+        wget -q $STATIC/change-root-profile.sh -P $SCRIPTS
+fi
+# Change $UNIXUSER .bash_profile
+        if [ -f $SCRIPTS/change-ocadmin-profile.sh ];
+                then
+                echo "change-ocadmin-profile.sh  exists"
+                else
+        wget -q $STATIC/change-ocadmin-profile.sh -P $SCRIPTS
+fi
+# Get startup-script for root
+        if [ -f $SCRIPTS/owncloud-startup-script.sh ];
+                then
+                echo "owncloud-startup-script.sh exists"
+                else
+        wget -q $GITHUB_REPO/owncloud-startup-script.sh -P $SCRIPTS
+fi
 
-# Prepare for startup-script after reboot
-sed -i "s|owncloud_install.sh|owncloud-startup-script.sh|g" $SCRIPTS/change-root-profile.sh
-sed -i "s|rm /root/.profile||g" $SCRIPTS/change-root-profile.sh
-bash $SCRIPTS/change-root-profile.sh
+# Welcome message after login (change in /home/$UNIXUSER/.profile
+        if [ -f $SCRIPTS/instruction.sh ];
+                then
+                echo "instruction.sh exists"
+                else
+        wget -q $STATIC/instruction.sh -P $SCRIPTS
+fi
+# Clears command history on every login
+        if [ -f $SCRIPTS/history.sh ];
+                then
+                echo "history.sh exists"
+                else
+        wget -q $STATIC/history.sh -P $SCRIPTS
+fi
 
-# Get the latest owncloud-startup-script.sh
-echo "Writes to rc.local..."
+# Change root profile
+        	bash $SCRIPTS/change-root-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-root-profile.sh were not executed correctly."
+	sleep 10
+else
+	echo "change-root-profile.sh script executed OK."
+	rm $SCRIPTS/change-root-profile.sh
+	sleep 2
+fi
+# Change $UNIXUSER profile
+        	bash $SCRIPTS/change-ocadmin-profile.sh
+if [[ $? > 0 ]]
+then
+	echo "change-ocadmin-profile.sh were not executed correctly."
+	sleep 10
+else
+	echo "change-ocadmin-profile.sh executed OK."
+	rm $SCRIPTS/change-ocadmin-profile.sh
+	sleep 2
+fi
 
-cat << RCLOCAL > "/etc/rc.local"
-#!/bin/sh -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-
-exit 0
-
-RCLOCAL
+# Get script for Redis
+        if [ -f $SCRIPTS/install-redis-php-7.sh ];
+                then
+                echo "install-redis-php-7.sh exists"
+                else
+        wget -q $STATIC/install-redis-php-7.sh -P $SCRIPTS
+fi
 
 # Make $SCRIPTS excutable
 chmod +x -R $SCRIPTS
@@ -395,6 +575,27 @@ chown root:root -R $SCRIPTS
 # Allow $UNIXUSER to run theese scripts
 chown $UNIXUSER:$UNIXUSER $SCRIPTS/instruction.sh
 chown $UNIXUSER:$UNIXUSER $SCRIPTS/history.sh
+
+# Install Redis
+bash $SCRIPTS/install-redis-php-7.sh
+rm $SCRIPTS/install-redis-php-7.sh
+
+# Upgrade
+aptitude full-upgrade -y
+
+# Cleanup
+echo "$CLEARBOOT"
+apt-get autoremove -y
+apt-get autoclean
+if [ -f /home/$UNIXUSER/*.sh ];
+then
+	rm /home/$UNIXUSER/*.sh
+fi
+
+if [ -f /root/*.sh ];
+then
+	rm /root/*.sh
+fi
 
 # Reboot
 reboot

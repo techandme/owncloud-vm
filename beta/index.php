@@ -15,13 +15,8 @@ body {
 	align: center;
 	text-align: center;
 	background: #1d2d44; /* Old browsers */
-	background: -moz-linear-gradient(top, #35537a 0%, #1d2d44 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#35537a), color-stop(100%,#1d2d44)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, #35537a 0%,#1d2d44 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, #35537a 0%,#1d2d44 100%); /* Opera11.10+ */
-	background: -ms-linear-gradient(top, #35537a 0%,#1d2d44 100%); /* IE10+ */
-	background: linear-gradient(top, #35537a 0%,#1d2d44 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#35537a', endColorstr='#1d2d44',GradientType=0 ); /* IE6-9 */
+	background-image: url('https://raw.githubusercontent.com/owncloud/core/master/core/img/background.jpg');
+	background-size: cover;
 }
 div.logotext   {
 	width: 50%;
@@ -78,12 +73,12 @@ a:active {
 <div class="logo">
 </div>
 <div class="logotext">
-<h2>ownCloud VM with PHP 7 - <a href="https://www.techandme.se/pre-configured-owncloud-installaton/" target="_blank">Tech and Me</a></h2>
+<h2>ownCloud VM - <a href="https://www.techandme.se/pre-configured-owncloud-installaton/" target="_blank">Tech and Me</a></h2>
 </div>
 <br>
 <div class="information">
 <p>Thank you for downloading the pre-configured ownCloud VM! If you see this page, you have successfully mounted the  ownCloud VM on the computer that will act as host for ownCloud.</p>
-<p>To complete the installation, please run the setup script. You can find login details in the middle of this page.
+<p>We have set everything up for you and the only thing you have to do now is to login. You can find login details in the middle of this page.</p>
 <p>Don't hesitate to ask if you have any questions. My email is: <a href="mailto:daniel@techandme.se?Subject=Before%20login%20-%20ownCloud%20VM" target="_top">daniel@techandme.se</a> You can also check the <a href="https://www.techandme.se/complete-install-instructions-owncloud/" target="_blank">complete install instructions</a>.</p>
 <p>Please <a href="https://www.techandme.se/thank_you">donate</a> if you like it. All the donations will go to server costs and developing, making this VM even better.</p>
 
@@ -115,7 +110,7 @@ a:active {
 <h3>
 <ul>
  <li><a href="http://<?=$_SERVER['SERVER_NAME'];?>/owncloud"        >http://<?=$_SERVER['SERVER_NAME'];?></a> (HTTP)
- <li><a href="https://<?=$_SERVER['SERVER_NAME'];?>"             >https://<?=$_SERVER['SERVER_NAME'];?></a> (HTTPS)
+ <li><a href="https://<?=$_SERVER['SERVER_NAME'];?>/owncloud"             >https://<?=$_SERVER['SERVER_NAME'];?></a> (HTTPS)
  <p>
  </ul>
 </h3>
@@ -146,15 +141,17 @@ a:active {
 <h2>Access phpMyadmin</h2>
 
 <div class="information">
-<p>Use the following address:
+<p>Use one of the following addresses, HTTPS is preffered:
 <h3>
 <ul>
  <li><a href="http://<?=$_SERVER['SERVER_NAME'];?>/phpmyadmin"        >http://<?=$_SERVER['SERVER_NAME'];?></a> (HTTP)
+ <li><a href="https://<?=$_SERVER['SERVER_NAME'];?>/phpmyadmin"             >https://<?=$_SERVER['SERVER_NAME'];?></a> (HTTPS)
  <p>
  </ul>
 </h3>
+<p>Note: Please accept the warning in the browser if you connect via HTTPS.</p>
 <h3>
 <a href="https://www.techandme.se/user-and-password/" target="_blank">Login details</a>
 </h3>
-<p>Note: Your external and internal IP are set as approved in /etc/apache2/conf-available/phpmyadmin.conf, all other access is forbidden.<p/>
+<p>Note: Your external IP is set as approved in /etc/apache2/conf-available/phpmyadmin.conf, all other access is forbidden.<p/>
 </div>
