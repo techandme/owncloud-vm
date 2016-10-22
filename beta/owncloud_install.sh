@@ -31,7 +31,7 @@ HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 IFACE=$(lshw -c network | grep "logical name" | awk '{print $3; exit}')
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 # Repositories
-GITHUB_REPO="https://raw.gFithubusercontent.com/enoch85/ownCloud-VM/master/beta"
+GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 DOWNLOADREPO="https://download.owncloud.org/community/testing/owncloud-$OCVERSION"
 # Commands
