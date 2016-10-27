@@ -27,9 +27,10 @@ NCVERSION=$(curl -s $NCREPO/ | tac | grep unknown.gif | sed 's/.*"nextcloud-\([^
 
 echo
 echo "# The purpose of this script is to migrate from ownCloud to Nextcloud."
-echo "# We expect you you run our ownCloud VM. This script may not work with every installation,"
+echo "# We expect you you run our ownCloud VM. This script may not work with other installations,"
 echo "# but if you have your datafolder outside ownCloud root then you are safe."
 echo "# Though we do also check if you have your data in the regular path which is $OCPATH/data."
+echo "# Please also check this script and change the $VHOST to your host before you run this script."
 echo -e "\e[32m"
 read -p "Press any key to continue the migration, or press CTRL+C to abort..." -n1 -s
 clear
@@ -71,8 +72,7 @@ tar -xjf $NCPATH-$NCVERSION.tar.bz2 -C $HTML
 # Restore Backup
 cp -R $BACKUP/* $NCPATH/
 
-# Replace owncloud with nextcloud
-find . -type f -exec sed -i 's|owncloud|nextcloud|g' {} + $NCPATH/config/config.php
+# Replace owncloud with nextcloud in $VHOST
 a2dissite $VHOST
 sed -i "s|owncloud|nextcloud|g" /etc/apache2/sites-available/$VHOST
 a2ensite $VHOST
@@ -104,11 +104,16 @@ sudo -u www-data php $NCPATH/occ upgrade
 if [[ $? == 0 ]]
 then
     sudo -u www-data php $OCPATH/occ maintenance:mode --off
-    echo
+    echo -e "\e[32m"
     echo "Migration success! Please check that everything is in order"
-    echo "Removing $OCPATH in 10 seconds..."
-    sleep 10
+    echo
+    read -p "Press any key to remove $OCPATH..." -n1 -s
+    clear
+    echo -e "\e[0m"
     rm -R $OCPATH
+    apt-get purge owncloud* -y
+    echo
+    echo "Your backup is still available at $BACKUP"
     exit 0
 else
     echo "Migration failed! But don't worry, your config is still intact and we have not removed your ownCloud folder"
