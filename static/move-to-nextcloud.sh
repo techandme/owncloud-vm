@@ -2,7 +2,7 @@
 
 # This script is written by Tech and Me 2016.
 # The purpose of this script is to migrate from ownCloud to Nextcloud.
-# We expect you you run our ownCloud VM. This script may not work with every installation.
+# We expect you to run our ownCloud VM. This script may not work with every installation.
 # But if you have your datafolder outside ownCloud root then you are safe.
 # Though we do also check if you have your data in the regular path which is /var/www/owncloud/data.
 
@@ -27,7 +27,7 @@ NCVERSION=$(curl -s $NCREPO/ | tac | grep unknown.gif | sed 's/.*"nextcloud-\([^
 
 echo
 echo "# The purpose of this script is to migrate from ownCloud to Nextcloud."
-echo "# We expect you you run our ownCloud VM. This script may not work with other installations,"
+echo "# We expect you to run our ownCloud VM. This script may not work with other installations,"
 echo "# but if you have your datafolder outside ownCloud root then you are safe."
 echo "# Though we do also check if you have your data in the regular path which is $OCPATH/data."
 echo "# Please also check this script and change the $VHOST to your host before you run this script."
@@ -53,13 +53,22 @@ sudo -u www-data php $OCPATH/occ maintenance:mode --on
 # Backup ownCloud config + data
 echo "Backing up config + data..."
 rsync -Aaxt $OCPATH/config $BACKUP
-if [ -d $OCPATH/data ]
+if [[ $? == 0 ]]
+then
+    echo "Backup OK!
+else
+    echo "Backup failed"
+    exit 1
+fi
+files=$(shopt -s nullglob dotglob; echo $OCPATH/data/*)
+if (( ${#files} ))
 then
     rsync -Aaxt $OCPATH/data $BACKUP
 else
+    echo
     echo "Your datafolder doesn't seem to be in $OCPATH/data"
-    echo "We will remove $OCPATH completley when this script is done."
     echo "If you have your data outside of $OCPATH then you're safe."
+    echo "We will remove $OCPATH completley when this script is done."
     echo -e "\e[32m"
     read -p "Press any key to continue the migration, or press CTRL+C to abort..." -n1 -s
     echo -e "\e[0m"
@@ -104,16 +113,46 @@ sudo -u www-data php $NCPATH/occ upgrade
 if [[ $? == 0 ]]
 then
     sudo -u www-data php $OCPATH/occ maintenance:mode --off
+    sudo -u www-data php $NCPATH/occ maintenance:mode --off
     echo -e "\e[32m"
     echo "Migration success! Please check that everything is in order"
     echo
     read -p "Press any key to remove $OCPATH..." -n1 -s
-    clear
     echo -e "\e[0m"
     rm -R $OCPATH
+    cd /
     apt-get purge owncloud* -y
+    apt-get autoremove -y
+    rm /etc/apt/sources.list.d/owncloud.list
+    service apache2 restart
+    crontab -u www-data -r
+    crontab -u www-data -l | { cat; echo "*/15  *  *  *  * php -f $NCPATH/cron.php > /dev/null 2>&1"; } | crontab -u www-data -
+    # Install PHP 7.0
+    echo "Re-installing PHP 7..."
+    apt-get update -q2
+    apt-get install -y \
+        libapache2-mod-php7.0 \
+        php7.0-common \
+        php7.0-mysql \
+        php7.0-intl \
+        php7.0-mcrypt \
+        php7.0-ldap \
+        php7.0-imap \
+        php7.0-cli \
+        php7.0-gd \
+        php7.0-pgsql \
+        php7.0-json \
+        php7.0-sqlite3 \
+        php7.0-curl \
+        php7.0-xml \
+        php7.0-zip \
+        php7.0-mbstring \
+        php-smbclient
+    service apache2 restart
     echo
     echo "Your backup is still available at $BACKUP"
+    echo "Apps are deactivated, please login to Nextcloud and reactivate them."
+    echo "Thank you for using Tech and Me!"
     exit 0
 else
     echo "Migration failed! But don't worry, your config is still intact and we have not removed your ownCloud folder"
