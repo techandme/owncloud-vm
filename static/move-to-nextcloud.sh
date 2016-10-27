@@ -6,6 +6,8 @@
 # But if you have your datafolder outside ownCloud root then you are safe.
 # Though we do also check if you have your data in the regular path which is /var/www/owncloud/data.
 
+# Apache2 vhost
+VHOST=owncloud_ssl_domain_self_signed.conf
 # Directories
 HTML=/var/www
 NCPATH=$HTML/nextcloud
@@ -16,6 +18,7 @@ SCRIPTS=/var/scripts
 STATIC="https://raw.githubusercontent.com/nextcloud/vm/master/static"
 NCREPO="https://download.nextcloud.com/server/releases"
 SECURE="$SCRIPTS/setup_secure_permissions_nextcloud.sh"
+GITHUB_REPO="https://raw.githubusercontent.com/nextcloud/vm/master"
 # Version
 NCVERSION=$(curl -s $NCREPO/ | tac | grep unknown.gif | sed 's/.*"nextcloud-\([^"]*\).zip.sha512".*/\1/;q')
 
@@ -66,7 +69,32 @@ wget $NCREPO/nextcloud-$NCVERSION.tar.bz2 -P $HTML
 tar -xjf $NCPATH-$NCVERSION.tar.bz2 -C $HTML
 
 # Restore Backup
-cp -R $BACKUP/ $NCPATH/
+cp -R $BACKUP/* $NCPATH/
+
+# Replace owncloud with nextcloud
+find . -type f -exec sed -i 's|owncloud|nextcloud|g' {} + $NCPATH/config/config.php
+a2dissite $VHOST
+sed -i "s|owncloud|nextcloud|g" /etc/apache2/sites-available/$VHOST
+a2ensite $VHOST
+apachectl configtest
+if [[ $? == 0 ]]
+then
+    service apache2 restart
+else
+    echo "Something went wrong with activating your new host. Please check /etc/apache2/sites-available/$VHOST that everything is correct."
+    exit 1
+fi
+
+# Get the Welcome Screen when http://$address
+if [ -f $SCRIPTS/index.php ]
+then
+    rm $SCRIPTS/index.php
+    wget -q $GITHUB_REPO/index.php -P $SCRIPTS
+else
+    wget -q $GITHUB_REPO/index.php -P $SCRIPTS
+fi
+mv $SCRIPTS/index.php $HTML/index.php
+chmod 750 $HTML/index.php && chown www-data:www-data $HTML/index.php
 
 # Set Secure permissions
 sudo bash $SCRIPTS/setup_secure_permissions_nextcloud.sh
