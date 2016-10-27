@@ -30,6 +30,7 @@ echo "# The purpose of this script is to migrate from ownCloud to Nextcloud."
 echo "# We expect you to run our ownCloud VM. This script may not work with other installations,"
 echo "# but if you have your datafolder outside ownCloud root then you are safe."
 echo "# Though we do also check if you have your data in the regular path which is $OCPATH/data."
+echo "# We will backup your ownCloud config files + MySQL + data in $BACKUP"
 echo "# Please also check this script and change the $VHOST to your host before you run this script."
 echo -e "\e[32m"
 read -p "Press any key to continue the migration, or press CTRL+C to abort..." -n1 -s
@@ -50,20 +51,39 @@ fi
 # Put ownCloud in maintenance mode
 sudo -u www-data php $OCPATH/occ maintenance:mode --on
 
-# Backup ownCloud config + data
-echo "Backing up config + data..."
+# Backup ownCloud config + data + MySQL
+echo "Backing up config...."
+# Config
 rsync -Aaxt $OCPATH/config $BACKUP
 if [[ $? == 0 ]]
 then
-    echo "Backup OK!"
+    echo -e "\e[32mSUCCESS!\e[0m"
 else
     echo "Backup failed"
     exit 1
 fi
+# MySQL
+PW_FILE=/var/mysql_password.txt
+OLDMYSQL=$(cat $PW_FILE)
+echo "Backing up MySQL..."
+mkdir -p $BACKUP/mysql
+mysqldump -u root -p$OLDMYSQL --databases owncloud_db > $BACKUP/mysql/owncloud_db.sql
+mysqldump -u root -p$OLDMYSQL --all-databases > $BACKUP/mysql/all-databases.sql
+if [ $? -eq 0 ]
+then
+        echo -e "\e[32mSUCCESS!\e[0m"
+        echo "Your MySQL + config files are stored in $BACKUP"
+else
+        echo "Backing up MySQL failed."
+        exit 1
+fi
+# Data
+echo "Backing up $OCPATH/data...."
 files=$(shopt -s nullglob dotglob; echo $OCPATH/data/*)
 if (( ${#files} ))
 then
     rsync -Aaxt $OCPATH/data $BACKUP
+    echo "$OCDATA/data is stored in $BACKUP"
 else
     echo
     echo "Your datafolder doesn't seem to be in $OCPATH/data"
@@ -80,6 +100,7 @@ tar -xjf $NCPATH-$NCVERSION.tar.bz2 -C $HTML
 
 # Restore Backup
 cp -R $BACKUP/* $NCPATH/
+rm -R $NCPATH/mysql
 
 # Replace owncloud with nextcloud in $VHOST
 a2dissite $VHOST
