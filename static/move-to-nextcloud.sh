@@ -6,6 +6,8 @@
 # But if you have your datafolder outside ownCloud root then you are safe.
 # Though we do also check if you have your data in the regular path which is /var/www/owncloud/data.
 
+# ownCloud MySQL database name
+OCDB=owncloud_db
 # Apache2 vhost
 VHOST=owncloud_ssl_domain_self_signed.conf
 # Directories
@@ -66,8 +68,15 @@ fi
 PW_FILE=/var/mysql_password.txt
 OLDMYSQL=$(cat $PW_FILE)
 echo "Backing up MySQL..."
+if [ -f $PW_FILE ]
+then
+    sleep 1
+else
+   echo "You have to put your root MySQL password in $PW_FILE for this script to work"
+   exit 1
+fi
 mkdir -p $BACKUP/mysql
-mysqldump -u root -p$OLDMYSQL --databases owncloud_db > $BACKUP/mysql/owncloud_db.sql
+mysqldump -u root -p$OLDMYSQL --databases $OCDB > $BACKUP/mysql/$OCDB.sql
 mysqldump -u root -p$OLDMYSQL --all-databases > $BACKUP/mysql/all-databases.sql
 if [ $? -eq 0 ]
 then
