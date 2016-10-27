@@ -55,7 +55,7 @@ echo "Backing up config + data..."
 rsync -Aaxt $OCPATH/config $BACKUP
 if [[ $? == 0 ]]
 then
-    echo "Backup OK!
+    echo "Backup OK!"
 else
     echo "Backup failed"
     exit 1
