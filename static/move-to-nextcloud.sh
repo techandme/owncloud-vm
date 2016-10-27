@@ -24,13 +24,24 @@ NCVERSION=$(curl -s $NCREPO/ | tac | grep unknown.gif | sed 's/.*"nextcloud-\([^
 
 echo
 echo "# The purpose of this script is to migrate from ownCloud to Nextcloud."
-echo "# We expect you you run our ownCloud VM. This script may not work with every installation"
-echo "# But if you have your datafolder outside ownCloud root then you are safe."
+echo "# We expect you you run our ownCloud VM. This script may not work with every installation,"
+echo "# but if you have your datafolder outside ownCloud root then you are safe."
 echo "# Though we do also check if you have your data in the regular path which is $OCPATH/data."
 echo -e "\e[32m"
 read -p "Press any key to continue the migration, or press CTRL+C to abort..." -n1 -s
 clear
 echo -e "\e[0m"
+
+# Set secure permissions
+FILE="$SECURE"
+if [ -f $FILE ]
+then
+    echo "Script exists"
+else
+    mkdir -p $SCRIPTS
+    wget -q $STATIC/setup_secure_permissions_nextcloud.sh -P $SCRIPTS
+    chmod +x $SECURE
+fi
 
 # Put ownCloud in maintenance mode
 sudo -u www-data php $OCPATH/occ maintenance:mode --on
@@ -51,19 +62,23 @@ else
 fi
 
 # Get the latest Nextcloud release and exctract
-wget $NCREPO/$NCVERSION -P $HTML
-unzip $NCPATH-$NCVERSION.zip -d $HTML
+wget $NCREPO/nextcloud-$NCVERSION.tar.bz2 -P $HTML
+tar -xjf $NCPATH-$NCVERSION.tar.bz2 -C $HTML
 
 # Restore Backup
 cp -R $BACKUP/ $NCPATH/
+
+# Set Secure permissions
+sudo bash $SCRIPTS/setup_secure_permissions_nextcloud.sh
 
 # Upgrade to Nextcloud
 sudo -u www-data php $NCPATH/occ upgrade
 if [[ $? == 0 ]]
 then
     sudo -u www-data php $OCPATH/occ maintenance:mode --off
+    echo
     echo "Migration success! Please check that everything is in order"
-    echo "Removing $OCPATH in 10 seconds...
+    echo "Removing $OCPATH in 10 seconds..."
     sleep 10
     rm -R $OCPATH
     exit 0
