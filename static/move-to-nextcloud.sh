@@ -92,7 +92,7 @@ files=$(shopt -s nullglob dotglob; echo $OCPATH/data/*)
 if (( ${#files} ))
 then
     rsync -Aaxt $OCPATH/data $BACKUP
-    echo "$OCDATA/data is stored in $BACKUP"
+    echo "$OCPATH/data is stored in $BACKUP"
 else
     echo
     echo "Your datafolder doesn't seem to be in $OCPATH/data"
