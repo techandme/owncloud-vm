@@ -33,7 +33,8 @@ echo "# We expect you to run our ownCloud VM. This script may not work with othe
 echo "# but if you have your datafolder outside ownCloud root then you are safe."
 echo "# Though we do also check if you have your data in the regular path which is $OCPATH/data."
 echo "# We will backup your ownCloud config files + MySQL + data in $BACKUP"
-echo "# Please also check this script and change the $VHOST to your host before you run this script."
+echo "# Please also check that both the Apache Vhost and the name of the DB are correct before you run this script."
+echo "# Right now the Vhost are; $VHOST and the DB name are; $OCDB"
 echo -e "\e[32m"
 read -p "Press any key to continue the migration, or press CTRL+C to abort..." -n1 -s
 clear
