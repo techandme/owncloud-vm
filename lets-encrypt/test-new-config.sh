@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SCRIPTS=/var/scripts
+STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 
 # Activate the new config
 echo -e "\e[0m"
@@ -30,7 +31,7 @@ cat << CRONTAB > "/var/scripts/letsencryptrenew.sh"
 #!/bin/sh
 set -x
 systemctl stop apache2.service
-if ! /opt/letsencrypt/letsencrypt-auto renew > /var/log/letsencrypt/renew.log 2>&1 ; then
+if ! /etc/letsencrypt/letsencrypt-auto renew > /var/log/letsencrypt/renew.log 2>&1 ; then
         echo Automated renewal failed:
         cat /var/log/letsencrypt/renew.log
         exit 1
@@ -47,6 +48,28 @@ CRONTAB
 
 # Make letsencryptrenew.sh executable
 chmod +x $SCRIPTS/letsencryptrenew.sh
+
+# Update Config
+if [ -f $SCRIPTS/update-config.php ]
+then
+    rm $SCRIPTS/update-config.php
+    wget -q $STATIC/update-config.php -P $SCRIPTS
+else
+    wget -q $STATIC/update-config.php -P $SCRIPTS
+fi
+
+# Sets trusted domain
+if [ -f $SCRIPTS/trusted.sh ]
+then
+    rm $SCRIPTS/trusted.sh
+    wget -q $STATIC/trusted.sh -P $SCRIPTS
+else
+    wget -q $STATIC/trusted.sh -P $SCRIPTS
+fi
+
+bash $SCRIPTS/trusted.sh
+rm $SCRIPTS/trusted.sh
+rm $SCRIPTS/update-config.php
 
 # Cleanup
 rm $SCRIPTS/test-new-config.sh
