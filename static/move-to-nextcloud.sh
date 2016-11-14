@@ -155,6 +155,9 @@ then
     apt-get purge owncloud* -y
     apt-get autoremove -y
     rm /etc/apt/sources.list.d/owncloud.list
+    rm $SCRIPTS/owncloud_update.sh
+    rm $SCRIPTS/update.sh
+    wget -q https://raw.githubusercontent.com/nextcloud/vm/master/static/update.sh
     service apache2 restart
     crontab -u www-data -r
     crontab -u www-data -l | { cat; echo "*/15  *  *  *  * php -f $NCPATH/cron.php > /dev/null 2>&1"; } | crontab -u www-data -
