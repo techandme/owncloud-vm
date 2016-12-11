@@ -12,7 +12,7 @@
 DEBUG=0
 
 # ownCloud version
-OCVERSION=9.1.2RC2
+OCVERSION=9.1.3RC1
 # Ubuntu version
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
 # Passwords
