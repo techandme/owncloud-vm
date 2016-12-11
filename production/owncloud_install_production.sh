@@ -173,25 +173,28 @@ echo "nameserver 8.20.247.20" >> /etc/resolvconf/resolv.conf.d/base
 service networking restart
 
 # Check network
-if ! [ -x "$(command -v nslookup)" ]; then
-	apt-get install dnsutils -y -q
+if ! [ -x "$(command -v nslookup)" ]
+then
+    apt-get install dnsutils -y -q
 else
-	echo 'dnsutils is installed.' >&2
+    echo 'dnsutils is installed.' >&2
 fi
-if ! [ -x "$(command -v ifup)" ]; then
-	apt-get install ifupdown -y -q
+if ! [ -x "$(command -v ifup)" ]
+then
+    apt-get install ifupdown -y -q
 else
-	echo 'ifupdown is installed.' >&2
+    echo 'ifupdown is installed.' >&2
 fi
 sudo ifdown $IFACE && sudo ifup $IFACE
 nslookup google.com
 if [[ $? > 0 ]]
 then
-	echo "Network NOT OK. You must have a working Network connection to run this script."
-        exit 1
+    echo "Network NOT OK. You must have a working Network connection to run this script."
+    exit 1
 else
-	echo "Network OK."
+    echo "Network OK."
 fi
+clear
 
 # Update system
 apt-get update -q2
