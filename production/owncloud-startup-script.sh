@@ -24,25 +24,36 @@ UNIXPASS=owncloud
         exit 1
 fi
 
+# Check network
+echo "Testing if network is OK..."
+sleep 2
+service networking restart
+    wget -q --spider http://github.com
+if [ $? -eq 0 ]
+then
+    echo -e "\e[32mOnline!\e[0m"
+else
 echo "Setting correct interface..."
 # Set correct interface
 { sed '/# The primary network interface/q' /etc/network/interfaces; printf 'auto %s\niface %s inet dhcp\n# This is an autoconfigured IPv6 interface\niface %s inet6 auto\n' "$IFACE" "$IFACE" "$IFACE"; } > /etc/network/interfaces.new
 mv /etc/network/interfaces.new /etc/network/interfaces
 service networking restart
+fi
 
 # Check network
 echo "Testing if network is OK..."
 sleep 2
-sudo ifdown $IFACE && sudo ifup $IFACE
-wget -q --spider http://github.com
-	if [ $? -eq 0 ]; then
-    		echo -e "\e[32mOnline!\e[0m"
-	else
-		echo
-		echo "Network NOT OK. You must have a working Network connection to run this script."
-		echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new".
-	       	exit 1
-	fi
+service networking restart
+    wget -q --spider http://github.com
+if [ $? -eq 0 ]
+then
+    echo -e "\e[32mOnline!\e[0m"
+else
+    echo
+    echo "Network NOT OK. You must have a working Network connection to run this script."
+    echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new"
+    exit 1
+fi
 
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
@@ -204,6 +215,16 @@ read -p "Press any key to start the script..." -n1 -s
 clear
 echo -e "\e[0m"
 
+# Set keyboard layout
+echo "Current keyboard layout is Swedish"
+echo "You must change keyboard layout to your language"
+echo -e "\e[32m"
+read -p "Press any key to change keyboard layout... " -n1 -s
+echo -e "\e[0m"
+dpkg-reconfigure keyboard-configuration
+echo
+clear
+
 # Change IP
 echo -e "\e[0m"
 echo "The script will now configure your IP to be static."
@@ -214,8 +235,14 @@ echo -e "\e[0m"
 echo -e "Write this down, you will need it to set static IP"
 echo -e "in your router later. It's included in this guide:"
 echo -e "https://www.techandme.se/open-port-80-443/ (step 1 - 5)"
+echo -e
+echo -e "Please note that we will backup the interfaces file to:"
+echo -e "/etc/network/interfaces.backup"
+echo -e "If you run this script on a remote VPS the IP is probably wrong. "
+echo -e "But no worries - we will restore the interfaces.backup in the end of this script."
 echo -e "\e[32m"
 read -p "Press any key to set static IP..." -n1 -s
+cp /etc/network/interfaces /etc/network/interfaces.backup
 clear
 echo -e "\e[0m"
 ifdown $IFACE
@@ -240,6 +267,7 @@ echo -e "\e[32m"
 read -p "Press any key to open /etc/network/interfaces..." -n1 -s
 echo -e "\e[0m"
 nano /etc/network/interfaces
+service networking restart
 clear
 echo "Testing if network is OK..."
 ifdown $IFACE
@@ -294,16 +322,6 @@ echo
     read -p "Press any key to continue... " -n1 -s
     echo -e "\e[0m"
 fi
-clear
-
-# Set keyboard layout
-echo "Current keyboard layout is Swedish"
-echo "You must change keyboard layout to your language"
-echo -e "\e[32m"
-read -p "Press any key to change keyboard layout... " -n1 -s
-echo -e "\e[0m"
-dpkg-reconfigure keyboard-configuration
-echo
 clear
 
 # Change Timezone
@@ -372,25 +390,6 @@ apt-get autoclean
 echo "$CLEARBOOT"
 clear
 
-ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print $2 }')
-# Success!
-echo -e "\e[32m"
-echo    "+--------------------------------------------------------------------+"
-echo    "|      Congratulations! You have sucessfully installed ownCloud!     |"
-echo    "|                                                                    |"
-echo -e "|         \e[0mLogin to ownCloud in your browser:\e[36m" $ADDRESS2"\e[32m           |"
-echo    "|                                                                    |"
-echo -e "|         \e[0mPublish your server online! \e[36mhttps://goo.gl/iUGE2U\e[32m          |"
-echo    "|                                                                    |"
-echo -e "|      \e[0mYour MySQL password is stored in: \e[36m$PW_FILE\e[32m     |"
-echo    "|                                                                    |"
-echo -e "|    \e[91m#################### Tech and Me - 2016 ####################\e[32m    |"
-echo    "+--------------------------------------------------------------------+"
-echo
-read -p "Press any key to continue..." -n1 -s
-echo -e "\e[0m"
-echo
-
 # Cleanup 2
 sudo -u www-data php $OCPATH/occ maintenance:repair
 rm $SCRIPTS/ip.sh
@@ -427,9 +426,44 @@ exit 0
 
 RCLOCAL
 
+# Success!
+clear
+echo -e "\e[32m"
+echo    "+--------------------------------------------------------------------+"
+echo    "|      Congratulations! You have successfully installed Nextcloud!   |"
+echo    "|                                                                    |"
+echo -e "|         \e[0mLogin to Nextcloud in your browser:\e[36m" $ADDRESS2"\e[32m           |"
+echo    "|                                                                    |"
+echo -e "|         \e[0mPublish your server online! \e[36mhttps://goo.gl/iUGE2U\e[32m          |"
+echo    "|                                                                    |"
+echo -e "|      \e[0mYour MySQL password is stored in: \e[36m$PW_FILE\e[32m     |"
+echo    "|                                                                    |"
+echo -e "|    \e[91m#################### Tech and Me - 2016 ####################\e[32m    |"
+echo    "+--------------------------------------------------------------------+"
+echo
+echo
+# VPS?
+function ask_yes_or_no() {
+    read -p "$1 ([y]es or [N]o): "
+    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
+        y|yes) echo "yes" ;;
+        *)     echo "no" ;;
+    esac
+}
+if [[ "yes" == $(ask_yes_or_no "Do you run this on a *remote* VPS?") ]]
+then
+    echo "Ok, then your IP are probably wrong, we will use the backup file to recover it so that you can connect after reboot"
+    echo -e "\e[32m"
+    read -p "Press any key to continue... " -n1 -s
+    echo -e "\e[0m"
+    mv /etc/network/interfaces.backup /etc/network/interfaces
+else
+    sleep 1
+fi
 clear
 echo
 echo
+
 cat << LETSENC
 +-----------------------------------------------+
 |  Ok, now the last part - a proper SSL cert.   |
