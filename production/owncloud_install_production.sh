@@ -33,7 +33,7 @@ STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 OCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
 OCREPOKEY="$OCREPO/Release.key"
 # Commands
-CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
+CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-y purge)
 # Linux user, and ownCloud user
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
@@ -161,7 +161,7 @@ fi
 
 # Change DNS
 if ! [ -x "$(command -v resolvconf)" ]; then
-	apt-get install resolvconf -y -q
+	apt install resolvconf-y -q
 	dpkg-reconfigure resolvconf
 else
 	echo 'reolvconf is installed.' >&2
@@ -175,13 +175,13 @@ service networking restart
 # Check network
 if ! [ -x "$(command -v nslookup)" ]
 then
-    apt-get install dnsutils -y -q
+    apt install dnsutils-y -q
 else
     echo 'dnsutils is installed.' >&2
 fi
 if ! [ -x "$(command -v ifup)" ]
 then
-    apt-get install ifupdown -y -q
+    apt install ifupdown-y -q
 else
     echo 'ifupdown is installed.' >&2
 fi
@@ -196,15 +196,26 @@ else
 fi
 clear
 
+echo "Locating the best mirrors..."
+apt update -q2
+apt install python-pip -y
+pip install \
+    --upgrade pip \
+    apt-select
+apt-select
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup && \
+sudo mv sources.list /etc/apt/
+clear
+
 # Update system
-apt-get update -q2
+apt update -q2
 
 # Set locales
-apt-get install language-pack-en-base -y
+apt install language-pack-en-base-y
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 # Install aptitude
-apt-get install aptitude -y
+apt install aptitude-y
 
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
@@ -212,13 +223,13 @@ chmod 600 $PW_FILE
 chown root:root $PW_FILE
 
 # Install MYSQL 5.7
-apt-get install software-properties-common -y
+apt install software-properties-common-y
 echo "mysql-server-5.7 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
 echo "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
-apt-get install mysql-server-5.7 -y
+apt install mysql-server-5.7-y
 
 # mysql_secure_installation
-apt-get -y install expect
+apt-y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
@@ -239,10 +250,10 @@ send \"y\r\"
 expect eof
 ")
 echo "$SECURE_MYSQL"
-apt-get -y purge expect
+apt-y purge expect
 
 # Install Apache
-apt-get install apache2 -y
+apt install apache2-y
 a2enmod rewrite \
         headers \
         env \
@@ -257,8 +268,8 @@ sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
 # Install PHP 7.0
-apt-get update -q2
-apt-get install -y \
+apt update -q2
+apt install-y \
         php \
 	php-mcrypt \
 	php-pear \
@@ -274,7 +285,7 @@ echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
 wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
 sh -c "echo 'deb $OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
-apt-get update -q2 && apt-get install owncloud -y
+apt update -q2 && apt install owncloud-y
 
 mkdir -p $OCDATA
 
@@ -307,7 +318,7 @@ sed -i "s|post_max_size = 8M|post_max_size = 1100M|g" /etc/php/7.0/apache2/php.i
 sed -i "s|upload_max_filesize = 2M|upload_max_filesize = 1000M|g" /etc/php/7.0/apache2/php.ini
 
 # Install Figlet
-apt-get install figlet -y
+apt install figlet-y
 
 # Generate $HTTP_CONF
 if [ -f $HTTP_CONF ];
@@ -424,19 +435,19 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.te
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="vinr vhpa jvbh hovy"
 
 # Install Libreoffice Writer to be able to read MS documents.
-sudo apt-get install --no-install-recommends libreoffice-writer -y
+sudo apt install --no-install-recommends libreoffice-writer-y
 
 # Install packages for Webmin
-apt-get install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+apt install-y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
 
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
 wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
-apt-get update -q2
-apt-get install webmin -y
+apt update -q2
+apt install webmin-y
 
 # Install Unzip
-apt-get install unzip -y
+apt install unzip-y
 
 # ownCloud apps
 CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
@@ -577,15 +588,15 @@ bash $SCRIPTS/redis-server-ubuntu16.sh
 rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
-aptitude full-upgrade -y
+aptitude full-upgrade-y
 
 # Remove LXD (always shows up as failed during boot)
-apt-get purge lxd -y
+apt purge lxd-y
 
 # Cleanup
 echo "$CLEARBOOT"
-apt-get autoremove -y
-apt-get autoclean
+apt autoremove-y
+apt autoclean
 if [ -f /home/$UNIXUSER/*.sh ];
 then
 	rm /home/$UNIXUSER/*.sh

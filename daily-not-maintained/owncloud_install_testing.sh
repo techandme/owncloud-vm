@@ -44,7 +44,7 @@ else
 fi
 
 # Update system
-apt-get update -q2
+apt update -q2
 
 # Set locales
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure locales
@@ -60,13 +60,13 @@ read -p "Press any key to continue..." -n1 -s
 echo -e "\e[0m"
 
 # Install MYSQL 5.6
-apt-get install software-properties-common -y
+apt install software-properties-common-y
 echo "mysql-server-5.6 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
 echo "mysql-server-5.6 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
-apt-get install mysql-server-5.6 -y
+apt install mysql-server-5.6-y
 
 # mysql_secure_installation
-aptitude -y install expect
+aptitude-y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
@@ -85,10 +85,10 @@ send \"y\r\"
 expect eof
 ")
 echo "$SECURE_MYSQL"
-aptitude -y purge expect
+aptitude-y purge expect
 
 # Install Apache
-apt-get install apache2 -y
+apt install apache2-y
 a2enmod rewrite \
         headers \
         env \
@@ -103,9 +103,9 @@ sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
 # Install PHP 7
-apt-get install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
-apt-get update -q2
-apt-get install -y \
+apt install python-software-properties-y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
+apt update -q2
+apt install-y \
         libapache2-mod-php7.0 \
         php7.0-common \
         php7.0-mysql \
@@ -235,11 +235,11 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="te
 
 # Install Libreoffice Writer to be able to read MS documents.
 echo -ne '\n' | sudo apt-add-repository ppa:libreoffice/libreoffice-4-4
-apt-get update -q2
-sudo apt-get install --no-install-recommends libreoffice-writer -y
+apt update -q2
+sudo apt install --no-install-recommends libreoffice-writer-y
 
 # Intsall Unzip
-apt-get install unzip -y
+apt install unzip-y
 
 # Download and install Documents
 if [ -d $OCPATH/apps/documents ]; then

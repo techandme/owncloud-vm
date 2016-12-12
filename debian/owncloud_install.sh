@@ -91,14 +91,14 @@ fi
 aptitude update
 
 # Install Sudo
-aptitude install sudo -y
+aptitude install sudo-y
 adduser ocadmin sudo
 
 # Install Rsync
-aptitude install rsync -y
+aptitude install rsync-y
 
 # Install figlet for techandme.sh
-aptitude install figlet -y
+aptitude install figlet-y
 
 # Set locales & timezone to Swedish
 echo "Europe/Stockholm" > /etc/timezone && \
@@ -134,7 +134,7 @@ read -p "Press any key to continue..." -n1 -s
 echo -e "\e[0m"
 
 # Install MYSQL 5.7
-aptitude install debconf-utils -y
+aptitude install debconf-utils-y
 if [ -d /var/lib/mysql ];
 then
 rm -R /var/lib/mysql
@@ -145,10 +145,10 @@ echo mysql-community-server mysql-community-server/root-pass password $MYSQL_PAS
 echo mysql-community-server mysql-community-server/re-root-pass password $MYSQL_PASS | debconf-set-selections
 apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys A4A9406876FCBD3C456770C88C718D3B5072E1F5
 aptitude update
-aptitude install mysql-community-server -y
+aptitude install mysql-community-server-y
 
 # mysql_secure_installation
-aptitude -y install expect
+aptitude-y install expect
 export SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
@@ -170,10 +170,10 @@ expect eof
 ")
 echo "$SECURE_MYSQL"
 unset SECURE_MYSQL
-aptitude -y purge expect
+aptitude-y purge expect
 
 # Install Apache
-aptitude install apache2 -y
+aptitude install apache2-y
 a2enmod rewrite \
         headers \
         env \
@@ -194,7 +194,7 @@ wget https://www.dotdeb.org/dotdeb.gpg
 apt-key add dotdeb.gpg
 rm dotdeb.gpg
 aptitude update
-aptitude install -y \
+aptitude install-y \
         software-properties-common \
 	php7.0 \
         php7.0-common \
@@ -217,7 +217,7 @@ aptitude install -y \
 wget -nv $OCREPOKEY -O Release.key
 apt-key add - < Release.key && rm Release.key
 sh -c "echo 'deb $OCREPO/ /' >> /etc/apt/sources.list.d/owncloud.list"
-apt-get update -q2 && apt-get install owncloud-files -y
+apt update -q2 && apt install owncloud-files-y
 
 # Create data folder, occ complains otherwise
 mkdir -p $OCDATA
@@ -326,10 +326,10 @@ su -s /bin/sh -c 'php $OCPATH/occ config:system:set mail_smtppassword --value="t
 
 # Install Libreoffice Writer to be able to read MS documents.
 aptitude update
-apt-get install --no-install-recommends libreoffice-writer -y
+apt install --no-install-recommends libreoffice-writer-y
 
 # Install unzip
-aptitude install unzip -y
+aptitude install unzip-y
 
 # Download and install Documents
 if [ -d $OCPATH/apps/documents ]; then

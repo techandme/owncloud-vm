@@ -24,8 +24,8 @@ else
     fi
 
 # System Upgrade
-sudo apt-get update -q2
-sudo aptitude full-upgrade -y
+sudo apt update -q2
+sudo aptitude full-upgrade-y
 
 # Backup data
 clear 
@@ -49,7 +49,7 @@ else
 if [ $GIT_IS_AVAILABLE -eq 1 ]; then
         sleep 1
 else
-        apt-get install git -y -q
+        apt install git-y -q
     fi
 if [ -d $OCPATH ]; 
 then 
@@ -130,8 +130,8 @@ else
 fi
 
 # Cleanup un-used packages
-sudo apt-get autoremove -y
-sudo apt-get autoclean
+sudo apt autoremove-y
+sudo apt autoclean
 
 # Update GRUB, just in case
 sudo update-grub

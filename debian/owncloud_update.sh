@@ -15,7 +15,7 @@ export OCPATH=/var/www/owncloud
 
 # System Upgrade
 aptitude update
-aptitude full-upgrade -y
+aptitude full-upgrade-y
 su -s /bin/sh -c 'php $OCPATH/occ upgrade' www-data
 
 # Enable Apps

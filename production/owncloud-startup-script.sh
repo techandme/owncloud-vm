@@ -8,7 +8,7 @@ OCDATA=/var/ocdata
 SCRIPTS=/var/scripts
 PW_FILE=/var/mysql_password.txt # Keep in sync with owncloud_install_production.sh
 IFACE=$(lshw -c network | grep "logical name" | awk '{print $3; exit}')
-CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-get -y purge)
+CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-y purge)
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
 GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
@@ -54,6 +54,12 @@ else
     echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new"
     exit 1
 fi
+
+# Get the best mirrors for Ubuntu based on location
+echo "Locating the best mirrors..."
+apt-select
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup && \
+sudo mv sources.list /etc/apt/
 
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
@@ -385,8 +391,8 @@ bash $SCRIPTS/temporary-fix.sh
 rm $SCRIPTS/temporary-fix.sh
 
 # Cleanup 1
-apt-get autoremove -y
-apt-get autoclean
+apt autoremove-y
+apt autoclean
 echo "$CLEARBOOT"
 clear
 

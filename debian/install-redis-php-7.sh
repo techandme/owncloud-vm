@@ -18,12 +18,12 @@ else mkdir -p $SCRIPTS
 fi
 
 # Get packages to be able to install Redis
-aptitude update &&  aptitude install build-essential -q -y
-aptitude install tcl8.5 -q -y
-aptitude install php-pear php7.0-dev -q -y
+aptitude update &&  aptitude install build-essential -q-y
+aptitude install tcl8.5 -q-y
+aptitude install php-pear php7.0-dev -q-y
 
 # Install Git and clone repo
-aptitude install git -y -q
+aptitude install git-y -q
 git clone -b php7 https://github.com/phpredis/phpredis.git
 
 # Build Redis PHP module
@@ -118,7 +118,7 @@ sed -i "s|CLIEXEC -p|CLIEXEC -s|g" $REDIS_INIT
 redis-cli SHUTDOWN
 
 # Cleanup
-aptitude purge -y \
+aptitude purge-y \
 	git \
 	php7.0-dev \
 	make \

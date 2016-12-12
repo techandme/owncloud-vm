@@ -5,7 +5,7 @@
 
 export SCRIPTS=/var/scripts
 export PW_FILE=/var/M-R_passwords.txt # Keep in sync with owncloud_install.sh
-export CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo aptitude -y purge)
+export CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo aptitude-y purge)
 export IP="/sbin/ip"
 export IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 export IFCONFIG="/sbin/ifconfig"
@@ -98,13 +98,13 @@ clear
 bash $SCRIPTS/trusted.sh
 
 # Install packages for Webmin
-aptitude install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+aptitude install-y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
 
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
 wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
 aptitude update
-aptitude install -y webmin
+aptitude install-y webmin
 echo
 echo "Webmin is installed, access it from your browser: https://$ADDRESS:10000"
 sleep 2

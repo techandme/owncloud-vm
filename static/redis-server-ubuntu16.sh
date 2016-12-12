@@ -50,9 +50,9 @@ else mkdir -p $SCRIPTS
 fi
 
 # Get packages to be able to install Redis
-apt-get update -q2 && sudo apt-get install build-essential -q -y
-apt-get install tcl8.5 -q -y
-apt-get install php-pear php7.0-dev -q -y
+apt update -q2 && sudo apt install build-essential -q-y
+apt install tcl8.5 -q-y
+apt install php-pear php7.0-dev -q-y
 
 # Install PHPmodule
 pecl install -Z redis
@@ -76,7 +76,7 @@ echo 'extension=redis.so' >> /etc/php/7.0/apache2/php.ini
 service apache2 restart
 
 # Install Redis
-apt-get install redis-server -y
+apt install redis-server-y
 if [[ $? > 0 ]]
 then
     echo "Installation failed."
@@ -122,13 +122,13 @@ sed -i "s|port 6379|port 0|g" $REDIS_CONF
 redis-cli SHUTDOWN
 
 # Cleanup
-apt-get purge -y \
+apt purge-y \
 	git \
 	php7.0-dev* \
 	build-essential*
 
-apt-get update -q2
-apt-get autoremove -y
-apt-get autoclean
+apt update -q2
+apt autoremove-y
+apt autoclean
 
 exit 0

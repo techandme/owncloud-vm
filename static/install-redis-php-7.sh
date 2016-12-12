@@ -18,12 +18,12 @@ else mkdir -p $SCRIPTS
 fi
 
 # Get packages to be able to install Redis
-apt-get update -q2 && sudo apt-get install build-essential -q -y
-apt-get install tcl8.5 -q -y
-apt-get install php-pear php7.0-dev -q -y
+apt update -q2 && sudo apt install build-essential -q-y
+apt install tcl8.5 -q-y
+apt install php-pear php7.0-dev -q-y
 
 # Install Git and clone repo
-apt-get install git -y -q
+apt install git-y -q
 git clone -b php7 https://github.com/phpredis/phpredis.git
 
 # Build Redis PHP module
@@ -117,15 +117,15 @@ sed -i "s|CLIEXEC -p|CLIEXEC -s|g" $REDIS_INIT
 redis-cli SHUTDOWN
 
 # Cleanup
-apt-get purge -y \
+apt purge-y \
 # Cleanup
-apt-get purge -y \
+apt purge-y \
 	git \
 	php7.0-dev* \
 	build-essential*
 	
-apt-get update -q2
-apt-get autoremove -y
-apt-get autoclean
+apt update -q2
+apt autoremove-y
+apt autoclean
 
 exit 0

@@ -152,8 +152,8 @@ then
     echo -e "\e[0m"
     rm -R $OCPATH
     cd /
-    apt-get purge owncloud* -y
-    apt-get autoremove -y
+    apt purge owncloud*-y
+    apt autoremove-y
     rm /etc/apt/sources.list.d/owncloud.list
     rm $SCRIPTS/owncloud_update.sh
     rm $SCRIPTS/update.sh
@@ -163,8 +163,8 @@ then
     crontab -u www-data -l | { cat; echo "*/15  *  *  *  * php -f $NCPATH/cron.php > /dev/null 2>&1"; } | crontab -u www-data -
     # Install PHP 7.0
     echo "Re-installing PHP 7..."
-    apt-get update -q2
-    apt-get install -y \
+    apt update -q2
+    apt install-y \
         libapache2-mod-php7.0 \
         php7.0-common \
         php7.0-mysql \
