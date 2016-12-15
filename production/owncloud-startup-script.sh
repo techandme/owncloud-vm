@@ -436,9 +436,9 @@ RCLOCAL
 clear
 echo -e "\e[32m"
 echo    "+--------------------------------------------------------------------+"
-echo    "|      Congratulations! You have successfully installed Nextcloud!   |"
+echo    "|      Congratulations! You have successfully installed ownCloud!   |"
 echo    "|                                                                    |"
-echo -e "|         \e[0mLogin to Nextcloud in your browser:\e[36m" $ADDRESS2"\e[32m           |"
+echo -e "|         \e[0mLogin to ownCloud in your browser:\e[36m" $ADDRESS2"\e[32m           |"
 echo    "|                                                                    |"
 echo -e "|         \e[0mPublish your server online! \e[36mhttps://goo.gl/iUGE2U\e[32m          |"
 echo    "|                                                                    |"
