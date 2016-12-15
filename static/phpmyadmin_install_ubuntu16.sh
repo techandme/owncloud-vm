@@ -62,7 +62,7 @@ echo 'phpmyadmin phpmyadmin/mysql/admin-pass password $PW_FILE' | debconf-set-se
 echo 'phpmyadmin phpmyadmin/mysql/app-pass password $PW_FILE' | debconf-set-selections
 echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
 apt update -q2
-apt install-y -q \
+apt install -y -q \
 	php-gettext \
 	phpmyadmin
 
