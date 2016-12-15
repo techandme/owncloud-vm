@@ -152,8 +152,8 @@ then
     echo -e "\e[0m"
     rm -R $OCPATH
     cd /
-    apt purge owncloud*-y
-    apt autoremove-y
+    apt purge owncloud* -y
+    apt autoremove -y
     rm /etc/apt/sources.list.d/owncloud.list
     rm $SCRIPTS/owncloud_update.sh
     rm $SCRIPTS/update.sh
@@ -164,7 +164,7 @@ then
     # Install PHP 7.0
     echo "Re-installing PHP 7..."
     apt update -q2
-    apt install-y \
+    apt install -y \
         libapache2-mod-php7.0 \
         php7.0-common \
         php7.0-mysql \

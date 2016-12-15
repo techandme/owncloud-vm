@@ -6,9 +6,9 @@
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }
 
 # Get packages to be able to install Redis
-apt update -q2 && sudo apt install build-essential -q-y
-apt install tcl8.5 -q-y
-apt install php-pear php5-dev -q-y
+apt update -q2 && sudo apt install build-essential -q -y
+apt install tcl8.5 -q -y
+apt install php-pear php5-dev -q -y
 
 # Get latest Redis
 wget -q http://download.redis.io/releases/redis-stable.tar.gz && tar -xzf redis-stable.tar.gz
@@ -75,7 +75,7 @@ ADD_TO_CONFIG
 # Remove installation package
 rm -rf redis
 rm -rf redis-stable.tar.gz
-apt autoremove-y
+apt autoremove -y
 apt autoclean
 
 exit 0

@@ -28,13 +28,13 @@ sleep 2
 
 # Check if unzip is installed
 if ! [ -x "$(command -v unzip)" ]; then
-  apt install unzip-y -q
+  apt install unzip -y -q
 else echo 'unzip are installed.' >&2
 fi
 
 # Install mbstring for PHP
 apt update -q2
-apt install php7.0-mbstring-y -q
+apt install php7.0-mbstring -y -q
 
 # Download phpMyadmin
 if [ -d $PHPMYADMINDIR ];

@@ -35,7 +35,7 @@ GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta"
 STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
 DOWNLOADREPO="https://download.owncloud.org/community/testing/owncloud-$OCVERSION"
 # Commands
-CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt-y purge)
+CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt -y purge)
 # Linux user, and ownCloud user
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
@@ -137,7 +137,7 @@ fi
 
 # Change DNS
 if ! [ -x "$(command -v resolvconf)" ]; then
-	apt install resolvconf-y -q
+	apt install resolvconf -y -q
 	dpkg-reconfigure resolvconf
 else
 	echo 'reolvconf is installed.' >&2
@@ -150,12 +150,12 @@ service networking restart
 
 # Check network
 if ! [ -x "$(command -v nslookup)" ]; then
-	apt install dnsutils-y -q
+	apt install dnsutils -y -q
 else
 	echo 'dnsutils is installed.' >&2
 fi
 if ! [ -x "$(command -v ifup)" ]; then
-	apt install ifupdown-y -q
+	apt install ifupdown -y -q
 else
 	echo 'ifupdown is installed.' >&2
 fi
@@ -173,11 +173,11 @@ fi
 apt update -q2
 
 # Set locales
-apt install language-pack-en-base-y
+apt install language-pack-en-base -y
 sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 # Install aptitude
-apt install aptitude-y
+apt install aptitude -y
 
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
@@ -186,11 +186,11 @@ chown root:root $PW_FILE
 
 # Install MYSQL 5.7
 sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 5072E1F5
-apt install debconf-utils -y
+apt install debconf-utils  -y
 export DEBIAN_FRONTEND=noninteractive
-sudo apt purge mysql.* -y
-sudo apt autoremove -y
-sudo apt autoclean -y
+sudo apt purge mysql.*  -y
+sudo apt autoremove  -y
+sudo apt autoclean  -y
 sudo rm -rf /var/lib/mysql
 sudo rm -rf /var/log/mysql
 
@@ -206,10 +206,10 @@ echo "mysql-community-server mysql-community-server/root-pass password $MYSQL_PA
 echo "mysql-community-server mysql-community-server/re-root-pass password $MYSQL_PASS" | debconf-set-selections
 
 sudo apt update -q
-sudo apt install -q-y mysql-community-server
+sudo apt install -q -y mysql-community-server
 
 # mysql_secure_installation
-apt-y install expect
+apt -y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
@@ -230,10 +230,10 @@ send \"y\r\"
 expect eof
 ")
 echo "$SECURE_MYSQL"
-apt-y purge expect
+apt -y purge expect
 
 # Install Apache
-apt install apache2-y
+apt install apache2 -y
 a2enmod rewrite \
         headers \
         env \
@@ -248,9 +248,9 @@ sudo hostnamectl set-hostname owncloud
 service apache2 restart
 
 # Install PHP 7.0
-apt install python-software-properties-y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
+apt install python-software-properties -y && echo -ne '\n' | sudo add-apt-repository ppa:ondrej/php
 apt update -q2
-apt install-y \
+apt install -y \
 	libapache2-mod-php7.0 \
         php7.0-common \
         php7.0-mysql \
@@ -276,7 +276,7 @@ echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
 
 # Download and install ownCloud
 wget $DOWNLOADREPO.zip -P $HTML
-apt install unzip-y
+apt install unzip -y
 unzip -q $HTML/owncloud-$OCVERSION.zip -d $HTML
 rm $HTML/owncloud-$OCVERSION.zip
 
@@ -311,7 +311,7 @@ sed -i "s|post_max_size = 8M|post_max_size = 1100M|g" /etc/php/7.0/apache2/php.i
 sed -i "s|upload_max_filesize = 2M|upload_max_filesize = 1000M|g" /etc/php/7.0/apache2/php.ini
 
 # Install Figlet
-apt install figlet-y
+apt install figlet -y
 
 # Generate $HTTP_CONF
 if [ -f $HTTP_CONF ];
@@ -428,16 +428,16 @@ sudo -u www-data php $OCPATH/occ config:system:set mail_smtpname --value="www.te
 sudo -u www-data php $OCPATH/occ config:system:set mail_smtppassword --value="vinr vhpa jvbh hovy"
 
 # Install Libreoffice Writer to be able to read MS documents.
-sudo apt install --no-install-recommends libreoffice-writer-y
+sudo apt install --no-install-recommends libreoffice-writer -y
 
 # Install packages for Webmin
-apt install-y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+apt install -y zip perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
 
 # Install Webmin
 sed -i '$a deb http://download.webmin.com/download/repository sarge contrib' /etc/apt/sources.list
 wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
 apt update -q2
-apt install webmin-y
+apt install webmin -y
 
 # ownCloud apps
 CONVER=$(wget -q https://raw.githubusercontent.com/owncloud/contacts/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
@@ -548,7 +548,7 @@ bash $SCRIPTS/install-redis-php-7.sh
 rm $SCRIPTS/install-redis-php-7.sh
 
 # Upgrade
-aptitude full-upgrade-y
+aptitude full-upgrade -y
 
 cat << TMPMSG > "$SCRIPTS/tempmsg.sh"
 clear
@@ -607,7 +607,7 @@ RCLOCAL
 
 # Cleanup
 echo "$CLEARBOOT"
-apt autoremove-y
+apt autoremove -y
 apt autoclean
 if [ -f /home/$UNIXUSER/*.sh ];
 then

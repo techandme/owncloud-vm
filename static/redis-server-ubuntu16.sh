@@ -76,7 +76,7 @@ echo 'extension=redis.so' >> /etc/php/7.0/apache2/php.ini
 service apache2 restart
 
 # Install Redis
-apt install redis-server-y
+apt install redis-server -y
 if [[ $? > 0 ]]
 then
     echo "Installation failed."
@@ -122,13 +122,13 @@ sed -i "s|port 6379|port 0|g" $REDIS_CONF
 redis-cli SHUTDOWN
 
 # Cleanup
-apt purge-y \
+apt purge -y \
 	git \
 	php7.0-dev* \
 	build-essential*
 
 apt update -q2
-apt autoremove-y
+apt autoremove -y
 apt autoclean
 
 exit 0

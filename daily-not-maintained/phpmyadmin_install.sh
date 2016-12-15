@@ -22,7 +22,7 @@ SAVEPATH=""
 fi
 
 # Install mbstring for PHP
-apt install php7.0-mbstring-y
+apt install php7.0-mbstring -y
 
 # Download phpMyadmin
 if [ -d $PHPMYADMINDIR ];
