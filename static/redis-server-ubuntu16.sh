@@ -50,9 +50,9 @@ else mkdir -p $SCRIPTS
 fi
 
 # Get packages to be able to install Redis
-apt update -q2 && sudo apt install build-essential -q-y
-apt install tcl8.5 -q-y
-apt install php-pear php7.0-dev -q-y
+apt update -q2 && sudo apt install build-essential -q -y
+apt install tcl8.5 -q -y
+apt install php-pear php7.0-dev -q -y
 
 # Install PHPmodule
 pecl install -Z redis
