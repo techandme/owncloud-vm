@@ -77,7 +77,7 @@ if ! version 14.04 "$DISTRO" 16.04.4; then
     exit 1
 fi
 
-if wget -q --spider "$DOWNLOADREPO.zip" > /dev/null; then
+if curl -s "$DOWNLOADREPO.zip" > /dev/null; then
         echo "ownCloud download file OK"
 else
         echo "ownCloud download file is not availible, exiting..."

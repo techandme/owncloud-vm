@@ -37,7 +37,7 @@ echo
 echo "System is now upgraded, now the script will upgrade ownCloud."
 echo "Which version do you want to upgrade to? Type it like this: '9.1.2RC1'"
 read OCVERSION
-wget -q --spider $DOWNLOADREPO/owncloud-$OCVERSION.tar.bz2
+curl -s $DOWNLOADREPO/owncloud-$OCVERSION.tar.bz2
 if [ $? -eq 0 ]; then
     echo -e "\e[32m$OCVERSION exists!\e[0m"
     else

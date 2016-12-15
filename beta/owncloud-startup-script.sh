@@ -34,7 +34,7 @@ service networking restart
 echo "Testing if network is OK..."
 sleep 2
 sudo ifdown $IFACE && sudo ifup $IFACE
-wget -q --spider http://github.com
+curl -s http://github.com > /dev/null
 	if [ $? -eq 0 ]; then
     		echo -e "\e[32mOnline!\e[0m"
 	else

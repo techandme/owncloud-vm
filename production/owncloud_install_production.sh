@@ -87,14 +87,14 @@ if ! version 16.04 "$DISTRO" 16.04.4; then
 fi
 
 # Check if repo is availible
-if wget -q --spider "$OCREPO" > /dev/null; then
+if curl -s "$OCREPO" > /dev/null; then
         echo "ownCloud repo OK"
 else
         echo "ownCloud repo is not availible, exiting..."
         exit 1
 fi
 
-if wget -q --spider "$OCREPOKEY" > /dev/null; then
+if curl -s "$OCREPOKEY" > /dev/null; then
         echo "ownCloud repo key OK"
 else
         echo "ownCloud repo key is not availible, exiting..."
