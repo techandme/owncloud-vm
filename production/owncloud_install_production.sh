@@ -194,7 +194,10 @@ then
 else
     echo "Network OK."
 fi
-clear
+
+# Set locales
+apt install language-pack-en-base-y
+sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 echo "Locating the best mirrors..."
 apt update -q2
@@ -209,13 +212,6 @@ clear
 
 # Update system
 apt update -q2
-
-# Set locales
-apt install language-pack-en-base-y
-sudo locale-gen "sv_SE.UTF-8" && sudo dpkg-reconfigure --frontend=noninteractive locales
-
-# Install aptitude
-apt install aptitude-y
 
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
