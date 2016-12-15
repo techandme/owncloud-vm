@@ -584,7 +584,7 @@ bash $SCRIPTS/redis-server-ubuntu16.sh
 rm $SCRIPTS/redis-server-ubuntu16.sh
 
 # Upgrade
-aptitude full-upgrade -y
+apt full-upgrade -y
 
 # Remove LXD (always shows up as failed during boot)
 apt purge lxd -y
