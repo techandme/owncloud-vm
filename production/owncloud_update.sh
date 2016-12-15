@@ -22,12 +22,12 @@ if [ $(dpkg-query -W -f='${Status}' aptitude 2>/dev/null | grep -c "ok installed
 then
         echo "Aptitude installed"
 else
-	apt install aptitude-y
+	apt install aptitude -y
 fi
 
 # System Upgrade
 sudo apt update -q2
-sudo aptitude full-upgrade-y
+sudo aptitude full-upgrade -y
 sudo -u www-data php $OCPATH/occ upgrade
 
 # Disable maintenance mode
@@ -76,7 +76,7 @@ sudo bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 sudo -u www-data php $OCPATH/occ maintenance:repair
 
 # Cleanup un-used packages
-sudo apt autoremove-y
+sudo apt autoremove -y
 sudo apt autoclean
 
 # Update GRUB, just in case
