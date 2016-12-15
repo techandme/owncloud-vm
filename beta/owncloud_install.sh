@@ -186,11 +186,11 @@ chown root:root $PW_FILE
 
 # Install MYSQL 5.7
 sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 5072E1F5
-apt install debconf-utils  -y
+apt install debconf-utils -y
 export DEBIAN_FRONTEND=noninteractive
-sudo apt purge mysql.*  -y
-sudo apt autoremove  -y
-sudo apt autoclean  -y
+sudo apt purge mysql.* -y
+sudo apt autoremove -y
+sudo apt autoclean -y
 sudo rm -rf /var/lib/mysql
 sudo rm -rf /var/log/mysql
 
