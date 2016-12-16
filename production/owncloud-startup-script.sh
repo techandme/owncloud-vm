@@ -434,6 +434,7 @@ RCLOCAL
 
 # Success!
 clear
+ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print $2 }')
 echo -e "\e[32m"
 echo    "+--------------------------------------------------------------------+"
 echo    "|      Congratulations! You have successfully installed ownCloud!   |"
@@ -447,7 +448,7 @@ echo    "|                                                                    |"
 echo -e "|    \e[91m#################### Tech and Me - 2016 ####################\e[32m    |"
 echo    "+--------------------------------------------------------------------+"
 echo
-echo
+echo -e "\e[0m"
 # VPS?
 function ask_yes_or_no() {
     read -p "$1 ([y]es or [N]o): "
@@ -503,7 +504,11 @@ bash $SCRIPTS/trusted.sh
 rm $SCRIPTS/trusted.sh
 rm $SCRIPTS/update-config.php
 
+# Prefer IPv6
+sed -i "s|precedence ::ffff:0:0/96  100|#precedence ::ffff:0:0/96  100|g" /etc/gai.conf
+
 # Reboot
+echo "System will now reboot..."
 reboot
 
 exit 0
