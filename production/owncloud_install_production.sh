@@ -607,6 +607,7 @@ then
 fi
 
 # Reboot
+echo "Installation done, system will now reboot..."
 reboot
 
 exit 0
