@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head><title>ownCloud - Tech and Me</title>
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
 <style>
 body {
 	background-color: #1d2d44;
