@@ -11,6 +11,7 @@ read -p "Press any key to continue... " -n1 -s
 echo -e "\e[0m"
 a2ensite $1
 a2dissite owncloud_ssl_domain_self_signed.conf
+a2dissite owncloud_http_domain_self_signed.conf
 service apache2 restart
 if [[ "$?" == "0" ]]
 then
@@ -49,6 +50,25 @@ CRONTAB
 # Make letsencryptrenew.sh executable
 chmod +x $SCRIPTS/letsencryptrenew.sh
 
+# Cleanup
+rm $SCRIPTS/test-new-config.sh
+rm $SCRIPTS/activate-ssl.sh
+
+else
+# If it fails, revert changes back to normal
+    a2dissite $1
+    a2ensite owncloud_ssl_domain_self_signed.conf
+    a2ensite owncloud_http_domain_self_signed.conf
+    service apache2 restart
+    echo -e "\e[96m"
+    echo "Couldn't load new config, reverted to old settings. Self-signed SSL is OK!"
+    echo -e "\e[0m"
+    echo -e "\e[32m"
+    read -p "Press any key to continue... " -n1 -s
+    echo -e "\e[0m"
+    exit 1
+fi
+
 # Update Config
 if [ -f $SCRIPTS/update-config.php ]
 then
@@ -70,23 +90,5 @@ fi
 bash $SCRIPTS/trusted.sh
 rm $SCRIPTS/trusted.sh
 rm $SCRIPTS/update-config.php
-
-# Cleanup
-rm $SCRIPTS/test-new-config.sh
-rm $SCRIPTS/activate-ssl.sh
-
-else
-# If it fails, revert changes back to normal
-    a2dissite $1
-    a2ensite owncloud_ssl_domain_self_signed.conf
-    service apache2 restart
-    echo -e "\e[96m"
-    echo "Couldn't load new config, reverted to old settings. Self-signed SSL is OK!"
-    echo -e "\e[0m"
-    echo -e "\e[32m"
-    read -p "Press any key to continue... " -n1 -s
-    echo -e "\e[0m"
-    exit 1
-fi
 
 exit 0
