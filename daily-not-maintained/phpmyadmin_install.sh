@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tech and Me, ©2016 - www.techandme.se
+# Tech and Me, ©2017 - www.techandme.se
 
 VERSION=4.5.5.1
 HTTP_PATH=https://files.phpmyadmin.net/phpMyAdmin/$VERSION

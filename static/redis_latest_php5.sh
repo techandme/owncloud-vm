@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tech and Me ©2016, www.techandme.se
+# Tech and Me ©2017, www.techandme.se
 
 # Must be root
 [[ `id -u` -eq 0 ]] || { echo "Must be root to run script, in Ubuntu type: sudo -i"; exit 1; }

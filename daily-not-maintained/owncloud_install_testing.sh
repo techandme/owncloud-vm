@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tech and Me, ©2016 - www.techandme.se
+# Tech and Me, ©2017 - www.techandme.se
 
 OCVERSION=owncloud-daily-master
 CONVER=v0.0.0.4

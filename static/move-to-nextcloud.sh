@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is written by Tech and Me 2016.
+# This script is written by Tech and Me 2017.
 # The purpose of this script is to migrate from ownCloud to Nextcloud.
 # We expect you to run our ownCloud VM. This script may not work with every installation.
 # But if you have your datafolder outside ownCloud root then you are safe.

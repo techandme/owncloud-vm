@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tech and Me, ©2016 - www.techandme.se
+# Tech and Me, ©2017 - www.techandme.se
 #
 # This install from ownCloud repos with PHP 7, MySQL 5.6 and Apache 2.4.
 
