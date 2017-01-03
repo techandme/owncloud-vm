@@ -216,6 +216,9 @@ clear
 # Update system
 apt update -q2
 
+# Install VM-tools
+apt install open-vm-tools -y
+
 # Write MySQL pass to file and keep it safe
 echo "$MYSQL_PASS" > $PW_FILE
 chmod 600 $PW_FILE
