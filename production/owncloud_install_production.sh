@@ -618,7 +618,7 @@ apt install linux-image-virtual-hwe-16.04-edge -y
 apt install linux-virtual-hwe-16.04-edge -y
 
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
-bash $SCRIPTS/setup_secure_permissions_nextcloud.sh
+bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
 # Reboot
 echo "Installation done, system will now reboot..."
