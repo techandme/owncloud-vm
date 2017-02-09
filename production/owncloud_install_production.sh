@@ -151,24 +151,6 @@ then
         exit 1 
 fi
 
-# Create $UNIXUSER if not existing
-if id "$UNIXUSER" >/dev/null 2>&1
-then
-        echo "$UNIXUSER already exists!"
-else
-	adduser --disabled-password --gecos "" $UNIXUSER
-        echo -e "$UNIXUSER:$UNIXPASS" | chpasswd
-        usermod -aG sudo $UNIXUSER
-fi
-
-if [ -d /home/$UNIXUSER ];
-then
-	echo "$UNIXUSER OK!"
-else
-	echo "Something went wrong when creating the user... Script will exit."
-	exit 1
-fi
-
 # Create $SCRIPTS dir
       	if [ -d $SCRIPTS ]; then
       		sleep 1
@@ -311,9 +293,16 @@ bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
 # Install ownCloud
 cd $OCPATH
-sudo -u www-data php occ maintenance:install --data-dir "$OCDATA" --database "mysql" --database-name "owncloud_db" --database-user "root" --database-pass "$MYSQL_PASS" --admin-user "$UNIXUSER" --admin-pass "$UNIXPASS"
+sudo -u www-data php occ maintenance:install \
+    --data-dir "$OCDATA" \
+    --database "mysql" \
+    --database-name "owncloud_db" \
+    --database-user "root" \
+    --database-pass "$MYSQL_PASS" \
+    --admin-user "$OCUSER" \
+    --admin-pass "$OCPASS"
 echo
-echo ownCloud version:
+echo "ownCloud version:"
 sudo -u www-data php $OCPATH/occ status
 echo
 sleep 3
