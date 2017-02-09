@@ -2,6 +2,11 @@
 
 # Tech and Me - ©2017, https://www.techandme.se/
 
+# Check for errors + debug code and abort if something isn't right
+# 1 = ON
+# 0 = OFF
+DEBUG=0
+
 WWW_ROOT=/var/www
 OCPATH=$WWW_ROOT/owncloud
 OCDATA=/var/ocdata
@@ -305,7 +310,7 @@ then
         echo "sudo nano /etc/network/interfaces"
         echo
         echo "If you experience any bugs, please report it here:"
-        echo "https://github.com/nextcloud/vm/issues/new"
+        echo "https://github.com/owncloud/vm/issues/new"
         echo -e "\e[32m"
         read -p "Press any key to continue..." -n1 -s
         echo -e "\e[0m"
@@ -514,9 +519,10 @@ exit 0
 
 RCLOCAL
 
+ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print $2 }')
+
 # Success!
 clear
-ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print $2 }')
 echo -e "\e[32m"
 echo    "+--------------------------------------------------------------------+"
 echo    "|      Congratulations! You have successfully installed ownCloud!   |"
@@ -525,33 +531,17 @@ echo -e "|         \e[0mLogin to ownCloud in your browser:\e[36m" $ADDRESS2"\e[3
 echo    "|                                                                    |"
 echo -e "|         \e[0mPublish your server online! \e[36mhttps://goo.gl/iUGE2U\e[32m          |"
 echo    "|                                                                    |"
-echo -e "|      \e[0mYour MySQL password is stored in: \e[36m$PW_FILE\e[32m     |"
+echo -e "|         \e[0mTo login to MySQL just type: \e[36m'mysql -u root'\e[32m               |"
+echo    "|                                                                    |"
+echo -e "|   \e[0mTo update this VM just type: \e[36m'sudo bash /var/scripts/update.sh'\e[32m  |"
 echo    "|                                                                    |"
 echo -e "|    \e[91m#################### Tech and Me - 2017 ####################\e[32m    |"
 echo    "+--------------------------------------------------------------------+"
 echo
-echo -e "\e[0m"
-# VPS?
-function ask_yes_or_no() {
-    read -p "$1 ([y]es or [N]o): "
-    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
-        y|yes) echo "yes" ;;
-        *)     echo "no" ;;
-    esac
-}
-if [[ "yes" == $(ask_yes_or_no "Do you run this on a *remote* VPS?") ]]
-then
-    echo "Ok, then your IP are probably wrong, we will use the backup file to recover it so that you can connect after reboot"
     echo -e "\e[32m"
     read -p "Press any key to continue... " -n1 -s
     echo -e "\e[0m"
-    mv /etc/network/interfaces.backup /etc/network/interfaces
-else
-    sleep 1
-fi
 clear
-echo
-echo
 
 cat << LETSENC
 +-----------------------------------------------+
