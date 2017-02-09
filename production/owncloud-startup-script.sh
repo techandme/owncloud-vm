@@ -310,7 +310,7 @@ then
         echo "sudo nano /etc/network/interfaces"
         echo
         echo "If you experience any bugs, please report it here:"
-        echo "https://github.com/owncloud/vm/issues/new"
+        echo "https://github.com/techandme/owncloud-vm/issues/new"
         echo -e "\e[32m"
         read -p "Press any key to continue..." -n1 -s
         echo -e "\e[0m"
@@ -367,27 +367,29 @@ bash $SCRIPTS/change_mysql_pass.sh && wait
 if [ $? -eq 0 ]
 then
 rm $SCRIPTS/change_mysql_pass.sh
-echo "[mysqld]" >> /root/.my.cnf
-echo "innodb_large_prefix=on" >> /root/.my.cnf
-echo "innodb_file_format=barracuda" >> /root/.my.cnf
-echo "innodb_file_per_table=1" >> /root/.my.cnf
+#echo "[mysqld]" >> /root/.my.cnf
+#echo "innodb_large_prefix=on" >> /root/.my.cnf
+#echo "innodb_file_format=barracuda" >> /root/.my.cnf
+#echo "innodb_file_per_table=1" >> /root/.my.cnf
 fi
 
+### Not supported yet:
+
 # Enable UTF8mb4 (4-byte support)
-OCDB=owncloud_db
-PW_FILE=/var/mysql_password.txt
-echo
-echo "Enabling UTF8mb4 support on $OCDB...."
-sudo /etc/init.d/mysql restart
-RESULT="mysqlshow --user=root --password=$(cat $PW_FILE) $OCDB| grep -v Wildcard | grep -o $OCDB"
-if [ "$RESULT" == "$OCDB" ]; then
-    mysql -u root -e "ALTER DATABASE $OCDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-fi
-if [ $? -eq 0 ]
-then
-sudo -u www-data $OCPATH/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
-sudo -u www-data $OCPATH/occ maintenance:repair
-fi
+#OCDB=owncloud_db
+#PW_FILE=/var/mysql_password.txt
+#echo
+#echo "Enabling UTF8mb4 support on $OCDB...."
+#sudo /etc/init.d/mysql restart
+#RESULT="mysqlshow --user=root --password=$(cat $PW_FILE) $OCDB| grep -v Wildcard | grep -o $OCDB"
+#if [ "$RESULT" == "$OCDB" ]; then
+#    mysql -u root -e "ALTER DATABASE $OCDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+#fi
+#if [ $? -eq 0 ]
+#then
+#sudo -u www-data $OCPATH/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
+#sudo -u www-data $OCPATH/occ maintenance:repair
+#fi
 
 # Install phpMyadmin
 bash $SCRIPTS/phpmyadmin_install_ubuntu16.sh
