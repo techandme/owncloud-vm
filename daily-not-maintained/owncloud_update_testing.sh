@@ -20,7 +20,7 @@ then
         echo "Script exists"
 else
         mkdir -p $SCRIPTS
-        wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta/setup_secure_permissions_owncloud.sh -P $SCRIPTS
+        wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/beta/setup_secure_permissions_owncloud.sh -P $SCRIPTS
     fi
 
 # System Upgrade

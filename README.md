@@ -1,4 +1,4 @@
-# ownCloud-VM
+# owncloud-vm
 Scripts to setup and configure the ownCloud VM.
 
 Feel free to contribute!
@@ -44,7 +44,7 @@ If you want to change the default user to your own, you have to change $UNIXUSER
     then
         echo "rc.local exists"
     else
-        wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta/rc.local -P /var/
+        wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/beta/rc.local -P /var/
         cat /var/rc.local > /etc/rc.local
         rm /var/rc.local
         reboot

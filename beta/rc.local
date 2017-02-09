@@ -13,9 +13,9 @@
 
 SCRIPTS="/var/scripts"
 HTML="/var/www/html"
-GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta"
-STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
-LETS_ENC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/master/beta"
+STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
+LETS_ENC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt"
 UNIXUSER=ocadmin
 
       	# Create dir

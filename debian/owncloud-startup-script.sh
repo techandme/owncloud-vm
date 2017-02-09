@@ -175,7 +175,7 @@ echo -e "\e[0m"
 # Get the latest active-ssl script
         cd $SCRIPTS
         rm $SCRIPTS/activate-ssl.sh
-        wget -q https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt/activate-ssl.sh
+        wget -q https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt/activate-ssl.sh
         chmod 755 $SCRIPTS/activate-ssl.sh
 clear
 

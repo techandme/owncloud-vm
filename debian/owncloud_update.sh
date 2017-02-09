@@ -6,7 +6,7 @@
 #
 
 export THEME_NAME=""
-export STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+export STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
 export SCRIPTS=/var/scripts
 export OCPATH=/var/www/owncloud
 

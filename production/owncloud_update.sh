@@ -10,7 +10,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 # Put your theme name here:
 THEME_NAME=""
 
-STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
 SCRIPTS=/var/scripts
 OCPATH=/var/www/owncloud
 

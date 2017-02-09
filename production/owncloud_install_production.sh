@@ -28,8 +28,8 @@ HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 IFACE=$(lshw -c network | grep "logical name" | awk '{print $3; exit}')
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 # Repositories
-GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production"
-STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/master/production"
+STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
 OCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
 OCREPOKEY="$OCREPO/Release.key"
 # Commands

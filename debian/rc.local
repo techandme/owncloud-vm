@@ -13,9 +13,9 @@
 
 SCRIPTS="/var/scripts"
 HTML="/var/www"
-GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/debian"
-LETS_ENC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt"
-STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/master/debian"
+LETS_ENC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt"
+STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
 
       	# Create dir
 if 		[ -d $SCRIPTS ];

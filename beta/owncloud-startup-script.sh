@@ -10,9 +10,9 @@ PW_FILE=/var/mysql_password.txt # Keep in sync with owncloud_install_production.
 IFACE=$(lshw -c network | grep "logical name" | awk '{print $3; exit}')
 CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt -y purge)
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
-GITHUB_REPO="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/beta"
-STATIC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static"
-LETS_ENC="https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/lets-encrypt"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/master/beta"
+STATIC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/static"
+LETS_ENC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt"
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
 
@@ -40,7 +40,7 @@ curl -s http://github.com > /dev/null
 	else
 		echo
 		echo "Network NOT OK. You must have a working Network connection to run this script."
-		echo "Please report this issue here: https://github.com/enoch85/ownCloud-VM/issues/new".
+		echo "Please report this issue here: https://github.com/techandme/owncloud-vm/issues/new".
 	       	exit 1
 	fi
 

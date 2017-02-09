@@ -15,10 +15,10 @@ mkdir -p $SCRIPTS
 if [ -f $FILE ];
 then
         rm $SCRIPTS/$FILE
-        wget -q https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production/$FILE -P $SCRIPTS
+        wget -q https://raw.githubusercontent.com/techandme/owncloud-vm/master/production/$FILE -P $SCRIPTS
         bash $SCRIPTS/$FILE
 else
-        wget -q https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/production/$FILE -P $SCRIPTS
+        wget -q https://raw.githubusercontent.com/techandme/owncloud-vm/master/production/$FILE -P $SCRIPTS
         bash $SCRIPTS/$FILE
 fi
 

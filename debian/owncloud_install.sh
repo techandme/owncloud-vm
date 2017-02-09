@@ -223,7 +223,7 @@ apt update -q2 && apt install owncloud-files-y
 mkdir -p $OCDATA
 
 # Secure permissions
-wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static/setup_secure_permissions_owncloud.sh -P $SCRIPTS
+wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/static/setup_secure_permissions_owncloud.sh -P $SCRIPTS
 chmod +x $SCRIPTS/setup_secure_permissions_owncloud.sh
 bash $SCRIPTS/setup_secure_permissions_owncloud.sh
 
@@ -237,7 +237,7 @@ echo
 sleep 3
 
 # Set trusted domain
-wget https://raw.githubusercontent.com/enoch85/ownCloud-VM/master/static//update-config.php -P $SCRIPTS
+wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/static//update-config.php -P $SCRIPTS
 chmod a+x $SCRIPTS/update-config.php
 php $SCRIPTS/update-config.php $OCPATH/config/config.php 'trusted_domains[]' localhost ${ADDRESS[@]} $(hostname) $(hostname --fqdn) 2>&1 >/dev/null
 php $SCRIPTS/update-config.php $OCPATH/config/config.php overwrite.cli.url https://$ADDRESS/owncloud 2>&1 >/dev/null
