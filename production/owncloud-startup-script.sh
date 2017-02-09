@@ -16,17 +16,26 @@ LETS_ENC="https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-en
 UNIXUSER=ocadmin
 UNIXPASS=owncloud
 
-	# Check if root
-	if [ "$(whoami)" != "root" ]; then
-        echo
-        echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud-startup-script.sh"
-        echo
-        exit 1
+# DEBUG mode
+if [ $DEBUG -eq 1 ]
+then
+    set -e
+    set -x
+else
+    sleep 1
+fi
+
+# Check if root
+if [ "$(whoami)" != "root" ]
+then
+    echo
+    echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud-startup-script.sh"
+    echo
+    exit 1
 fi
 
 # Check network
 echo "Testing if network is OK..."
-sleep 2
 service networking restart
     curl -s http://github.com > /dev/null
 if [ $? -eq 0 ]
@@ -42,7 +51,6 @@ fi
 
 # Check network
 echo "Testing if network is OK..."
-sleep 2
 service networking restart
     curl -s http://github.com > /dev/null
 if [ $? -eq 0 ]
@@ -59,7 +67,10 @@ fi
 echo "Locating the best mirrors..."
 apt-select
 sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup && \
+if [ -f sources.list ]
+then
 sudo mv sources.list /etc/apt/
+fi
 
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
 
@@ -221,68 +232,114 @@ read -p "Press any key to start the script..." -n1 -s
 clear
 echo -e "\e[0m"
 
+# Set hostname and ServerName
+echo "Setting hostname..."
+FQN=$(host -TtA $(hostname -s)|grep "has address"|awk '{print $1}') ; \
+if [[ "$FQN" == "" ]]
+then
+    FQN=$(hostname -s)
+fi
+sudo sh -c "echo 'ServerName $FQN' >> /etc/apache2/apache2.conf"
+sudo hostnamectl set-hostname $FQN
+service apache2 restart
+cat << ETCHOSTS > "/etc/hosts"
+127.0.1.1 $FQN.localdomain $FQN
+127.0.0.1 localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ETCHOSTS
+
+# VPS?
+function ask_yes_or_no() {
+    read -p "$1 ([y]es or [N]o): "
+    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
+        y|yes) echo "yes" ;;
+        *)     echo "no" ;;
+    esac
+}
+
+if [[ "no" == $(ask_yes_or_no "Do you run this script on a *remote* VPS like DigitalOcean, HostGator or similar?") ]]
+then
+    # Change IP
+    echo -e "\e[0m"
+    echo "OK, we assume you run this locally and we will now configure your IP to be static."
+    echo -e "\e[1m"
+    echo "Your internal IP is: $ADDRESS"
+    echo -e "\e[0m"
+    echo -e "Write this down, you will need it to set static IP"
+    echo -e "in your router later. It's included in this guide:"
+    echo -e "https://www.techandme.se/open-port-80-443/ (step 1 - 5)"
+    echo -e "\e[32m"
+    read -p "Press any key to set static IP..." -n1 -s
+    echo -e "\e[0m"
+    ifdown $IFACE
+    sleep 1
+    ifup $IFACE
+    sleep 1
+    bash $SCRIPTS/ip.sh
+    if [ "$IFACE" = "" ]
+    then
+        echo "IFACE is an emtpy value. Trying to set IFACE with another method..."
+        wget -q $STATIC/ip2.sh -P $SCRIPTS
+        bash $SCRIPTS/ip2.sh
+        rm $SCRIPTS/ip2.sh
+    fi
+    ifdown $IFACE
+    sleep 1
+    ifup $IFACE
+    sleep 1
+    echo
+    echo "Testing if network is OK..."
+    sleep 1
+    echo
+    CONTEST=$(bash $SCRIPTS/test_connection.sh)
+    if [ "$CONTEST" == "Connected!" ]
+    then
+        # Connected!
+        echo -e "\e[32mConnected!\e[0m"
+        echo
+        echo -e "We will use the DHCP IP: \e[32m$ADDRESS\e[0m. If you want to change it later then just edit the interfaces file:"
+        echo "sudo nano /etc/network/interfaces"
+        echo
+        echo "If you experience any bugs, please report it here:"
+        echo "https://github.com/nextcloud/vm/issues/new"
+        echo -e "\e[32m"
+        read -p "Press any key to continue..." -n1 -s
+        echo -e "\e[0m"
+    else
+        # Not connected!
+        echo -e "\e[31mNot Connected\e[0m\nYou should change your settings manually in the next step."
+        echo -e "\e[32m"
+        read -p "Press any key to open /etc/network/interfaces..." -n1 -s
+        echo -e "\e[0m"
+        nano /etc/network/interfaces
+        service networking restart
+        clear
+        echo "Testing if network is OK..."
+        ifdown $IFACE
+        sleep 1
+        ifup $IFACE
+        sleep 1
+        bash $SCRIPTS/test_connection.sh
+        sleep 1
+    fi 
+else
+    echo "OK, then we will not set a static IP as your VPS provider already have setup the network for you..."
+    sleep 5
+fi
+clear
+
 # Set keyboard layout
-echo "Current keyboard layout is Swedish"
+echo "Current keyboard layout is $(localectl status | grep "Layout" | awk '{print $3}')"
 echo "You must change keyboard layout to your language"
 echo -e "\e[32m"
 read -p "Press any key to change keyboard layout... " -n1 -s
 echo -e "\e[0m"
 dpkg-reconfigure keyboard-configuration
 echo
-clear
-
-# Change IP
-echo -e "\e[0m"
-echo "The script will now configure your IP to be static."
-echo -e "\e[36m"
-echo -e "\e[1m"
-echo "Your internal IP is: $ADDRESS"
-echo -e "\e[0m"
-echo -e "Write this down, you will need it to set static IP"
-echo -e "in your router later. It's included in this guide:"
-echo -e "https://www.techandme.se/open-port-80-443/ (step 1 - 5)"
-echo -e
-echo -e "Please note that we will backup the interfaces file to:"
-echo -e "/etc/network/interfaces.backup"
-echo -e "If you run this script on a remote VPS the IP is probably wrong. "
-echo -e "But no worries - we will restore the interfaces.backup in the end of this script."
-echo -e "\e[32m"
-read -p "Press any key to set static IP..." -n1 -s
-cp /etc/network/interfaces /etc/network/interfaces.backup
-clear
-echo -e "\e[0m"
-ifdown $IFACE
-sleep 2
-ifup $IFACE
-sleep 2
-bash $SCRIPTS/ip.sh
-ifdown $IFACE
-sleep 2
-ifup $IFACE
-sleep 2
-echo
-echo "Testing if network is OK..."
-sleep 1
-echo
-bash $SCRIPTS/test_connection.sh
-sleep 2
-echo
-echo -e "\e[0mIf the output is \e[32mConnected! \o/\e[0m everything is working."
-echo -e "\e[0mIf the output is \e[31mNot Connected!\e[0m you should change\nyour settings manually in the next step."
-echo -e "\e[32m"
-read -p "Press any key to open /etc/network/interfaces..." -n1 -s
-echo -e "\e[0m"
-nano /etc/network/interfaces
-service networking restart
-clear
-echo "Testing if network is OK..."
-ifdown $IFACE
-sleep 2
-ifup $IFACE
-sleep 2
-echo
-bash $SCRIPTS/test_connection.sh
-sleep 2
 clear
 
 # Pretty URLs
@@ -301,8 +358,31 @@ dpkg-reconfigure openssh-server
 
 # Generate new MySQL password
 echo
-bash $SCRIPTS/change_mysql_pass.sh
+bash $SCRIPTS/change_mysql_pass.sh && wait
+if [ $? -eq 0 ]
+then
 rm $SCRIPTS/change_mysql_pass.sh
+echo "[mysqld]" >> /root/.my.cnf
+echo "innodb_large_prefix=on" >> /root/.my.cnf
+echo "innodb_file_format=barracuda" >> /root/.my.cnf
+echo "innodb_file_per_table=1" >> /root/.my.cnf
+fi
+
+# Enable UTF8mb4 (4-byte support)
+OCDB=owncloud_db
+PW_FILE=/var/mysql_password.txt
+echo
+echo "Enabling UTF8mb4 support on $OCDB...."
+sudo /etc/init.d/mysql restart
+RESULT="mysqlshow --user=root --password=$(cat $PW_FILE) $OCDB| grep -v Wildcard | grep -o $OCDB"
+if [ "$RESULT" == "$OCDB" ]; then
+    mysql -u root -e "ALTER DATABASE $OCDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+fi
+if [ $? -eq 0 ]
+then
+sudo -u www-data $OCPATH/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
+sudo -u www-data $OCPATH/occ maintenance:repair
+fi
 
 # Install phpMyadmin
 bash $SCRIPTS/phpmyadmin_install_ubuntu16.sh
@@ -331,7 +411,7 @@ fi
 clear
 
 # Change Timezone
-echo "Current timezone is Europe/Stockholm"
+echo "Current timezone is $(cat /etc/timezone)"
 echo "You must change timezone to your timezone"
 echo -e "\e[32m"
 read -p "Press any key to change timezone... " -n1 -s
@@ -385,6 +465,10 @@ sleep 2
 echo
 echo
 bash $SCRIPTS/update.sh
+
+# Fixes https://github.com/nextcloud/vm/issues/58
+a2dismod status
+service apache restart
 
 # Add temporary fix if needed
 bash $SCRIPTS/temporary-fix.sh
@@ -506,7 +590,7 @@ rm $SCRIPTS/update-config.php
 sed -i "s|precedence ::ffff:0:0/96  100|#precedence ::ffff:0:0/96  100|g" /etc/gai.conf
 
 # Reboot
-echo "System will now reboot..."
+echo "Installation is now done. System will now reboot..."
 reboot
 
 exit 0

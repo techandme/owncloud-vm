@@ -12,22 +12,24 @@ UPLOADPATH=""
 SAVEPATH=""
 
 # Check if root
-        if [ "$(whoami)" != "root" ]; then
-        echo
-        echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/phpmyadmin_install.sh"
-        echo
-        exit 1
+if [ "$(whoami)" != "root" ]
+then
+    echo
+    echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/phpmyadmin_install.sh"
+    echo
+    exit 1
 fi
 
 # Check Ubuntu version
+echo
 echo "Checking server OS and version..."
 if [ $OS -eq 1 ]
 then
-        sleep 1
+    sleep 1
 else
-        echo "Ubuntu Server is required to run this script."
-        echo "Please install that distro and try again."
-        exit 1
+    echo "Ubuntu Server is required to run this script."
+    echo "Please install that distro and try again."
+    exit 1
 fi
 
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
@@ -52,6 +54,7 @@ fi
 
 echo
 echo "Installing and securing phpMyadmin..."
+echo "This may take a while, please don't abort."
 echo
 sleep 2
 
@@ -63,16 +66,19 @@ echo 'phpmyadmin phpmyadmin/mysql/app-pass password $PW_FILE' | debconf-set-sele
 echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
 apt update -q2
 apt install -y -q \
-	php-gettext \
-	phpmyadmin
+    php-gettext \
+    phpmyadmin
+
+# Remove Password file
+rm /var/mysql_password.txt
 
 # Secure phpMyadmin
-if [ -f $PHPMYADMIN_CONF ];
-        then
-        rm $PHPMYADMIN_CONF
+if [ -f $PHPMYADMIN_CONF ]
+    then
+    rm $PHPMYADMIN_CONF
 fi
-        touch "$PHPMYADMIN_CONF"
-        cat << CONF_CREATE > "$PHPMYADMIN_CONF"
+    touch "$PHPMYADMIN_CONF"
+    cat << CONF_CREATE > "$PHPMYADMIN_CONF"
 # phpMyAdmin default Apache configuration
 
 Alias /phpmyadmin $PHPMYADMINDIR
@@ -102,7 +108,7 @@ Alias /phpmyadmin $PHPMYADMINDIR
 # Apache 2.4
       <RequireAny>
         Require ip $WANIP
-	Require ip $ADDRESS
+    Require ip $ADDRESS
         Require ip 127.0.0.1
         Require ip ::1
       </RequireAny>
@@ -116,7 +122,7 @@ Alias /phpmyadmin $PHPMYADMINDIR
         Allow from $ADDRESS
         Allow from ::1
         Allow from localhost
-	</IfModule>
+    </IfModule>
 </Directory>
 
 # Authorize for setup
@@ -168,10 +174,14 @@ cat << CONFIG_CREATE >> "$CONFIG"
 CONFIG_CREATE
 
 service apache2 restart
-
-echo
-echo "$PHPMYADMIN_CONF was successfully secured."
-echo
-sleep 3
-
-exit 0
+if [[ $? > 0 ]]
+then 
+    echo "Apache2 could not restart..."
+    echo "The script will exit."
+    exit 1
+else
+    echo
+    echo "$PHPMYADMIN_CONF was successfully secured."
+    echo
+    sleep 3
+fi
