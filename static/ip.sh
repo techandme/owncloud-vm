@@ -10,28 +10,24 @@ GATEWAY=$(route -n|grep "UG"|grep -v "UGH"|cut -f 10 -d " ")
 
 cat <<-IPCONFIG > "$INTERFACES"
 source /etc/network/interfaces.d/*
-
 # The loopback network interface
-        auto lo $IFACE
-        iface lo inet loopback
-
+auto lo $IFACE
+iface lo inet loopback
 # The primary network interface
-        iface $IFACE inet static
-                pre-up /sbin/ethtool -K $IFACE tso off
-                pre-up /sbin/ethtool -K $IFACE gso off
-
+iface $IFACE inet static
+pre-up /sbin/ethtool -K $IFACE tso off
+pre-up /sbin/ethtool -K $IFACE gso off
+# Fixes https://github.com/nextcloud/vm/issues/92:
+pre-up ip link set dev $IFACE mtu 1430
 # Best practice is to change the static address
 # to something outside your DHCP range.
-                address $ADDRESS
-                netmask $NETMASK
-                gateway $GATEWAY
-
+address $ADDRESS
+netmask $NETMASK
+gateway $GATEWAY
 # This is an autoconfigured IPv6 interface
-#	iface $IFACE inet6 auto
-
+# iface $IFACE inet6 auto
 # Exit and save:	[CTRL+X] + [Y] + [ENTER]
 # Exit without saving:	[CTRL+X]
-
 IPCONFIG
 
 exit 0
