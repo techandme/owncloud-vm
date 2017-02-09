@@ -34,9 +34,10 @@ OCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
 OCREPOKEY="$OCREPO/Release.key"
 # Commands
 CLEARBOOT=$(dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | xargs sudo apt -y purge)
-# Linux user, and ownCloud user
-UNIXUSER=ocadmin
-UNIXPASS=owncloud
+# Linux user, and Nextcloud user
+UNIXUSER=$SUDO_USER
+NCPASS=owncloud
+NCUSER=ocadmin
 
 # DEBUG mode
 if [ $DEBUG -eq 1 ]
@@ -48,12 +49,25 @@ else
 fi
 
 # Check if root
-        if [ "$(whoami)" != "root" ]; then
-        echo
-        echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud_install_production.sh"
-        echo
-        exit 1
+if [ "$(whoami)" != "root" ]
+then
+    echo
+    echo -e "\e[31mSorry, you are not root.\n\e[0mYou must type: \e[36msudo \e[0mbash $SCRIPTS/owncloud_install_production.sh"
+    echo
+    exit 1
 fi
+
+# Show current user
+echo
+echo "Current user with sudo permissions is: $UNIXUSER".
+echo "This script will set up everything with that user."
+echo "If the field after ':' is blank you are probably running as a pure root user."
+echo "It's possible to install with root, but there will be minor errors."
+echo
+echo "Please create a user with sudo permissions if you want an optimal installation."
+echo -e "\e[32m"
+read -p "Press any key to start the script. Press CTRL+C to abort." -n1 -s
+echo -e "\e[0m"
 
 # Prefer IPv4
 sed -i "s|#precedence ::ffff:0:0/96  100|precedence ::ffff:0:0/96  100|g" /etc/gai.conf
@@ -280,8 +294,8 @@ apt install -y \
         php-smbclient
 
 # Enable SMB client
-echo '# This enables php-smbclient' >> /etc/php/7.0/apache2/php.ini
-echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
+# echo '# This enables php-smbclient' >> /etc/php/7.0/apache2/php.ini
+# echo 'extension="smbclient.so"' >> /etc/php/7.0/apache2/php.ini
 
 # Download and install ownCloud
 wget -nv $OCREPOKEY -O Release.key
