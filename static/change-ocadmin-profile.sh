@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UNIXUSER=ocadmin
+UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
 
 rm /home/$UNIXUSER/.profile
@@ -15,22 +15,22 @@ cat <<-UNIXUSER-PROFILE > "$UNIXUSER_PROFILE"
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 # if running bash
-if [ -n "$BASH_VERSION" ]; then
+if [ -n "$BASH_VERSION" ]
+then
     # include .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
+    if [ -f "$HOME/.bashrc" ]
+    then
         . "$HOME/.bashrc"
     fi
 fi
 # set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/bin" ] ; then
+if [ -d "$HOME/bin" ]
+then
     PATH="$HOME/bin:$PATH"
 fi
 bash /var/scripts/instruction.sh
 bash /var/scripts/history.sh
 sudo -i
-
 UNIXUSER-PROFILE
-
 chown $UNIXUSER:$UNIXUSER $UNIXUSER_PROFILE
-
 exit 0
