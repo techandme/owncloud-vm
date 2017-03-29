@@ -3,10 +3,9 @@
 # Tech and Me ©2017 - www.techandme.se
 
 OCPATH=/var/www/owncloud
+WANIP4=$(dig +short myip.opendns.com @resolver1.opendns.com)
 ADDRESS=$(hostname -I | cut -d ' ' -f 1)
-dir_before_letsencrypt=/etc
-letsencryptpath=/etc/letsencrypt
-certfiles=$letsencryptpath/live
+certfiles=/etc/letsencrypt/live
 SCRIPTS=/var/scripts
 
 # Check if root
@@ -44,7 +43,9 @@ cat << STARTMSG
 |       https://www.citysites.eu/                               |
 |                                                               |
 +---------------------------------------------------------------+
+
 STARTMSG
+
 function ask_yes_or_no() {
     read -p "$1 ([y]es or [N]o): "
     case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
@@ -61,6 +62,7 @@ then
     echo -e "\e[0m"
 exit
 fi
+
 function ask_yes_or_no() {
     read -p "$1 ([y]es or [N]o): "
     case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
@@ -77,6 +79,7 @@ then
     echo -e "\e[0m"
     exit
 fi
+
 function ask_yes_or_no() {
     read -p "$1 ([y]es or [N]o): "
     case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
@@ -84,7 +87,7 @@ function ask_yes_or_no() {
         *)     echo "no" ;;
     esac
 }
-if [[ "yes" == $(ask_yes_or_no "Do you have a domian that you will use?") ]]
+if [[ "yes" == $(ask_yes_or_no "Do you have a domain that you will use?") ]]
 then
     sleep 1
 else
@@ -95,26 +98,7 @@ else
     echo -e "\e[0m"
     exit
 fi
-# Install git
-    git --version 2>&1 >/dev/null
-    GIT_IS_AVAILABLE=$?
-# ...
-if [ $GIT_IS_AVAILABLE -eq 1 ]
-then
-    sleep 1
-else
-    apt install git-y -q
-fi
-# Fetch latest version of test-new-config.sh
-if [ -f $SCRIPTS/test-new-config.sh ]
-then
-    rm $SCRIPTS/test-new-config.sh
-    wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
-    chmod +x $SCRIPTS/test-new-config.sh
-else
-    wget https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
-    chmod +x $SCRIPTS/test-new-config.sh
-fi
+
 echo
 # Ask for domain name
 cat << ENTERDOMAIN
@@ -125,6 +109,7 @@ cat << ENTERDOMAIN
 ENTERDOMAIN
 echo
 read domain
+
 function ask_yes_or_no() {
     read -p "$1 ([y]es or [N]o): "
     case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
@@ -146,19 +131,104 @@ if [[ "no" == $(ask_yes_or_no "Is this correct? $domain") ]]
 |    based on what you enter.                                   |
 +---------------------------------------------------------------+
 ENTERDOMAIN2
+
     echo
     read domain
     echo
 fi
+
+# Check if 443 is open using nmap, if not notify the user
+echo "Running apt update..."
+apt update -q2
+if [ $(dpkg-query -W -f='${Status}' nmap 2>/dev/null | grep -c "ok installed") -eq 1 ]
+then
+      echo "nmap is already installed..."
+      clear
+else
+    apt install nmap -y
+fi
+
+if [ $(nmap -sS -p 443 "$WANIP4" -PN | grep -c "open") -eq 1 ]
+then
+  echo -e "\e[32mPort 443 is open on $WANIP4!\e[0m"
+  apt remove --purge nmap -y
+else
+  echo "Port 443 is not open on $WANIP4. We will do a second try on $domain instead."
+  echo -e "\e[32m"
+  read -p "Press any key to test $domain... " -n1 -s
+  echo -e "\e[0m"
+  if [[ $(nmap -sS -PN -p 443 $domain | grep -m 1 "open" | awk '{print $2}') = open ]]
+  then
+    echo -e "\e[32mPort 443 is open on $domain!\e[0m"
+    apt remove --purge nmap -y
+  else
+    echo "Port 443 is not open on $domain. Please follow this guide to open ports in your router: https://www.techandme.se/open-port-80-443/"
+    echo -e "\e[32m"
+    read -p "Press any key to exit... " -n1 -s
+    echo -e "\e[0m"
+    apt remove --purge nmap -y
+    exit 1
+  fi
+fi
+
+# Fetch latest version of test-new-config.sh
+if [ -f $SCRIPTS/test-new-config.sh ]
+then
+    rm $SCRIPTS/test-new-config.sh
+    wget -q https://raw.githubusercontent.com/nextcloud/vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
+    chmod +x $SCRIPTS/test-new-config.sh
+else
+    wget -q https://raw.githubusercontent.com/nextcloud/vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
+    chmod +x $SCRIPTS/test-new-config.sh
+fi
+
+# Check if $domain exists and is reachable
+echo
+echo "Checking if $domain exists and is reachable..."
+if wget -q -T 10 -t 2 --spider $domain; then
+   sleep 1
+elif wget -q -T 10 -t 2 --spider --no-check-certificate https://$domain; then
+   sleep 1
+elif curl -s -k -m 10  $domain; then
+   sleep 1
+elif curl -s -k -m 10 https://$domain > /dev/null ; then
+   sleep 1
+else
+   echo "Nope, it's not there. You have to create $domain and point"
+   echo "it to this server before you can run this script."
+   echo -e "\e[32m"
+   read -p "Press any key to continue... " -n1 -s
+   echo -e "\e[0m"
+   exit 1
+fi
+
+# Install letsencrypt
+letsencrypt --version 2> /dev/null
+LE_IS_AVAILABLE=$?
+if [ $LE_IS_AVAILABLE -eq 0 ]
+then
+    letsencrypt --version
+else
+    echo "Installing letsencrypt..."
+    add-apt-repository ppa:certbot/certbot -y
+    apt update -q2
+    apt install letsencrypt -y -q
+fi
+
 #Fix issue #28
 ssl_conf="/etc/apache2/sites-available/$domain.conf"
+
 # Check if $ssl_conf exists, and if, then delete
 if [ -f $ssl_conf ]
 then
     rm $ssl_conf
 fi
+
 # Change ServerName in apache.conf
-sed -i "s|ServerName owncloud|ServerName $domain|g" /etc/apache2/apache2.conf
+sed -i "s|ServerName $(hostname -s)|ServerName $domain|g" /etc/apache2/apache2.conf
+sudo hostnamectl set-hostname $domain
+service apache2 restart
+
 # Generate owncloud_ssl_domain.conf
 if [ -f $ssl_conf ]
 then
@@ -174,48 +244,57 @@ else
 </VirtualHost>
 
 <VirtualHost *:443>
+
     Header add Strict-Transport-Security: "max-age=15768000;includeSubdomains"
     SSLEngine on
+
 ### YOUR SERVER ADDRESS ###
+
     ServerAdmin admin@$domain
     ServerName $domain
+
 ### SETTINGS ###
+
     DocumentRoot $OCPATH
-    <Directory $oCPATH>
+
+    <Directory $OCPATH>
     Options Indexes FollowSymLinks
     AllowOverride All
     Require all granted
     Satisfy Any
     </Directory>
-    Alias /owncloud "$OCPATH/"
+
     <IfModule mod_dav.c>
     Dav off
     </IfModule>
+
     SetEnv HOME $OCPATH
     SetEnv HTTP_HOME $OCPATH
+
+
 ### LOCATION OF CERT FILES ###
+
     SSLCertificateChainFile $certfiles/$domain/chain.pem
     SSLCertificateFile $certfiles/$domain/cert.pem
     SSLCertificateKeyFile $certfiles/$domain/privkey.pem
+
 </VirtualHost>
 SSL_CREATE
 fi
+
 ##### START FIRST TRY
+
 # Stop Apache to aviod port conflicts
 a2dissite 000-default.conf
 sudo service apache2 stop
-# Check if $letsencryptpath exist, and if, then delete.
-if [ -d "$letsencryptpath" ]
-then
-    rm -R $letsencryptpath
-fi
 # Generate certs
-cd $dir_before_letsencrypt
-git clone https://github.com/letsencrypt/letsencrypt
-cd $letsencryptpath
-./letsencrypt-auto certonly --standalone -d $domain
-# Use for testing
-#./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
+letsencrypt certonly \
+--standalone \
+--rsa-key-size 4096 \
+--renew-by-default \
+--agree-tos \
+-d $domain
+
 # Activate Apache again (Disabled during standalone)
 service apache2 start
 a2ensite 000-default.conf
@@ -234,16 +313,12 @@ else
     echo -e "\e[0m"
 fi
 ##### START SECOND TRY
-# Check if $letsencryptpath exist, and if, then delete.
-if [ -d "$letsencryptpath" ]
-then
-    rm -R $letsencryptpath
-fi
 # Generate certs
-cd $dir_before_letsencrypt
-git clone https://github.com/letsencrypt/letsencrypt
-cd $letsencryptpath
-./letsencrypt-auto -d $domain
+letsencrypt \
+--rsa-key-size 4096 \
+--renew-by-default \
+--agree-tos \
+-d $domain
 # Check if $certfiles exists
 if [ -d "$certfiles" ]
 then
@@ -258,16 +333,13 @@ else
     echo -e "\e[0m"
 fi
 ##### START THIRD TRY
-# Check if $letsencryptpath exist, and if, then delete.
-if [ -d "$letsencryptpath" ]
-then
-    rm -R $letsencryptpath
-fi
-# Generate certs
-cd $dir_before_letsencrypt
-git clone https://github.com/letsencrypt/letsencrypt
-cd $letsencryptpath
-./letsencrypt-auto certonly --agree-tos --webroot -w $OCPATH -d $domain
+letsencrypt certonly \
+--webroot --w $NCPATH \
+--rsa-key-size 4096 \
+--renew-by-default \
+--agree-tos \
+-d $domain
+
 # Check if $certfiles exists
 if [ -d "$certfiles" ]
 then
@@ -282,16 +354,14 @@ else
     echo -e "\e[0m"
 fi
 #### START FORTH TRY
-# Check if $letsencryptpath exist, and if, then delete.
-if [ -d "$letsencryptpath" ]
-then
-    rm -R $letsencryptpath
-fi
 # Generate certs
-cd $dir_before_letsencrypt
-git clone https://github.com/letsencrypt/letsencrypt
-cd $letsencryptpath
-./letsencrypt-auto --agree-tos --apache -d $domain
+letsencrypt \
+--apache
+--rsa-key-size 4096 \
+--renew-by-default \
+--agree-tos \
+-d $domain
+
 # Check if $certfiles exists
 if [ -d "$certfiles" ]
 then
@@ -312,7 +382,7 @@ else
 | Please check the guide for further information on how to enable SSL.   |
 |                                                                        |
 | This script is developed on GitHub, feel free to contribute:           |
-| https://github.com/techandme/owncloud-vm/                              |
+| https://github.com/techandme/owncloud-vm/tree/master/production        |
 |                                                                        |
 | The script will now do some cleanup and revert the settings.           |
 +------------------------------------------------------------------------+
@@ -320,12 +390,13 @@ ENDMSG
     echo -e "\e[32m"
     read -p "Press any key to revert settings and exit... " -n1 -s
     echo -e "\e[0m"
+
 # Cleanup
-    rm -R $letsencryptpath
-    rm $SCRIPTS/test-new-config.sh
-    rm $ssl_conf
-    rm -R /root/.local/share/letsencrypt
-# Change ServerName in apache.conf
-    sed -i "s|ServerName $domain|ServerName owncloud|g" /etc/apache2/apache2.conf
+apt remove letsencrypt -y
+apt autoremove -y
+# Change ServerName in apache.conf and hostname
+    sed -i "s|ServerName $domain|ServerName $(hostname -s)|g" /etc/apache2/apache2.conf
+    sudo hostnamectl set-hostname $(hostname -s)
+    service apache2 restart
 fi
 clear
