@@ -12,6 +12,7 @@ echo -e "\e[0m"
 a2ensite $1
 a2dissite owncloud_ssl_domain_self_signed.conf
 a2dissite owncloud_http_domain_self_signed.conf
+a2dissite 000-default.conf
 service apache2 restart
 if [[ "$?" == "0" ]]
 then
@@ -27,23 +28,49 @@ then
     echo -e "\e[32m"
     read -p "Press any key to continue... " -n1 -s
     echo -e "\e[0m"
-    crontab -u root -l | { cat; echo "@monthly $SCRIPTS/letsencryptrenew.sh"; } | crontab -u root -
-cat << CRONTAB > "/var/scripts/letsencryptrenew.sh"
-#!/bin/sh
-set -x
-systemctl stop apache2.service
-if ! /etc/letsencrypt/letsencrypt-auto renew > /var/log/letsencrypt/renew.log 2>&1 ; then
-        echo Automated renewal failed:
-        cat /var/log/letsencrypt/renew.log
-        exit 1
-fi
-systemctl start apache2.service
-if [[ $? == 0 ]]
+    crontab -u root -l | { cat; echo "@weekly $SCRIPTS/letsencryptrenew.sh"; } | crontab -u root -
+
+# Set hostname and ServerName
+FQDOMAIN=$(grep -r -m 1 ServerName /etc/apache2/sites-enabled/* | awk '{print $2}')
+echo "Setting hostname to $FQDOMAIN..."
+sudo sh -c "echo 'ServerName $FQDOMAIN' >> /etc/apache2/apache2.conf"
+sudo hostnamectl set-hostname $FQDOMAIN
+service apache2 restart
+
+# Update Config
+if [ -f $SCRIPTS/update-config.php ]
 then
-        echo "Let's Encrypt SUCCESS!"--$(date +%Y-%m-%d_%H:%M) >> /var/log/letsencrypt/cronjob.log
+    rm $SCRIPTS/update-config.php
+    wget -q $STATIC/update-config.php -P $SCRIPTS
 else
-        echo "Let's Encrypt FAILED!"--$(date +%Y-%m-%d_%H:%M) >> /var/log/letsencrypt/cronjob.log
-        reboot
+    wget -q $STATIC/update-config.php -P $SCRIPTS
+fi
+
+# Sets trusted domain in config.php
+if [ -f $SCRIPTS/trusted.sh ]
+then
+    rm $SCRIPTS/trusted.sh
+    wget -q $STATIC/trusted.sh -P $SCRIPTS
+    bash $SCRIPTS/trusted.sh
+    rm $SCRIPTS/update-config.php
+    rm $SCRIPTS/trusted.sh
+else
+    wget -q $STATIC/trusted.sh -P $SCRIPTS
+    bash $SCRIPTS/trusted.sh
+    rm $SCRIPTS/trusted.sh
+    rm $SCRIPTS/update-config.php
+fi
+
+DATE='$(date +%Y-%m-%d_%H:%M)'
+cat << CRONTAB > "$SCRIPTS/letsencryptrenew.sh"
+#!/bin/sh
+service apache2 stop
+if ! certbot renew --quiet --no-self-upgrade > /var/log/letsencrypt/renew.log 2>&1 ; then
+        echo "Let's Encrypt FAILED!"--$DATE >> /var/log/letsencrypt/cronjob.log
+        service apache2 start
+else
+        echo "Let's Encrypt SUCCESS!"--$DATE >> /var/log/letsencrypt/cronjob.log
+        service apache2 start
 fi
 CRONTAB
 
@@ -59,6 +86,7 @@ else
     a2dissite $1
     a2ensite owncloud_ssl_domain_self_signed.conf
     a2ensite owncloud_http_domain_self_signed.conf
+    a2ensite 000-default.conf
     service apache2 restart
     echo -e "\e[96m"
     echo "Couldn't load new config, reverted to old settings. Self-signed SSL is OK!"
@@ -69,26 +97,4 @@ else
     exit 1
 fi
 
-# Update Config
-if [ -f $SCRIPTS/update-config.php ]
-then
-    rm $SCRIPTS/update-config.php
-    wget -q $STATIC/update-config.php -P $SCRIPTS
-else
-    wget -q $STATIC/update-config.php -P $SCRIPTS
-fi
-
-# Sets trusted domain
-if [ -f $SCRIPTS/trusted.sh ]
-then
-    rm $SCRIPTS/trusted.sh
-    wget -q $STATIC/trusted.sh -P $SCRIPTS
-else
-    wget -q $STATIC/trusted.sh -P $SCRIPTS
-fi
-
-bash $SCRIPTS/trusted.sh
-rm $SCRIPTS/trusted.sh
-rm $SCRIPTS/update-config.php
-
-exit 0
+exit
