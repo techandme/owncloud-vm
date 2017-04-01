@@ -175,10 +175,10 @@ fi
 if [ -f $SCRIPTS/test-new-config.sh ]
 then
     rm $SCRIPTS/test-new-config.sh
-    wget -q https://raw.githubusercontent.com/nextcloud/vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
+    wget -q https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
     chmod +x $SCRIPTS/test-new-config.sh
 else
-    wget -q https://raw.githubusercontent.com/nextcloud/vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
+    wget -q https://raw.githubusercontent.com/techandme/owncloud-vm/master/lets-encrypt/test-new-config.sh -P $SCRIPTS
     chmod +x $SCRIPTS/test-new-config.sh
 fi
 
