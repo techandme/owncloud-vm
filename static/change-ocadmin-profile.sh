@@ -1,9 +1,19 @@
 #!/bin/bash
 
-UNIXUSER=$SUDO_USER
-UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
+# Tech and Me © - 2017, https://www.techandme.se/
 
-rm /home/$UNIXUSER/.profile
+# shellcheck disable=2034,2059
+true
+# shellcheck source=lib.sh
+. <(curl -sL https://raw.githubusercontent.com/nextcloud/vm/master/lib.sh)
+
+# Check for errors + debug code and abort if something isn't right
+# 1 = ON
+# 0 = OFF
+DEBUG=0
+debug_mode
+
+rm "/home/$UNIXUSER/.profile"
 
 cat <<-UNIXUSER-PROFILE > "$UNIXUSER_PROFILE"
 # ~/.profile: executed by the command interpreter for login shells.
@@ -31,6 +41,11 @@ fi
 bash /var/scripts/instruction.sh
 bash /var/scripts/history.sh
 sudo -i
+
 UNIXUSER-PROFILE
-chown $UNIXUSER:$UNIXUSER $UNIXUSER_PROFILE
+
+chown "$UNIXUSER:$UNIXUSER" "$UNIXUSER_PROFILE"
+chown "$UNIXUSER:$UNIXUSER" "$SCRIPTS/history.sh"
+chown "$UNIXUSER:$UNIXUSER" "$SCRIPTS/instruction.sh"
+
 exit 0

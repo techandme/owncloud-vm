@@ -10,7 +10,7 @@
 #
 if ($argc < 3)
   {
-    print "Example Usage:\n\t". __FILE__." path/to/config.php overwritewebroot /owncloud\n";
+    print "Example Usage:\n\t". __FILE__." path/to/config.php overwritewebroot /nextcloud\n";
     print "\t".__FILE__." path/to/config.php trusted_domains[] 17.0.2.15 localhost\n";
     # nothing to do
     return;
@@ -19,8 +19,8 @@ if ($argc < 3)
 
 if (!is_file($argv[1]))
   {
-    # do not create the file, if missing. 
-    # Wrong permissions are deadly for owncloud.
+    # do not create the file, if missing.
+    # Wrong permissions are deadly for nextcloud.
     ## FIXME: get some proper errno or strerror() please?
     print($argv[1] . ": \$CONFIG cannot be loaded?\n");
     return;
