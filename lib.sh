@@ -57,7 +57,7 @@ MYCNF=/root/.my.cnf
 # Nextcloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
 NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1)
-STABLEVERSION="owncloud_files_$NCVERSION.orig"  
+STABLEVERSION="owncloud-files_$NCVERSION.orig"  
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
