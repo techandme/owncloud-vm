@@ -7,12 +7,12 @@ true
 
 # Dirs
 SCRIPTS=/var/scripts
-NCPATH=/var/www/nextcloud
+NCPATH=/var/www/owncloud
 HTML=/var/www
-NCDATA=/var/ncdata
+NCDATA=/var/ocdata
 SNAPDIR=/var/snap/spreedme
 GPGDIR=/tmp/gpg
-BACKUP=/var/NCBACKUP
+BACKUP=/var/OCBACKUP
 # Ubuntu OS
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
@@ -30,15 +30,15 @@ INTERFACES="/etc/network/interfaces"
 NETMASK=$($IFCONFIG | grep -w inet |grep -v 127.0.0.1| awk '{print $4}' | cut -d ":" -f 2)
 GATEWAY=$(route -n|grep "UG"|grep -v "UGH"|cut -f 10 -d " ")
 # Repo
-GITHUB_REPO="https://raw.githubusercontent.com/nextcloud/vm/master"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/master"
 STATIC="$GITHUB_REPO/static"
 LETS_ENC="$GITHUB_REPO/lets-encrypt"
 APP="$GITHUB_REPO/apps"
-NCREPO="https://download.nextcloud.com/server/releases"
-ISSUES="https://github.com/nextcloud/vm/issues"
+NCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
+ISSUES="https://github.com/techandme/owncloud-vm/issues"
 # User information
-NCPASS=nextcloud
-NCUSER=ncadmin
+NCPASS=owcloud
+NCUSER=ocadmin
 UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
 ROOT_PROFILE="/root/.bash_profile"
@@ -48,16 +48,16 @@ MYSQL_PASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1
 NEWMYSQLPASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
 # Path to specific files
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
-SECURE="$SCRIPTS/setup_secure_permissions_nextcloud.sh"
-SSL_CONF="/etc/apache2/sites-available/nextcloud_ssl_domain_self_signed.conf"
-HTTP_CONF="/etc/apache2/sites-available/nextcloud_http_domain_self_signed.conf"
+SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
+SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
+HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 PW_FILE=/var/mysql_password.txt
 MYCNF=/root/.my.cnf
 [ ! -z "$CHANGE_MYSQL" ] && OLDMYSQL=$(cat $PW_FILE)
 # Nextcloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
-NCVERSION=$(curl -s -m 900 $NCREPO/ | tac | grep unknown.gif | sed 's/.*"nextcloud-\([^"]*\).zip.sha512".*/\1/;q')
-STABLEVERSION="nextcloud-$NCVERSION"
+NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1)
+STABLEVERSION="owncloud_files_$NCVERSION.orig"  
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
@@ -195,12 +195,12 @@ calc_wt_size() {
 }
 
 download_verify_nextcloud_stable() {
-wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -P "$HTML"
+wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.gz" -P "$HTML"
 mkdir -p "$GPGDIR"
-wget -q "$NCREPO/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
+wget -q "$NCREPO/$STABLEVERSION.tar.gz.dsc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
 gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$OpenPGP_fingerprint"
-gpg --verify "$GPGDIR/$STABLEVERSION.tar.bz2.asc" "$HTML/$STABLEVERSION.tar.bz2"
+gpg --verify "$GPGDIR/$STABLEVERSION.tar.gz.dsc" "$HTML/$STABLEVERSION.tar.gz"
 rm -r "$GPGDIR"
 }
 
@@ -227,7 +227,7 @@ download_le_script() {
     then
         echo "{$1} failed to download. Please run: 'sudo wget ${STATIC}/${1}.sh|.php|.py' again."
         echo "If you get this error when running the nextcloud-startup-script then just re-run it with:"
-        echo "'sudo bash $SCRIPTS/nextcloud-startup-script.sh' and all the scripts will be downloaded again"
+        echo "'sudo bash $SCRIPTS/owncloud-startup-script.sh' and all the scripts will be downloaded again"
         exit 1
     fi
 }
