@@ -1,9 +1,10 @@
 # owncloud-vm
-Scripts to setup and configure the ownCloud VM.
-
-Feel free to contribute!
 
 [![Build Status](https://travis-ci.org/techandme/owncloud-vm.svg?branch=master)](https://travis-ci.org/techandme/owncloud-vm)
+
+Scripts to setup and configure the ownCloud VM. Feel free to contribute!
+
+We also produce the official [Nextcloud VM](https://github.com/nextcloud/vm) which is updated more frequently.
 
 ----------------------------------------------------------------------------------------------------------------------------
 
