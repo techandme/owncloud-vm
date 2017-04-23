@@ -88,7 +88,7 @@
 
         <div class="information">
             <p>Default User:</p>
-            <h3>ncadmin</h3>
+            <h3>ocadmin</h3>
             <p>Default Password:</p>
             <h3>owncloud</h3>
             <p>Note: The setup script will ask you to change the default password to your own. It's also recommended to change the default user. Do this by adding another admin user, log out from ncadmin, and login with your new user, then delete ncadmin.</p>
@@ -99,7 +99,7 @@
             <p>Before you can use ownCloud you have to run the setup script to complete the installation. This is easily done by just typing 'owncloud' when you log in to the terminal for the first time.</p>
             <p>The full path to the setup script is: /var/scripts/owncloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
             <center>
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/-3fKEu2HhJo" frameborder="0" allowfullscreen></iframe>
+                <iframe width="560" height="315" src="https://www.youtube.com/watch?v=QLFMvaX-D0o" frameborder="0" allowfullscreen></iframe>
             </center>
         </div>
 
@@ -130,7 +130,7 @@
             </h3>
             <p>Note: Please accept the warning in the browser if you connect via HTTPS.</p>
             <h3>
-                <a href="https://www.techandme.se/user-and-password-owncloud/" target="_blank">Login details</a>
+                <a href="https://www.techandme.se/user-and-password/" target="_blank">Login details</a>
             </h3>
             <p>Note: Webmin is installed when you run the setup script. To access Webmin externally you have to open port 10000 in your router.</p>
         </div>
@@ -147,7 +147,7 @@
             </h3>
             <p>Note: Please accept the warning in the browser if you connect via HTTPS.</p>
             <h3>
-                <a href="https://www.techandme.se/user-and-password-owncloud/" target="_blank">Login details</a>
+                <a href="https://www.techandme.se/user-and-password/" target="_blank">Login details</a>
             </h3>
             <p>Note: Your external IP is set as approved in /etc/apache2/conf-available/phpmyadmin.conf, all other access is forbidden.</p>
         </div>

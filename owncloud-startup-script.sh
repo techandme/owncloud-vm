@@ -138,7 +138,7 @@ chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/owncloud.sh"
 
 clear
 echo "+--------------------------------------------------------------------+"
-echo "| This script will configure your ownCloud and activate SSL.        |"
+echo "| This script will configure your ownCloud and activate SSL.         |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Generate new SSH keys for the server                             |"
@@ -147,9 +147,9 @@ echo "| - Configure UTF8mb4 (4-byte support for MySQL)                     |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Install selected apps and automatically configure them           |"
 echo "| - Detect and set hostname                                          |"
-echo "| - Upgrade your system and ownCloud to latest version              |"
-echo "| - Set secure permissions to ownCloud                              |"
-echo "| - Set new passwords to Linux and ownCloud                         |"
+echo "| - Upgrade your system and ownCloud to latest version               |"
+echo "| - Set secure permissions to ownCloud                               |"
+echo "| - Set new passwords to Linux and ownCloud                          |"
 echo "| - Set new keyboard layout                                          |"
 echo "| - Change timezone                                                  |"
 echo "| - Set static IP to the system (you have to set the same IP in      |"
@@ -360,6 +360,7 @@ done
 echo
 clear
 #NCADMIN=$(sudo -u www-data php $NCPATH/occ user:list | awk '{print $3}')
+NCADMIN="ocadmin"
 printf "${Color_Off}\n"
 echo "For better security, change the ownCloud password for [$NCADMIN]"
 echo "The current password for $NCADMIN is [$NCPASS]"
