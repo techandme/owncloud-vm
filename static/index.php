@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
     <head>
-        <title>Nextcloud VM</title>
+        <title>ownCloud VM - Tech and Me</title>
         <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
         <style type="text/css">
             body {
@@ -17,7 +17,7 @@
                 align: center;
                 text-align: center;
                 background: #0082c9; /* Old browsers */
-                background-image: url('https://raw.githubusercontent.com/nextcloud/server/master/core/img/background.jpg');
+                background-image: url('https://raw.githubusercontent.com/owncloud/core/master/core/img/background.jpg');
                 background-size: cover;
             }
             div.logotext   {
@@ -25,7 +25,7 @@
                 margin: 0 auto;
             }
             div.logo   {
-                background-image: url('/nextcloud/core/img/logo-icon.svg');
+                background-image: url('/owncloud/core/img/logo-icon.svg');
                 background-repeat: no-repeat; top center;
                 width: 50%;
                 height: 25%;
@@ -75,42 +75,42 @@
         <br>
         <div class="logo"></div>
         <div class="logotext">
-            <h2><a href="https://github.com/nextcloud/vm" target="_blank">Nextcloud VM</a> - by <a href="https://nextcloud.com" target="_blank">Nextcloud Community</a></h2>
+            <h2><a href="https://github.com/techandme/owncloud-vm/" target="_blank">ownCloud VM</a> - by <a href="https://www.techandme.se/pre-configured-owncloud-installaton/" target="_blank">Tech and Me</a></h2>
         </div>
         <br>
         <div class="information">
-            <p>Thank you for downloading the pre-configured Nextcloud VM! If you see this page, you have successfully mounted the Nextcloud VM on the computer that will act as host for Nextcloud.</p>
+            <p>Thank you for downloading the pre-configured ownCloud VM! If you see this page, you have successfully mounted the ownCloud VM on the computer that will act as host for ownCloud.</p>
             <p>We have set everything up for you and the only thing you have to do now is to login. You can find login details in the middle of this page.</p>
-            <p>Don't hesitate to ask if you have any questions. You can ask for help in our community <a href="https://help.nextcloud.com/c/support/appliances-docker-snappy-vm" target="_blank">support</a> channels. You can also check the <a href="https://www.techandme.se/complete-install-instructions-nextcloud/" target="_blank">complete install instructions</a>.</p>
+            <p>Don't hesitate to ask if you have any questions. You can ask for help in our community <a href="https://central.owncloud.org/" target="_blank">support</a> channels. You can also check the <a href="https://www.techandme.se/complete-install-instructions-owncloud/" target="_blank">complete install instructions</a>.</p>
         </div>
 
-        <h2><a href="https://www.techandme.se/user-and-password-nextcloud/" target="_blank">Login</a> to Nextcloud</h2>
+        <h2><a href="https://www.techandme.se/user-and-password/" target="_blank">Login</a> to ownCloud</h2>
 
         <div class="information">
             <p>Default User:</p>
             <h3>ncadmin</h3>
             <p>Default Password:</p>
-            <h3>nextcloud</h3>
+            <h3>owncloud</h3>
             <p>Note: The setup script will ask you to change the default password to your own. It's also recommended to change the default user. Do this by adding another admin user, log out from ncadmin, and login with your new user, then delete ncadmin.</p>
             <br>
             <center>
                 <h3> How to mount the VM and and login:</h3>
             </center>
-            <p>Before you can use Nextcloud you have to run the setup script to complete the installation. This is easily done by just typing 'nextcloud' when you log in to the terminal for the first time.</p>
-            <p>The full path to the setup script is: /var/scripts/nextcloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
+            <p>Before you can use ownCloud you have to run the setup script to complete the installation. This is easily done by just typing 'owncloud' when you log in to the terminal for the first time.</p>
+            <p>The full path to the setup script is: /var/scripts/owncloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
             <center>
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/-3fKEu2HhJo" frameborder="0" allowfullscreen></iframe>
             </center>
         </div>
 
-        <h2>Access Nextcloud</h2>
+        <h2>Access ownCloud</h2>
 
         <div class="information">
             <p>Use one of the following addresses, HTTPS is preffered:
             <h3>
                 <ul>
-                    <li><a href="http://<?=$_SERVER['SERVER_NAME'];?>/nextcloud">http://<?=$_SERVER['SERVER_NAME'];?></a> (HTTP)
-                    <li><a href="https://<?=$_SERVER['SERVER_NAME'];?>/nextcloud">https://<?=$_SERVER['SERVER_NAME'];?></a> (HTTPS)
+                    <li><a href="http://<?=$_SERVER['SERVER_NAME'];?>/owncloud">http://<?=$_SERVER['SERVER_NAME'];?></a> (HTTP)
+                    <li><a href="https://<?=$_SERVER['SERVER_NAME'];?>/owncloud">https://<?=$_SERVER['SERVER_NAME'];?></a> (HTTPS)
                 </ul>
             </h3>
             <p>Note: Please accept the warning in the browser if you connect via HTTPS. It is recommended<br>
@@ -130,7 +130,7 @@
             </h3>
             <p>Note: Please accept the warning in the browser if you connect via HTTPS.</p>
             <h3>
-                <a href="https://www.techandme.se/user-and-password-nextcloud/" target="_blank">Login details</a>
+                <a href="https://www.techandme.se/user-and-password-owncloud/" target="_blank">Login details</a>
             </h3>
             <p>Note: Webmin is installed when you run the setup script. To access Webmin externally you have to open port 10000 in your router.</p>
         </div>
@@ -147,7 +147,7 @@
             </h3>
             <p>Note: Please accept the warning in the browser if you connect via HTTPS.</p>
             <h3>
-                <a href="https://www.techandme.se/user-and-password-nextcloud/" target="_blank">Login details</a>
+                <a href="https://www.techandme.se/user-and-password-owncloud/" target="_blank">Login details</a>
             </h3>
             <p>Note: Your external IP is set as approved in /etc/apache2/conf-available/phpmyadmin.conf, all other access is forbidden.</p>
         </div>
