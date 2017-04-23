@@ -60,15 +60,15 @@ then
     chmod +x "$SECURE"
 fi
 
-# Upgrade Nextcloud
-echo "Checking latest released version on the Nextcloud download server and if it's possible to download..."
+# Upgrade ownCloud
+echo "Checking latest released version on the ownCloud download server and if it's possible to download..."
 wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -O /dev/null & spinner_loading
 if [ $? -eq 0 ]; then
     printf "${Green}SUCCESS!${Color_Off}\n"
     rm -f "$STABLEVERSION.tar.bz2"
 else
     echo
-    printf "${IRed}Nextcloud %s doesn't exist.${Color_Off}\n" "$NCVERSION"
+    printf "${IRed}ownCloud %s doesn't exist.${Color_Off}\n" "$NCVERSION"
     echo "Please check available versions here: $NCREPO"
     echo
     exit 1
@@ -82,7 +82,7 @@ then
     echo "Current version: $CURRENTVERSION"
     echo "Latest release: $NCVERSION"
     echo
-    echo "It is best to keep your Nextcloud server upgraded regularly, and to install all point releases"
+    echo "It is best to keep your ownCloud server upgraded regularly, and to install all point releases"
     echo "and major releases without skipping any of them, as skipping releases increases the risk of"
     echo "errors. Major releases are 9, 10, 11 and 12. Point releases are intermediate releases for each"
     echo "major release. For example, 9.0.52 and 10.0.2 are point releases."
@@ -103,7 +103,7 @@ else
     echo "No need to upgrade, this script will exit..."
     exit 0
 fi
-echo "Backing up files and upgrading to Nextcloud $NCVERSION in 10 seconds..."
+echo "Backing up files and upgrading to ownCloud $NCVERSION in 10 seconds..."
 echo "Press CTRL+C to abort."
 sleep 10
 
@@ -137,7 +137,7 @@ else
     printf "${Green}\nBackup OK!${Color_Off}\n"
 fi
 
-# Download and validate Nextcloud package
+# Download and validate ownCloud package
 check_command download_verify_owncloud_stable
 
 if [ -f "$HTML/$STABLEVERSION.tar.bz2" ]
@@ -170,7 +170,7 @@ then
     echo 
     printf "${Green}All files are backed up.${Color_Off}\n"
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --on
-    echo "Removing old Nextcloud instance in 5 seconds..." && sleep 5
+    echo "Removing old ownCloud instance in 5 seconds..." && sleep 5
     rm -rf $NCPATH
     tar -xjf "$HTML/$STABLEVERSION.tar.bz2" -C "$HTML"
     rm "$HTML/$STABLEVERSION.tar.bz2"

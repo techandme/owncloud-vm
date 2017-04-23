@@ -23,10 +23,10 @@ then
     exit 1
 fi
 
-# Make sure there is an Nextcloud installation
+# Make sure there is an ownCloud installation
 if ! [ "$(sudo -u www-data php $NCPATH/occ -V)" ]
 then
-    echo "It seems there is no Nextcloud server installed, please check your installation."
+    echo "It seems there is no ownCloud server installed, please check your installation."
     exit 1
 fi
 
@@ -39,7 +39,7 @@ then
     exit 1
 fi
 
-echo "Starting to setup Solr & Nextant on Nextcloud..."
+echo "Starting to setup Solr & Nextant on ownCloud..."
 
 # Installing requirements
 apt update -q4 & spinner_loading

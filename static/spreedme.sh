@@ -20,10 +20,10 @@ then
     exit 1
 fi
 
-# Check if Nextcloud exists
+# Check if ownCloud exists
 if [ ! -d "$NCPATH" ]
 then
-    echo "Nextcloud does not seem to be installed. This script will exit..."
+    echo "ownCloud does not seem to be installed. This script will exit..."
     exit
 fi
 
@@ -34,7 +34,7 @@ then
     exit 1
 fi
 
-# Install Nextcloud Spreedme Snap
+# Install ownCloud Spreedme Snap
 if [ -d "$SNAPDIR" ]
 then
     echo "SpreeMe Snap already seems to be installed and wil now be re-installed..."

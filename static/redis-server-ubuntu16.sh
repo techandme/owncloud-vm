@@ -79,7 +79,7 @@ fi
 # Prepare for adding redis configuration
 sed -i "s|);||g" $NCPATH/config/config.php
 
-# Add the needed config to Nextclouds config.php
+# Add the needed config to ownClouds config.php
 cat <<ADD_TO_CONFIG >> $NCPATH/config/config.php
   'memcache.local' => '\\OC\\Memcache\\Redis',
   'filelocking.enabled' => true,

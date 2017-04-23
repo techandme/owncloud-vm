@@ -26,17 +26,17 @@ whiptail --msgbox "Please before you start, make sure that port 443 is directly 
 # Get the latest packages
 apt update -q4 & spinner_loading
 
-# Check if Nextcloud is installed
-echo "Checking if Nextcloud is installed..."
+# Check if ownCloud is installed
+echo "Checking if ownCloud is installed..."
 if ! curl -s https://"${NCDOMAIN//\\/}"/status.php | grep -q 'installed":true'
 then
     echo
-    echo "It seems like Nextcloud is not installed or that you don't use https on:"
+    echo "It seems like ownCloud is not installed or that you don't use https on:"
     echo "${NCDOMAIN//\\/}."
-    echo "Please install Nextcloud and make sure your domain is reachable, or activate SSL"
+    echo "Please install ownCloud and make sure your domain is reachable, or activate SSL"
     echo "on your domain to be able to run this script."
     echo
-    echo "If you use the Nextcloud VM you can use the Let's Encrypt script to get SSL and activate your Nextcloud domain."
+    echo "If you use the ownCloud VM you can use the Let's Encrypt script to get SSL and activate your ownCloud domain."
     echo "When SSL is activated, run these commands from your terminal:"
     echo "sudo wget $APP/collabora.sh"
     echo "sudo bash collabora.sh"

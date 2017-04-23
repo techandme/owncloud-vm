@@ -80,7 +80,7 @@ do
 # Ask for domain name
 cat << ENTERDOMAIN
 +---------------------------------------------------------------+
-|    Please enter the domain name you will use for Nextcloud:   |
+|    Please enter the domain name you will use for ownCloud:   |
 |    Like this: example.com, or nextcloud.example.com           |
 +---------------------------------------------------------------+
 ENTERDOMAIN
