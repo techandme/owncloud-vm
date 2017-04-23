@@ -57,7 +57,7 @@ MYCNF=/root/.my.cnf
 # Nextcloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
 NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1)
-STABLEVERSION="owncloud-files_$NCVERSION.orig"  
+STABLEVERSION="owncloud-$NCVERSION"  
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
@@ -194,13 +194,13 @@ calc_wt_size() {
     export WT_MENU_HEIGHT
 }
 
-download_verify_nextcloud_stable() {
-wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.gz" -P "$HTML"
+download_verify_owncloud_stable() {
+wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -P "$HTML"
 mkdir -p "$GPGDIR"
-wget -q "$NCREPO/$STABLEVERSION.tar.gz.dsc" -P "$GPGDIR"
+wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
 gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$OpenPGP_fingerprint"
-gpg --verify "$GPGDIR/$STABLEVERSION.tar.gz.dsc" "$HTML/$STABLEVERSION.tar.gz"
+gpg --verify "https://owncloud.org/owncloud.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
 }
 
