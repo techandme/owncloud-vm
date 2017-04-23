@@ -16,11 +16,11 @@ debug_mode
 clear
 cat << INST1
 +-----------------------------------------------------------------------+
-| Thanks for downloading this ownCloud VM by the ownCloud Community!  |
+| Thanks for downloading this ownCloud VM by Tech and Me!  		|
 |                                                                       |
 INST1
 echo -e "|"  "${Green}To run the startup script type the sudoer password. This will either${Color_Off}  |"
-echo -e "|"  "${Green}be the default ('nextcloud') or the one chosen during installation.${Color_Off}   |"
+echo -e "|"  "${Green}be the default ('owncloud') or the one chosen during installation.${Color_Off}   |"
 cat << INST2
 |                                                                       |
 | If you have never done this before you can follow the complete        |

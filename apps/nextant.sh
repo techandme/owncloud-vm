@@ -72,7 +72,7 @@ iptables -A INPUT -p tcp --dport 8983 -j DROP
 
 if service solr start
 then
-    sudo -u solr /opt/solr/bin/solr create -c nextant 
+    sudo -u solr /opt/solr/bin/solr create -c nextant
 else
     echo "Solr failed to start, something is wrong with the Solr installation"
     exit 1
@@ -92,7 +92,7 @@ check_command "echo \"SOLR_OPTS=\\\"\\\$SOLR_OPTS -Dsolr.allow.unsafe.resourcelo
 
 check_command service solr restart
 
-# Get nextant app for nextcloud
+# Get nextant app for ownCloud
 check_command wget -q -P "$NC_APPS_PATH" "$NT_DL"
 check_command cd "$NC_APPS_PATH"
 check_command tar zxf "$NT_RELEASE"
@@ -100,7 +100,7 @@ check_command tar zxf "$NT_RELEASE"
 # Set secure permissions
 if [ ! -f $SECURE ]
 then
-run_static_script setup_secure_permissions_nextcloud
+run_static_script setup_secure_permissions_owncloud
 fi
 
 # Enable Nextant

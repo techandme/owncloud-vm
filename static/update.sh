@@ -13,7 +13,7 @@ true
 DEBUG=0
 debug_mode
 
-FILE=nextcloud_update.sh
+FILE=owncloud_update.sh
 
 # Must be root
 if ! is_root

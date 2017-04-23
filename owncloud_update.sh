@@ -56,7 +56,7 @@ rm /var/lib/apt/lists/* -r
 if [ ! -f "$SECURE" ]
 then
     mkdir -p "$SCRIPTS"
-    download_static_script setup_secure_permissions_nextcloud
+    download_static_script setup_secure_permissions_owncloud
     chmod +x "$SECURE"
 fi
 
@@ -152,7 +152,7 @@ if [ -d $BACKUP/config/ ]
 then
     echo "$BACKUP/config/ exists"
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if config/ folder exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if config/ folder exist."
     exit 1
 fi
 
@@ -160,7 +160,7 @@ if [ -d $BACKUP/apps/ ]
 then
     echo "$BACKUP/apps/ exists"
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if apps/ folder exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if apps/ folder exist."
     exit 1
 fi
 
@@ -180,7 +180,7 @@ then
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --off
     sudo -u www-data php "$NCPATH"/occ upgrade
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if the folders exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if the folders exist."
     exit 1
 fi
 
@@ -246,6 +246,6 @@ else
     sudo -u www-data php "$NCPATH"/occ status
     echo "UPGRADE FAILED!"
     echo "Your files are still backed up at $BACKUP. No worries!"
-    echo "Please report this issue to https://github.com/nextcloud/vm/issues"
+    echo "Please report this issue to $ISSUES"
     exit 1
 fi

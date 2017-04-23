@@ -81,7 +81,7 @@ do
 cat << ENTERDOMAIN
 +---------------------------------------------------------------+
 |    Please enter the domain name you will use for ownCloud:   |
-|    Like this: example.com, or nextcloud.example.com           |
+|    Like this: example.com, or owncloud.example.com           |
 +---------------------------------------------------------------+
 ENTERDOMAIN
 echo
@@ -167,7 +167,7 @@ then
     rm -f "$ssl_conf"
 fi
 
-# Generate nextcloud_ssl_domain.conf
+# Generate owncloud_ssl_domain.conf
 if [ ! -f "$ssl_conf" ]
 then
     touch "$ssl_conf"
@@ -315,7 +315,7 @@ cat << ENDMSG
 | Please check the guide for further information on how to enable SSL.   |
 |                                                                        |
 | This script is developed on GitHub, feel free to contribute:           |
-| https://github.com/nextcloud/vm                                        |
+| https://github.com/owncloud/vm                                        |
 |                                                                        |
 | The script will now do some cleanup and revert the settings.           |
 +------------------------------------------------------------------------+

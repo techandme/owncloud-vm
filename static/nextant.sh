@@ -92,7 +92,7 @@ check_command "echo \"SOLR_OPTS=\\\"\\\$SOLR_OPTS -Dsolr.allow.unsafe.resourcelo
 
 check_command service solr restart
 
-# Get nextant app for nextcloud
+# Get nextant app for owncloud
 check_command wget -q -P "$NC_APPS_PATH" "$NT_DL"
 check_command cd "$NC_APPS_PATH"
 check_command tar zxf "$NT_RELEASE"
@@ -100,7 +100,7 @@ check_command tar zxf "$NT_RELEASE"
 # Set secure permissions
 if [ ! -f $SECURE ]
 then
-run_static_script setup_secure_permissions_nextcloud
+run_static_script setup_secure_permissions_owncloud
 fi
 
 # Enable Nextant

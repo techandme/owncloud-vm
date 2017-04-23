@@ -16,8 +16,8 @@ debug_mode
 printf "${Color_Off}We will now test that everything is OK\n"
 any_key "Press any key to continue... "
 a2ensite "$1"
-a2dissite nextcloud_ssl_domain_self_signed.conf
-a2dissite nextcloud_http_domain_self_signed.conf
+a2dissite owncloud_ssl_domain_self_signed.conf
+a2dissite owncloud_http_domain_self_signed.conf
 a2dissite 000-default.conf
 if service apache2 restart
 then
@@ -68,8 +68,8 @@ rm $SCRIPTS/activate-ssl.sh ## Remove ??
 else
 # If it fails, revert changes back to normal
     a2dissite "$1"
-    a2ensite nextcloud_ssl_domain_self_signed.conf
-    a2ensite nextcloud_http_domain_self_signed.conf
+    a2ensite owncloud_ssl_domain_self_signed.conf
+    a2ensite owncloud_http_domain_self_signed.conf
     a2ensite 000-default.conf
     service apache2 restart
     printf "${ICyan}Couldn't load new config, reverted to old settings. Self-signed SSL is OK!${Color_Off}\n"
