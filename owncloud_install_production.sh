@@ -431,7 +431,7 @@ chmod +x -R "$SCRIPTS"
 chown root:root -R "$SCRIPTS"
 
 # Prepare first bootup
-check_command run_static_script change-ncadmin-profile
+check_command run_static_script change-ocadmin-profile
 check_command run_static_script change-root-profile
 
 # Install Redis
