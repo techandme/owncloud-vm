@@ -35,10 +35,10 @@ STATIC="$GITHUB_REPO/static"
 LETS_ENC="$GITHUB_REPO/lets-encrypt"
 APP="$GITHUB_REPO/apps"
 NCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
-ocdownloadrepo=https://download.owncloud.org/community
+ocdownloadrepo="https://download.owncloud.org/community"
 ISSUES="https://github.com/techandme/owncloud-vm/issues"
 # User information
-NCPASS=owcloud
+NCPASS=owncloud
 NCUSER=ocadmin
 UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
