@@ -37,7 +37,7 @@ network_ok() {
 # Check if root
 if ! is_root
 then
-    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash $SCRIPTS/nextcloud-startup-script.sh\n"
+    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash $SCRIPTS/owncloud-startup-script.sh\n"
     exit 1
 fi
 
@@ -63,7 +63,7 @@ then
     printf "${Green}Online!${Color_Off}\n"
 else
     printf "\nNetwork NOT OK. You must have a working Network connection to run this script.\n"
-    echo "Please report this issue here: https://github.com/nextcloud/vm/issues/new"
+    echo "Please report this issue here: $ISSUES"
     exit 1
 fi
 
@@ -102,9 +102,9 @@ download_static_script update
 download_static_script trusted
 download_static_script ip
 download_static_script test_connection
-download_static_script setup_secure_permissions_nextcloud
+download_static_script setup_secure_permissions_owncloud
 download_static_script change_mysql_pass
-download_static_script nextcloud
+download_static_script owncloud
 download_static_script update-config
 download_static_script index
 
@@ -119,7 +119,7 @@ fi
 if [ ! -f "$SCRIPTS"/activate-ssl.sh ]
 then
     echo "activate-ssl failed"
-    echo "Script failed to download. Please run: 'sudo bash $SCRIPTS/nextcloud-startup-script.sh' again."
+    echo "Script failed to download. Please run: 'sudo bash $SCRIPTS/owncloud-startup-script.sh' again."
     exit 1
 fi
 
@@ -134,11 +134,11 @@ chmod +x -R $SCRIPTS
 chown root:root -R $SCRIPTS
 
 # Allow $UNIXUSER to run figlet script
-chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/nextcloud.sh"
+chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/owncloud.sh"
 
 clear
 echo "+--------------------------------------------------------------------+"
-echo "| This script will configure your Nextcloud and activate SSL.        |"
+echo "| This script will configure your ownCloud and activate SSL.        |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Generate new SSH keys for the server                             |"
@@ -147,9 +147,9 @@ echo "| - Configure UTF8mb4 (4-byte support for MySQL)                     |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Install selected apps and automatically configure them           |"
 echo "| - Detect and set hostname                                          |"
-echo "| - Upgrade your system and Nextcloud to latest version              |"
-echo "| - Set secure permissions to Nextcloud                              |"
-echo "| - Set new passwords to Linux and Nextcloud                         |"
+echo "| - Upgrade your system and ownCloud to latest version              |"
+echo "| - Set secure permissions to ownCloud                              |"
+echo "| - Set new passwords to Linux and ownCloud                         |"
 echo "| - Set new keyboard layout                                          |"
 echo "| - Change timezone                                                  |"
 echo "| - Set static IP to the system (you have to set the same IP in      |"
@@ -201,7 +201,7 @@ then
         printf "We will use the DHCP IP: ${Green}$ADDRESS${Color_Off}. If you want to change it later then just edit the interfaces file:\n"
         printf "sudo nano /etc/network/interfaces\n"
         echo "If you experience any bugs, please report it here:"
-        echo "https://github.com/nextcloud/vm/issues/new"
+        echo "$ISSUES"
         any_key "Press any key to continue..."
     else
         # Not connected!
@@ -262,7 +262,7 @@ then
 fi
 
 # Enable UTF8mb4 (4-byte support)
-NCDB=nextcloud_db
+NCDB=owncloud_db
 PW_FILE=/var/mysql_password.txt
 printf "\nEnabling UTF8mb4 support on $NCDB....\n"
 echo "Please be patient, it may take a while."
@@ -359,11 +359,11 @@ do
 done
 echo
 clear
-NCADMIN=$(sudo -u www-data php $NCPATH/occ user:list | awk '{print $3}')
+#NCADMIN=$(sudo -u www-data php $NCPATH/occ user:list | awk '{print $3}')
 printf "${Color_Off}\n"
-echo "For better security, change the Nextcloud password for [$NCADMIN]"
+echo "For better security, change the ownCloud password for [$NCADMIN]"
 echo "The current password for $NCADMIN is [$NCPASS]"
-any_key "Press any key to change password for Nextcloud..."
+any_key "Press any key to change password for ownCloud..."
 while true
 do
     sudo -u www-data php "$NCPATH/occ" user:resetpassword "$NCADMIN" && break
@@ -393,10 +393,10 @@ sudo -u www-data php "$NCPATH/occ" maintenance:repair
 rm -f "$SCRIPTS/ip.sh"
 rm -f "$SCRIPTS/test_connection.sh"
 rm -f "$SCRIPTS/instruction.sh"
-rm -f "$NCDATA/nextcloud.log"
-rm -f "$SCRIPTS/nextcloud-startup-script.sh"
+rm -f "$NCDATA/owncloud.log"
+rm -f "$SCRIPTS/owncloud-startup-script.sh"
 find /root "/home/$UNIXUSER" -type f \( -name '*.sh*' -o -name '*.html*' -o -name '*.tar*' -o -name '*.zip*' \) -delete
-sed -i "s|instruction.sh|nextcloud.sh|g" "/home/$UNIXUSER/.bash_profile"
+sed -i "s|instruction.sh|owncloud.sh|g" "/home/$UNIXUSER/.bash_profile"
 
 truncate -s 0 \
     /root/.bash_history \
@@ -442,9 +442,9 @@ ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print
 clear
 printf "%s\n""${Green}"
 echo    "+--------------------------------------------------------------------+"
-echo    "|      Congratulations! You have successfully installed Nextcloud!   |"
+echo    "|      Congratulations! You have successfully installed ownCloud!   |"
 echo    "|                                                                    |"
-printf "|         ${Color_Off}Login to Nextcloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}         |\n"
+printf "|         ${Color_Off}Login to ownCloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}         |\n"
 echo    "|                                                                    |"
 printf "|         ${Color_Off}Publish your server online! ${Cyan}https://goo.gl/iUGE2U${Green}          |\n"
 echo    "|                                                                    |"
@@ -464,6 +464,6 @@ rm -f "$SCRIPTS"/trusted.sh
 sed -i "s|precedence ::ffff:0:0/96  100|#precedence ::ffff:0:0/96  100|g" /etc/gai.conf
 
 # Reboot
-rm -f "$SCRIPTS/nextcloud-startup-script.sh"
+rm -f "$SCRIPTS/owncloud-startup-script.sh"
 any_key "Installation finished, press any key to reboot system..."
 reboot
