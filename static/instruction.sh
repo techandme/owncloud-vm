@@ -1,24 +1,37 @@
 #!/bin/bash
-#
+
+# Tech and Me © - 2017, https://www.techandme.se/
+
+# shellcheck disable=2034,2059
+true
+# shellcheck source=lib.sh
+. <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+
+# Check for errors + debug code and abort if something isn't right
+# 1 = ON
+# 0 = OFF
+DEBUG=0
+debug_mode
+
 clear
 cat << INST1
 +-----------------------------------------------------------------------+
-| Thank you for downloading this ownCloud VM made by Tech and Me!       |
+| Thanks for downloading this ownCloud VM by Tech and Me!  		|
 |                                                                       |
 INST1
-echo -e "|"  "\e[32mTo run the startup script type the sudoer password. This will either\e[0m  |"
-echo -e "|"  "\e[32mbe the default ('owncloud') or the one chosen during installation.\e[0m    |"
+echo -e "|"  "${Green}To run the startup script type the sudoer password. This will either${Color_Off}  |"
+echo -e "|"  "${Green}be the default ('owncloud') or the one chosen during installation.${Color_Off}    |"
 cat << INST2
 |                                                                       |
 | If you have never done this before you can follow the complete        |
-| installation instructions here: https://goo.gl/3FYtz6                 |
+| installation instructions here: https://goo.gl/JVxuPh                 |
 |                                                                       |
 | You can schedule the ownCloud update process using a cron job.        |
 | This is done using a script built into this VM that automatically     |
 | updates ownCloud, sets secure permissions, and logs the successful    |
-| update to /var/log/cronjobs_success.log                    		|
+| update to /var/log/cronjobs_success.log                               |
 | Detailed instructions for setting this up can be found here:          |
-| https://www.techandme.se/set-automatic-owncloud-updates/              |
+| https://www.techandme.se/nextcloud-update-is-now-fully-automated/     |
 |                                                                       |
 |  ####################### Tech and Me - 2017 ########################  |
 +-----------------------------------------------------------------------+

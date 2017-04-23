@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cat /dev/null > ~/.bash_history
+truncate -s0 "$HOME/.bash_history"
 
 exit 0
