@@ -197,12 +197,12 @@ calc_wt_size() {
 
 download_verify_owncloud_stable() {
 wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
-wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
 mkdir -p "$GPGDIR"
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
 wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
-gpg --import $GPGDIR/owncloud.asc
-gpg --verify "$GPGDIR/owncloud.asc" "$GPGDIR/$STABLEVERSION.tar.bz2.asc"
+gpg --import "$GPGDIR/owncloud.asc"
+gpg --verify "$GPGDIR/$STABLEVERSION.tar.bz2.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
 }
 
