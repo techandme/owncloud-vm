@@ -21,7 +21,7 @@ debug_mode
 # Check if root
 if ! is_root
 then
-    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/nextcloud_install_production.sh\n" "$SCRIPTS"
+    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/owncloud_install_production.sh\n" "$SCRIPTS"
     exit 1
 fi
 
@@ -55,7 +55,7 @@ fi
 # Check if key is available
 if ! wget -q -T 10 -t 2 "$NCREPO" > /dev/null
 then
-    echo "Nextcloud repo is not available, exiting..."
+    echo "ownCloud repo is not available, exiting..."
     exit 1
 fi
 
@@ -226,7 +226,7 @@ check_command apt install -y \
 # Install VM-tools
 apt install open-vm-tools -y
 
-# Download and validate Nextcloud package
+# Download and validate ownCloud package
 check_command download_verify_owncloud_stable
 
 if [ ! -f "$HTML/$STABLEVERSION.tar.bz2" ]
@@ -240,21 +240,21 @@ tar -xjf "$HTML/$STABLEVERSION.tar.bz2" -C "$HTML" & spinner_loading
 rm "$HTML/$STABLEVERSION.tar.bz2"
 
 # Secure permissions
-download_static_script setup_secure_permissions_nextcloud
+download_static_script setup_secure_permissions_owncloud
 bash $SECURE & spinner_loading
 
-# Install Nextcloud
+# Install ownCloud
 cd "$NCPATH"
 check_command sudo -u www-data php occ maintenance:install \
     --data-dir "$NCDATA" \
     --database "mysql" \
-    --database-name "nextcloud_db" \
+    --database-name "owncloud_db" \
     --database-user "root" \
     --database-pass "$MYSQL_PASS" \
     --admin-user "$NCUSER" \
     --admin-pass "$NCPASS"
 echo
-echo "Nextcloud version:"
+echo "ownCloud version:"
 sudo -u www-data php "$NCPATH"/occ status
 sleep 3
 echo
@@ -371,8 +371,8 @@ SSL_CREATE
 fi
 
 # Enable new config
-a2ensite nextcloud_ssl_domain_self_signed.conf
-a2ensite nextcloud_http_domain_self_signed.conf
+a2ensite owncloud_ssl_domain_self_signed.conf
+a2ensite owncloud_http_domain_self_signed.conf
 a2dissite default-ssl
 service apache2 restart
 
@@ -419,9 +419,9 @@ done 9< results
 rm -f results
 
 # Get needed scripts for first bootup
-if [ ! -f "$SCRIPTS"/nextcloud-startup-script.sh ]
+if [ ! -f "$SCRIPTS"/owncloud-startup-script.sh ]
 then
-check_command wget -q "$GITHUB_REPO"/nextcloud-startup-script.sh -P "$SCRIPTS"
+check_command wget -q "$GITHUB_REPO"/owncloud-startup-script.sh -P "$SCRIPTS"
 fi
 download_static_script instruction
 download_static_script history
