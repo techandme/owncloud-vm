@@ -35,6 +35,7 @@ STATIC="$GITHUB_REPO/static"
 LETS_ENC="$GITHUB_REPO/lets-encrypt"
 APP="$GITHUB_REPO/apps"
 NCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
+ocdownloadrepo=https://download.owncloud.org/community
 ISSUES="https://github.com/techandme/owncloud-vm/issues"
 # User information
 NCPASS=owcloud
@@ -195,7 +196,7 @@ calc_wt_size() {
 }
 
 download_verify_owncloud_stable() {
-wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -P "$HTML"
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
 mkdir -p "$GPGDIR"
 wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
