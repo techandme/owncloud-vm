@@ -196,12 +196,12 @@ calc_wt_size() {
 }
 
 download_verify_owncloud_stable() {
-wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$HTML"
 mkdir -p "$GPGDIR"
 wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
-gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$OpenPGP_fingerprint"
-gpg --verify "https://owncloud.org/owncloud.asc" "$HTML/$STABLEVERSION.tar.bz2"
+gpg --import $GPGDIR/owncloud.asc
+gpg --verify "$GPGDIR/owncloud.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
 }
 
