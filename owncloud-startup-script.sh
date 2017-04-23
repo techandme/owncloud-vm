@@ -443,9 +443,9 @@ ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print
 clear
 printf "%s\n""${Green}"
 echo    "+--------------------------------------------------------------------+"
-echo    "|      Congratulations! You have successfully installed ownCloud!   |"
+echo    "|      Congratulations! You have successfully installed ownCloud!    |"
 echo    "|                                                                    |"
-printf "|         ${Color_Off}Login to ownCloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}         |\n"
+printf "|         ${Color_Off}Login to ownCloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}          |\n"
 echo    "|                                                                    |"
 printf "|         ${Color_Off}Publish your server online! ${Cyan}https://goo.gl/iUGE2U${Green}          |\n"
 echo    "|                                                                    |"

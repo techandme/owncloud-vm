@@ -5,7 +5,7 @@
         <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
         <style type="text/css">
             body {
-                background-color: #0082c9;
+                background-color: #1d2d44;
                 font-weight: 300;
                 font-size: 1em;
                 line-height: 1.6em;
@@ -99,7 +99,7 @@
             <p>Before you can use ownCloud you have to run the setup script to complete the installation. This is easily done by just typing 'owncloud' when you log in to the terminal for the first time.</p>
             <p>The full path to the setup script is: /var/scripts/owncloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
             <center>
-                <iframe width="560" height="315" src="https://www.youtube.com/watch?v=QLFMvaX-D0o" frameborder="0" allowfullscreen></iframe>
+                <iframe width="420" height="345" src="https://www.youtube.com/embed/QLFMvaX-D0o"></iframe>
             </center>
         </div>
 

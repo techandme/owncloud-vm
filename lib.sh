@@ -57,8 +57,8 @@ MYCNF=/root/.my.cnf
 [ ! -z "$CHANGE_MYSQL" ] && OLDMYSQL=$(cat $PW_FILE)
 # ownCloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
-NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1)
-STABLEVERSION="owncloud-$NCVERSION"  
+NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1 && rm -f Ubuntu_16.04)
+STABLEVERSION="owncloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
