@@ -62,7 +62,7 @@ fi
 
 # Upgrade ownCloud
 echo "Checking latest released version on the ownCloud download server and if it's possible to download..."
-wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -O /dev/null & spinner_loading
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -O /dev/null & spinner_loading
 if [ $? -eq 0 ]; then
     printf "${Green}SUCCESS!${Color_Off}\n"
     rm -f "$STABLEVERSION.tar.bz2"
