@@ -33,9 +33,7 @@ echo "If the field after ':' is blank you are probably running as a pure root us
 echo "It's possible to install with root, but there will be minor errors."
 echo
 echo "Please create a user with sudo permissions if you want an optimal installation."
-wget -q "$STATIC"/adduser.sh
-bash adduser.sh
-rm -f adduser.sh
+run_static_script adduser
 
 # Check Ubuntu version
 echo "Checking server OS and version..."
@@ -451,10 +449,12 @@ apt autoremove -y
 apt autoclean
 find /root "/home/$UNIXUSER" -type f \( -name '*.sh*' -o -name '*.html*' -o -name '*.tar*' -o -name '*.zip*' \) -delete
 
-# Install virtual kernels
-apt install linux-tools-virtual-hwe-16.04 linux-cloud-tools-virtual-hwe-16.04  -y
-apt install linux-image-virtual-hwe-16.04 -y
-apt install linux-virtual-hwe-16.04 -y
+# Install virtual kernels for Hyper-V, and extra for UTF8 kernel module + Collabora
+apt-get install --install-recommends -y \
+linux-virtual-lts-xenial \
+linux-tools-virtual-lts-xenial \
+linux-cloud-tools-virtual-lts-xenial \
+linux-image-extra-"$(uname -r)"
 
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
 bash $SECURE & spinner_loading
