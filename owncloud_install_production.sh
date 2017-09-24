@@ -308,7 +308,7 @@ sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpmode --value="smtp
 sudo -u www-data php "$NCPATH"/occ config:system:set log_rotate_size --value="10485760"
 
 # Enable OPCache for PHP 
-# https://docs.nextcloud.com/server/12/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
+# https://docs.owncloud.com/server/12/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
 phpenmod opcache
 {
 echo "# OPcache settings for ownCloud"

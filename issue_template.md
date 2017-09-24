@@ -35,7 +35,7 @@ Please use http://hastebin.com/ for long error messages or logs. Thanks!
 
 #### Log file (/var/ocdata/owncloud.log)
 ```
-Insert your nextcloud.log file here
+Insert your owncloud.log file here
 ```
 
 #### Installation log (command output)

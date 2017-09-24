@@ -26,7 +26,7 @@ iface lo inet loopback
 iface $IFACE inet static
 pre-up /sbin/ethtool -K $IFACE2 tso off
 pre-up /sbin/ethtool -K $IFACE2 gso off
-# Fixes https://github.com/nextcloud/vm/issues/92:
+# Fixes https://github.com/owncloud/vm/issues/92:
 pre-up ip link set dev $IFACE2 mtu 1430
 
 # Best practice is to change the static address

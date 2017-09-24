@@ -275,7 +275,7 @@ cat << ENDMSG
 | Please check the guide for further information on how to enable SSL.   |
 |                                                                        |
 | This script is developed on GitHub, feel free to contribute:           |
-| https://github.com/nextcloud/vm                                        |
+| https://github.com/owncloud/vm                                        |
 |                                                                        |
 | The script will now do some cleanup and revert the settings.           |
 +------------------------------------------------------------------------+

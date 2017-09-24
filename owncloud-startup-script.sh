@@ -331,7 +331,7 @@ do
 done
 clear
 
-# Fixes https://github.com/nextcloud/vm/issues/58
+# Fixes https://github.com/owncloud/vm/issues/58
 a2dismod status
 service apache2 reload
 

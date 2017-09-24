@@ -16,7 +16,7 @@ debug_mode
 
 clear
 figlet -f small ownCloud
-echo "     https://www.nextcloud.com"
+echo "     https://www.owncloud.com"
 echo
 echo
 echo "Hostname: $(hostname -s)"
