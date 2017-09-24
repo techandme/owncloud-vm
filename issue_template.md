@@ -1,8 +1,8 @@
 <!--
-Thank you for reporting your issue to us!
+Thanks for reporting issues back to this repository, you contributons are much appriciated! This is the issue tracker of Tech and Me's ownCloud VM, if you have any support question please check out https://shop.techandme.se/index.php/product-category/support
 
 Please report only issues corresponding to the VM for ownCloud 9 or later. If you found a bug that is related to core, 
-you can file your report here: https://github.com/nextcloud/server
+you can file your report here: https://github.com/owncloud/server
 -->
 ## Steps to reproduce
 1.
