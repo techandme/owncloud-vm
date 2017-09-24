@@ -240,7 +240,7 @@ tar -xjf "$HTML/$STABLEVERSION.tar.bz2" -C "$HTML" & spinner_loading
 rm "$HTML/$STABLEVERSION.tar.bz2"
 
 # Secure permissions
-download_static_script setup_secure_permissions_nextcloud
+download_static_script setup_secure_permissions_owncloud
 bash $SECURE & spinner_loading
 
 # Create database owncloud_db
