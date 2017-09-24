@@ -7,12 +7,11 @@ true
 
 # Dirs
 SCRIPTS=/var/scripts
-NCPATH=/var/www/nextcloud
+NCPATH=/var/www/owncloud
 HTML=/var/www
-NCDATA=/var/ncdata
-SNAPDIR=/var/snap/spreedme
+NCDATA=/var/ocdata
 GPGDIR=/tmp/gpg
-BACKUP=/var/NCBACKUP
+BACKUP=/var/OCBACKUP
 # Ubuntu OS
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
@@ -30,15 +29,16 @@ INTERFACES="/etc/network/interfaces"
 NETMASK=$($IFCONFIG | grep -w inet |grep -v 127.0.0.1| awk '{print $4}' | cut -d ":" -f 2)
 GATEWAY=$(route -n|grep "UG"|grep -v "UGH"|cut -f 10 -d " ")
 # Repo
-GITHUB_REPO="https://raw.githubusercontent.com/nextcloud/vm/master"
+GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/refactor"
 STATIC="$GITHUB_REPO/static"
 LETS_ENC="$GITHUB_REPO/lets-encrypt"
 APP="$GITHUB_REPO/apps"
-NCREPO="https://download.nextcloud.com/server/releases"
-ISSUES="https://github.com/nextcloud/vm/issues"
+NCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
+ocdownloadrepo="https://download.owncloud.org/community"
+ISSUES="https://github.com/techandme/owncloud-vm/issues"
 # User information
-NCPASS=nextcloud
-NCUSER=ncadmin
+NCPASS=owncloud
+NCUSER=ocadmin
 UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
 ROOT_PROFILE="/root/.bash_profile"
@@ -54,67 +54,22 @@ MYCNF=/root/.my.cnf
 [ ! -z "$NCDBPASS" ] && NCCONFIGDBPASS=$(grep "dbpassword" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
 # Path to specific files
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
-SECURE="$SCRIPTS/setup_secure_permissions_nextcloud.sh"
+SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
-HTTP_CONF="/etc/apache2/sites-available/nextcloud_http_domain_self_signed.conf"
+HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
 HTTP2_CONF="/etc/apache2/mods-available/http2.conf"
 # ownCloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
-NCVERSION=$(curl -s -m 900 $NCREPO/ | sed --silent 's/.*href="nextcloud-\([^"]\+\).zip.asc".*/\1/p' | sort --version-sort | tail -1)
-STABLEVERSION="nextcloud-$NCVERSION"
+NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1 && rm -f Ubuntu_16.04)
+STABLEVERSION="owncloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
 OpenPGP_fingerprint='28806A878AE423A28372792ED75899B9A724937A'
-# OnlyOffice URL
-[ ! -z "$OO_INSTALL" ] && SUBDOMAIN=$(whiptail --title "Techandme.se OnlyOffice" --inputbox "OnlyOffice subdomain eg: office.yourdomain.com" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
-# ownCloud Main Domain
-[ ! -z "$OO_INSTALL" ] && NCDOMAIN=$(whiptail --title "Techandme.se OnlyOffice" --inputbox "ownCloud url, make sure it looks like this: cloud\\.yourdomain\\.com" "$WT_HEIGHT" "$WT_WIDTH" cloud\\.yourdomain\\.com 3>&1 1>&2 2>&3)
-# Collabora Docker URL
-[ ! -z "$COLLABORA_INSTALL" ] && SUBDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
-# ownCloud Main Domain
-[ ! -z "$COLLABORA_INSTALL" ] && NCDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "ownCloud url, make sure it looks like this: cloud\\.yourdomain\\.com" "$WT_HEIGHT" "$WT_WIDTH" cloud\\.yourdomain\\.com 3>&1 1>&2 2>&3)
-# Letsencrypt
+# Lets Encrypt
 LETSENCRYPTPATH="/etc/letsencrypt"
 CERTFILES="$LETSENCRYPTPATH/live"
 DHPARAMS="$CERTFILES/$SUBDOMAIN/dhparam.pem"
-# Collabora App
-[ ! -z "$COLLABORA_INSTALL" ] && COLLVER=$(curl -s https://api.github.com/repos/nextcloud/richdocuments/releases/latest | grep "tag_name" | cut -d\" -f4)
-COLLVER_FILE=richdocuments.tar.gz
-COLLVER_REPO=https://github.com/nextcloud/richdocuments/releases/download
-HTTPS_CONF="/etc/apache2/sites-available/$SUBDOMAIN.conf"
-# Nextant
-SOLR_VERSION=$(curl -s https://github.com/apache/lucene-solr/tags | grep -o "release.*</span>$" | grep -o '[0-9].[0-9].[0-9]' | sort -t. -k1,1n -k2,2n -k3,3n | tail -n1)
-[ ! -z "$NEXTANT_INSTALL" ] && NEXTANT_VERSION=$(curl -s https://api.github.com/repos/nextcloud/nextant/releases/latest | grep 'tag_name' | cut -d\" -f4 | sed -e "s|v||g")
-NT_RELEASE=nextant-$NEXTANT_VERSION.tar.gz
-NT_DL=https://github.com/nextcloud/nextant/releases/download/v$NEXTANT_VERSION/$NT_RELEASE
-SOLR_RELEASE=solr-$SOLR_VERSION.tgz
-SOLR_DL=http://www-eu.apache.org/dist/lucene/solr/$SOLR_VERSION/$SOLR_RELEASE
-NC_APPS_PATH=$NCPATH/apps/
-SOLR_HOME=/home/$SUDO_USER/solr_install/
-SOLR_JETTY=/opt/solr/server/etc/jetty-http.xml
-SOLR_DSCONF=/opt/solr-$SOLR_VERSION/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml
-# Passman
-[ ! -z "$PASSMAN_INSTALL" ] && PASSVER=$(curl -s https://api.github.com/repos/nextcloud/passman/releases/latest | grep "tag_name" | cut -d\" -f4)
-PASSVER_FILE=passman_$PASSVER.tar.gz
-PASSVER_REPO=https://releases.passman.cc
-SHA256=/tmp/sha256
-# Preview Generator
-[ ! -z "$PREVIEW_INSTALL" ] && PREVER=$(curl -s https://api.github.com/repos/rullzer/previewgenerator/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
-PREVER_FILE=previewgenerator.tar.gz
-PREVER_REPO=https://github.com/rullzer/previewgenerator/releases/download
-# Calendar
-[ ! -z "$CALENDAR_INSTALL" ] && CALVER=$(curl -s https://api.github.com/repos/nextcloud/calendar/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
-CALVER_FILE=calendar.tar.gz
-CALVER_REPO=https://github.com/nextcloud/calendar/releases/download
-# Contacts
-[ ! -z "$CONTACTS_INSTALL" ] && CONVER=$(curl -s https://api.github.com/repos/nextcloud/contacts/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
-CONVER_FILE=contacts.tar.gz
-CONVER_REPO=https://github.com/nextcloud/contacts/releases/download
-# Spreed.ME
-SPREEDME_VER=$(wget -q https://raw.githubusercontent.com/strukturag/nextcloud-spreedme/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
-SPREEDME_FILE="v$SPREEDME_VER.tar.gz"
-SPREEDME_REPO=https://github.com/strukturag/nextcloud-spreedme/archive
 # phpMyadmin
 PHPMYADMINDIR=/usr/share/phpmyadmin
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
