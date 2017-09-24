@@ -64,8 +64,6 @@ NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 }
 STABLEVERSION="owncloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
-# Keys
-OpenPGP_fingerprint='28806A878AE423A28372792ED75899B9A724937A'
 # Lets Encrypt
 LETSENCRYPTPATH="/etc/letsencrypt"
 CERTFILES="$LETSENCRYPTPATH/live"
@@ -313,13 +311,14 @@ calc_wt_size() {
     export WT_MENU_HEIGHT
 }
 
-download_verify_nextcloud_stable() {
-rm -f "$HTML/$STABLEVERSION.tar.bz2"
-wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -P "$HTML"
+download_verify_owncloud_stable() {
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
+wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
+wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
 mkdir -p "$GPGDIR"
 wget -q "$NCREPO/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
-gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$OpenPGP_fingerprint"
+-gpg --import "$GPGDIR/owncloud.asc"
 gpg --verify "$GPGDIR/$STABLEVERSION.tar.bz2.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
 rm -f releases
