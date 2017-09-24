@@ -2,7 +2,7 @@ import glob, json, os, subprocess, urllib2
 
 nc_path      = '/var/www/owncloud/apps/'
 backup_path  = '/var/NCBACKUP/apps/'
-shipped_url  = 'http://raw.githubusercontent.com/owncloud/server/master/core/shipped.json'
+shipped_url  = 'http://raw.githubusercontent.com/owncloud/core/master/core/shipped.json'
 
 json_data    = json.load(urllib2.urlopen(shipped_url))
 shipped_apps = json_data['shippedApps'] + json_data['alwaysEnabled']
