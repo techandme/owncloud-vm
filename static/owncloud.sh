@@ -15,8 +15,8 @@ DEBUG=0
 debug_mode
 
 clear
-figlet -f small ownCloud
-echo "     https://www.owncloud.com"
+figlet -f small Tech and Me
+echo "    https://www.techandme.se"
 echo
 echo
 echo "Hostname: $(hostname -s)"
