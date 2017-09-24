@@ -203,7 +203,7 @@ else
 fi
 
 # Download and validate ownCloud package
-check_command download_verify_nextcloud_stable
+check_command download_verify_owncloud_stable
 
 if [ -f "$HTML/$STABLEVERSION.tar.bz2" ]
 then

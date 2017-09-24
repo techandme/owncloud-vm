@@ -21,7 +21,7 @@ debug_mode
 # Check if root
 if ! is_root
 then
-    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/nextcloud_install_production.sh\n" "$SCRIPTS"
+    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/owncloud_install_production.sh\n" "$SCRIPTS"
     exit 1
 fi
 
@@ -227,7 +227,7 @@ check_command apt install -y \
 apt install open-vm-tools -y
 
 # Download and validate ownCloud package
-check_command download_verify_nextcloud_stable
+check_command download_verify_owncloud_stable
 
 if [ ! -f "$HTML/$STABLEVERSION.tar.bz2" ]
 then
@@ -243,15 +243,15 @@ rm "$HTML/$STABLEVERSION.tar.bz2"
 download_static_script setup_secure_permissions_nextcloud
 bash $SECURE & spinner_loading
 
-# Create database nextcloud_db
-mysql -u root -p"$MARIADB_PASS" -e "CREATE DATABASE IF NOT EXISTS nextcloud_db;"
+# Create database owncloud_db
+mysql -u root -p"$MARIADB_PASS" -e "CREATE DATABASE IF NOT EXISTS owncloud_db;"
 
 # Install ownCloud
 cd "$NCPATH"
 check_command sudo -u www-data php occ maintenance:install \
     --data-dir "$NCDATA" \
     --database "mysql" \
-    --database-name "nextcloud_db" \
+    --database-name "owncloud_db" \
     --database-user "root" \
     --database-pass "$MARIADB_PASS" \
     --admin-user "$NCUSER" \
@@ -413,7 +413,7 @@ fi
 
 # Enable new config
 a2ensite owncloud_ssl_domain_self_signed.conf
-a2ensite nextcloud_http_domain_self_signed.conf
+a2ensite owncloud_http_domain_self_signed.conf
 a2dissite default-ssl
 
 # Enable HTTP/2 server wide, if user decides to

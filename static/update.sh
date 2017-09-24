@@ -23,6 +23,6 @@ fi
 mkdir -p "$SCRIPTS"
 
 # Delete, download, run
-run_main_script nextcloud_update
+run_main_script owncloud_update
 
 exit
