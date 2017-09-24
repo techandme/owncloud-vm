@@ -61,7 +61,7 @@ HTTP2_CONF="/etc/apache2/mods-available/http2.conf"
 # ownCloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
 NCVERSION=$(curl -s -m 900 $NCREPO/ | sed --silent 's/.*href="owncloud-files_\([^"]\+\).orig.tar.gz".*/\1/p' | sort --version-sort | tail -1)
-STABLEVERSION="owncloud-files_$NCVERSION"
+STABLEVERSION="owncloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Lets Encrypt
