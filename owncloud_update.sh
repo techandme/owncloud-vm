@@ -58,7 +58,7 @@ rm /var/lib/apt/lists/* -r
 if [ ! -f "$SECURE" ]
 then
     mkdir -p "$SCRIPTS"
-    download_static_script "$SECURE"
+    download_static_script setup_secure_permissions_owncloud
     chmod +x "$SECURE"
 fi
 
