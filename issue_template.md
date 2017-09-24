@@ -33,7 +33,7 @@ Tell us what happens instead
 Please use http://hastebin.com/ for long error messages or logs. Thanks!
 -->
 
-#### Log file (/var/ncdata/nextcloud.log)
+#### Log file (/var/ocdata/owncloud.log)
 ```
 Insert your nextcloud.log file here
 ```
