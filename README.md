@@ -4,7 +4,7 @@
 
 Scripts to setup and configure the ownCloud VM. Feel free to contribute!
 
-We also produce the official [Nextcloud VM](https://github.com/owncloud/vm) which is updated more frequently.
+We also produce the official [Nextcloud VM](https://github.com/nextcloud/vm) which is updated more frequently.
 
 ----------------------------------------------------------------------------------------------------------------------------
 
