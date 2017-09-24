@@ -2,7 +2,7 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
 unset FIRST_IFACE
 unset CHECK_CURRENT_REPO
 
@@ -52,7 +52,7 @@ else
     mv /etc/network/interfaces.new /etc/network/interfaces
     service networking restart
     # shellcheck source=lib.sh
-    CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+    CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
     unset CHECK_CURRENT_REPO
 fi
 

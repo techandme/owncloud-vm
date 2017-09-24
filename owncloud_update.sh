@@ -2,7 +2,7 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-NCDB=1 && MYCNFPW=1 && NC_UPDATE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+NCDB=1 && MYCNFPW=1 && NC_UPDATE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
 unset NC_UPDATE
 unset MYCNFPW
 unset NCDB
