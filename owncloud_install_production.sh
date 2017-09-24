@@ -469,9 +469,9 @@ done 9< results
 rm -f results
 
 # Get needed scripts for first bootup
-if [ ! -f "$SCRIPTS"/nextcloud-startup-script.sh ]
+if [ ! -f "$SCRIPTS"/owncloud-startup-script.sh ]
 then
-check_command wget -q "$GITHUB_REPO"/nextcloud-startup-script.sh -P "$SCRIPTS"
+check_command wget -q "$GITHUB_REPO"/owncloud-startup-script.sh -P "$SCRIPTS"
 fi
 download_static_script instruction
 download_static_script history

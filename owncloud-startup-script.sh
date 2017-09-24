@@ -33,7 +33,7 @@ network_ok() {
 # Check if root
 if ! is_root
 then
-    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash $SCRIPTS/nextcloud-startup-script.sh\n"
+    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash $SCRIPTS/owncloud-startup-script.sh\n"
     exit 1
 fi
 
@@ -355,7 +355,7 @@ rm -f "$SCRIPTS/ip.sh"
 rm -f "$SCRIPTS/test_connection.sh"
 rm -f "$SCRIPTS/instruction.sh"
 rm -f "$NCDATA/nextcloud.log"
-rm -f "$SCRIPTS/nextcloud-startup-script.sh"
+rm -f "$SCRIPTS/owncloud-startup-script.sh"
 find /root "/home/$UNIXUSER" -type f \( -name '*.sh*' -o -name '*.html*' -o -name '*.tar*' -o -name '*.zip*' \) -delete
 sed -i "s|instruction.sh|nextcloud.sh|g" "/home/$UNIXUSER/.bash_profile"
 
@@ -435,5 +435,5 @@ echo
 
 # Reboot
 any_key "Installation finished, press any key to reboot system..."
-rm -f "$SCRIPTS/nextcloud-startup-script.sh"
+rm -f "$SCRIPTS/owncloud-startup-script.sh"
 reboot

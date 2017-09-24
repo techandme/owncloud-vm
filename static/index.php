@@ -97,7 +97,7 @@
                 <h3> How to mount the VM and and login:</h3>
             </center>
             <p>Before you can use ownCloud you have to run the setup script to complete the installation. This is easily done by just typing 'nextcloud' when you log in to the terminal for the first time.</p>
-            <p>The full path to the setup script is: /var/scripts/nextcloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
+            <p>The full path to the setup script is: /var/scripts/owncloud-startup-script.sh. When the script is finnished it will be deleted, as it's only used the first time you boot the machine.</p>
             <center>
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/-3fKEu2HhJo" frameborder="0" allowfullscreen></iframe>
             </center>
