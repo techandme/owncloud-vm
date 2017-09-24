@@ -111,9 +111,9 @@ download_static_script update
 download_static_script trusted
 download_static_script ip
 download_static_script test_connection
-download_static_script setup_secure_permissions_nextcloud
+download_static_script setup_secure_permissions_owncloud
 download_static_script change_mysql_pass
-download_static_script nextcloud
+download_static_script owncloud
 download_static_script update-config
 download_static_script index
 download_le_script activate-ssl
@@ -129,7 +129,7 @@ chmod +x -R $SCRIPTS
 chown root:root -R $SCRIPTS
 
 # Allow $UNIXUSER to run figlet script
-chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/nextcloud.sh"
+chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/owncloud.sh"
 
 clear
 echo "+--------------------------------------------------------------------+"
@@ -354,10 +354,10 @@ sudo -u www-data php "$NCPATH/occ" maintenance:repair
 rm -f "$SCRIPTS/ip.sh"
 rm -f "$SCRIPTS/test_connection.sh"
 rm -f "$SCRIPTS/instruction.sh"
-rm -f "$NCDATA/nextcloud.log"
+rm -f "$NCDATA/owncloud.log"
 rm -f "$SCRIPTS/owncloud-startup-script.sh"
 find /root "/home/$UNIXUSER" -type f \( -name '*.sh*' -o -name '*.html*' -o -name '*.tar*' -o -name '*.zip*' \) -delete
-sed -i "s|instruction.sh|nextcloud.sh|g" "/home/$UNIXUSER/.bash_profile"
+sed -i "s|instruction.sh|owncloud.sh|g" "/home/$UNIXUSER/.bash_profile"
 
 truncate -s 0 \
     /root/.bash_history \
