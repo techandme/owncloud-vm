@@ -2,8 +2,10 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-NC_UPDATE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+NCDB=1 && MYCNFPW=1 && NC_UPDATE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
 unset NC_UPDATE
+unset MYCNFPW
+unset NCDB
 
 # Tech and Me © - 2017, https://www.techandme.se/
 
@@ -25,6 +27,10 @@ then
     exit 1
 fi
 
+# Check if dpkg or apt is running
+is_process_running dpkg
+is_process_running apt
+
 # System Upgrade
 apt update -q4 & spinner_loading
 export DEBIAN_FRONTEND=noninteractive ; apt dist-upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
@@ -32,15 +38,31 @@ export DEBIAN_FRONTEND=noninteractive ; apt dist-upgrade -y -o Dpkg::Options::="
 # Update Redis PHP extention
 if type pecl > /dev/null 2>&1
 then
-    if [ "$(dpkg-query -W -f='${Status}' php7.0-dev 2>/dev/null | grep -c "ok installed")" == "0" ]
-    then
-        echo "Preparing to upgrade Redis Pecl extenstion..."
-        apt install php7.0-dev -y
-    fi
+    install_if_not php7.0-dev
     echo "Trying to upgrade the Redis Pecl extenstion..."
     pecl upgrade redis
     service apache2 restart
 fi
+
+# Update docker images
+# This updates ALL Docker images:
+if [ "$(docker ps -a >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
+then
+docker images | grep -v REPOSITORY | awk '{print $1}' | xargs -L1 docker pull
+fi
+
+## OLD WAY ##
+#if [ "$(docker image inspect onlyoffice/documentserver >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
+#then
+#    echo "Updating Docker container for OnlyOffice..."
+#    docker pull onlyoffice/documentserver
+#fi
+#
+#if [ "$(docker image inspect collabora/code >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
+#then
+#    echo "Updating Docker container for Collabora..."
+#    docker pull collabora/code
+#fi
 
 # Cleanup un-used packages
 apt autoremove -y
@@ -56,22 +78,8 @@ rm /var/lib/apt/lists/* -r
 if [ ! -f "$SECURE" ]
 then
     mkdir -p "$SCRIPTS"
-    download_static_script setup_secure_permissions_owncloud
+    download_static_script setup_secure_permissions_nextcloud
     chmod +x "$SECURE"
-fi
-
-# Upgrade ownCloud
-echo "Checking latest released version on the ownCloud download server and if it's possible to download..."
-wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -O /dev/null & spinner_loading
-if [ $? -eq 0 ]; then
-    printf "${Green}SUCCESS!${Color_Off}\n"
-    rm -f "$STABLEVERSION.tar.bz2"
-else
-    echo
-    printf "${IRed}ownCloud %s doesn't exist.${Color_Off}\n" "$NCVERSION"
-    echo "Please check available versions here: $NCREPO"
-    echo
-    exit 1
 fi
 
 # Major versions unsupported
@@ -103,11 +111,58 @@ else
     echo "No need to upgrade, this script will exit..."
     exit 0
 fi
+
+# Make sure old instaces can upgrade as well
+if [ ! -f "$MYCNF" ] && [ -f /var/mysql_password.txt ]
+then
+    regressionpw=$(cat /var/mysql_password.txt)
+cat << LOGIN > "$MYCNF"
+[client]
+password='$regressionpw'
+LOGIN
+    chmod 0600 $MYCNF
+    chown root:root $MYCNF
+    echo "Please restart the upgrade process, we fixed the password file $MYCNF."
+    exit 1    
+elif [ -z "$MARIADBMYCNFPASS" ] && [ -f /var/mysql_password.txt ]
+then
+    regressionpw=$(cat /var/mysql_password.txt)
+    {
+    echo "[client]"
+    echo "password='$regressionpw'"
+    } >> "$MYCNF"
+    echo "Please restart the upgrade process, we fixed the password file $MYCNF."
+    exit 1    
+fi
+
+if [ -z "$MARIADBMYCNFPASS" ]
+then
+    echo "Something went wrong with copying your mysql password to $MYCNF."
+    echo "We wrote a guide on how to fix this. You can find the guide here:"
+    echo "https://www.techandme.se/reset-mysql-5-7-root-password/"
+    exit 1
+else
+    rm -f /var/mysql_password.txt
+fi
+
+# Upgrade ownCloud
+echo "Checking latest released version on the ownCloud download server and if it's possible to download..."
+if ! wget -q --show-progress -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2"
+then
+    echo
+    printf "${IRed}ownCloud %s doesn't exist.${Color_Off}\n" "$NCVERSION"
+    echo "Please check available versions here: $NCREPO"
+    echo
+    exit 1
+else
+    rm -f "$STABLEVERSION.tar.bz2"
+fi
+
 echo "Backing up files and upgrading to ownCloud $NCVERSION in 10 seconds..."
 echo "Press CTRL+C to abort."
 sleep 10
 
-# Backup data
+# Check if backup exists and move to old
 echo "Backing up data..."
 DATE=$(date +%Y-%m-%d-%H%M%S)
 if [ -d $BACKUP ]
@@ -118,10 +173,10 @@ then
     mkdir -p $BACKUP
 fi
 
+# Backup data
 for folders in config themes apps
 do
-    rsync -Aax "$NCPATH/$folders" "$BACKUP"
-    if [ $? -eq 0 ]
+    if [[ "$(rsync -Aax $NCPATH/$folders $BACKUP)" -eq 0 ]]
     then
         BACKUP_OK=1
     else
@@ -137,8 +192,18 @@ else
     printf "${Green}\nBackup OK!${Color_Off}\n"
 fi
 
+# Backup MARIADB
+if mysql -u root -p"$MARIADBMYCNFPASS" -e "SHOW DATABASES LIKE '$NCCONFIGDB'" > /dev/null
+then
+    echo "Doing mysqldump of $NCCONFIGDB..."
+    check_command mysqldump -u root -p"$MARIADBMYCNFPASS" -d "$NCCONFIGDB" > "$BACKUP"/nextclouddb.sql
+else
+    echo "Doing mysqldump of all databases..."
+    check_command mysqldump -u root -p"$MARIADBMYCNFPASS" -d --all-databases > "$BACKUP"/alldatabases.sql
+fi
+
 # Download and validate ownCloud package
-check_command download_verify_owncloud_stable
+check_command download_verify_nextcloud_stable
 
 if [ -f "$HTML/$STABLEVERSION.tar.bz2" ]
 then
@@ -152,7 +217,7 @@ if [ -d $BACKUP/config/ ]
 then
     echo "$BACKUP/config/ exists"
 else
-    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if config/ folder exist."
+    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if config/ folder exist."
     exit 1
 fi
 
@@ -160,7 +225,7 @@ if [ -d $BACKUP/apps/ ]
 then
     echo "$BACKUP/apps/ exists"
 else
-    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if apps/ folder exist."
+    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if apps/ folder exist."
     exit 1
 fi
 
@@ -178,11 +243,14 @@ then
     cp -R $BACKUP/config "$NCPATH"/
     bash $SECURE & spinner_loading
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --off
-    sudo -u www-data php "$NCPATH"/occ upgrade
+    sudo -u www-data php "$NCPATH"/occ upgrade --no-app-disable
 else
-    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if the folders exist."
+    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if the folders exist."
     exit 1
 fi
+
+# Recover apps that exists in the backed up apps folder
+# run_static_script recover_apps
 
 # Enable Apps
 if [ -d "$SNAPDIR" ]
@@ -190,23 +258,11 @@ then
     run_app_script spreedme
 fi
 
-# Recover apps that exists in the backed up apps folder
-run_static_script recover_apps
-
 # Change owner of $BACKUP folder to root
 chown -R root:root "$BACKUP"
 
-# Increase max filesize (expects that changes are made in /etc/php5/apache2/php.ini)
-# Here is a guide: https://www.techandme.se/increase-max-file-size/
-VALUE="# php_value upload_max_filesize 511M"
-if grep -Fxq "$VALUE" "$NCPATH"/.htaccess
-then
-    echo "Value correct"
-else
-    sed -i 's/  php_value upload_max_filesize 511M/# php_value upload_max_filesize 511M/g' "$NCPATH"/.htaccess
-    sed -i 's/  php_value post_max_size 513M/# php_value post_max_size 511M/g' "$NCPATH"/.htaccess
-    sed -i 's/  php_value memory_limit 512M/# php_value memory_limit 512M/g' "$NCPATH"/.htaccess
-fi
+# Set max upload in ownCloud .htaccess
+configure_max_upload
 
 # Set $THEME_NAME
 VALUE2="$THEME_NAME"
@@ -235,6 +291,9 @@ then
     echo "NEXTCLOUD UPDATE success-$(date +"%Y%m%d")" >> /var/log/cronjobs_success.log
     sudo -u www-data php "$NCPATH"/occ status
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --off
+    echo
+    echo "If you notice that some apps are disabled it's due to that they are not compatible with the new ownCloud version."
+    echo "To recover your old apps, please check $BACKUP/apps and copy them to $NCPATH/apps manually."
     echo
     echo "Thank you for using Tech and Me's updater!"
     ## Un-hash this if you want the system to reboot

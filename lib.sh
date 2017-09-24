@@ -7,12 +7,12 @@ true
 
 # Dirs
 SCRIPTS=/var/scripts
-NCPATH=/var/www/owncloud
+NCPATH=/var/www/nextcloud
 HTML=/var/www
-NCDATA=/var/ocdata
+NCDATA=/var/ncdata
 SNAPDIR=/var/snap/spreedme
 GPGDIR=/tmp/gpg
-BACKUP=/var/OCBACKUP
+BACKUP=/var/NCBACKUP
 # Ubuntu OS
 DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
 OS=$(grep -ic "Ubuntu" /etc/issue.net)
@@ -30,39 +30,46 @@ INTERFACES="/etc/network/interfaces"
 NETMASK=$($IFCONFIG | grep -w inet |grep -v 127.0.0.1| awk '{print $4}' | cut -d ":" -f 2)
 GATEWAY=$(route -n|grep "UG"|grep -v "UGH"|cut -f 10 -d " ")
 # Repo
-GITHUB_REPO="https://raw.githubusercontent.com/techandme/owncloud-vm/refactor"
+GITHUB_REPO="https://raw.githubusercontent.com/nextcloud/vm/master"
 STATIC="$GITHUB_REPO/static"
 LETS_ENC="$GITHUB_REPO/lets-encrypt"
 APP="$GITHUB_REPO/apps"
-NCREPO="https://download.owncloud.org/download/repositories/stable/Ubuntu_16.04"
-ocdownloadrepo="https://download.owncloud.org/community"
-ISSUES="https://github.com/techandme/owncloud-vm/issues"
+NCREPO="https://download.nextcloud.com/server/releases"
+ISSUES="https://github.com/nextcloud/vm/issues"
 # User information
-NCPASS=owncloud
-NCUSER=ocadmin
+NCPASS=nextcloud
+NCUSER=ncadmin
 UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
 ROOT_PROFILE="/root/.bash_profile"
-# Passwords
+# MARIADB
 SHUF=$(shuf -i 25-29 -n 1)
-MYSQL_PASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
-NEWMYSQLPASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+MARIADB_PASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+NEWMARIADBPASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+[ ! -z "$NCDB" ] && NCCONFIGDB=$(grep "dbname" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
+ETCMYCNF=/etc/mysql/my.cnf
+MYCNF=/root/.my.cnf
+[ ! -z "$MYCNFPW" ] && MARIADBMYCNFPASS=$(grep "password" $MYCNF | sed -n "/password/s/^password='\(.*\)'$/\1/p")
+[ ! -z "$NCDB" ] && NCCONFIGDB=$(grep "dbname" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
+[ ! -z "$NCDBPASS" ] && NCCONFIGDBPASS=$(grep "dbpassword" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
 # Path to specific files
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
-SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
+SECURE="$SCRIPTS/setup_secure_permissions_nextcloud.sh"
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
-HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
-PW_FILE=/var/mysql_password.txt
-MYCNF=/root/.my.cnf
-[ ! -z "$CHANGE_MYSQL" ] && OLDMYSQL=$(cat $PW_FILE)
+HTTP_CONF="/etc/apache2/sites-available/nextcloud_http_domain_self_signed.conf"
+HTTP2_CONF="/etc/apache2/mods-available/http2.conf"
 # ownCloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
-NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1 && rm -f Ubuntu_16.04)
-STABLEVERSION="owncloud-$NCVERSION"
+NCVERSION=$(curl -s -m 900 $NCREPO/ | sed --silent 's/.*href="nextcloud-\([^"]\+\).zip.asc".*/\1/p' | sort --version-sort | tail -1)
+STABLEVERSION="nextcloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
 # Keys
 OpenPGP_fingerprint='28806A878AE423A28372792ED75899B9A724937A'
+# OnlyOffice URL
+[ ! -z "$OO_INSTALL" ] && SUBDOMAIN=$(whiptail --title "Techandme.se OnlyOffice" --inputbox "OnlyOffice subdomain eg: office.yourdomain.com" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+# ownCloud Main Domain
+[ ! -z "$OO_INSTALL" ] && NCDOMAIN=$(whiptail --title "Techandme.se OnlyOffice" --inputbox "ownCloud url, make sure it looks like this: cloud\\.yourdomain\\.com" "$WT_HEIGHT" "$WT_WIDTH" cloud\\.yourdomain\\.com 3>&1 1>&2 2>&3)
 # Collabora Docker URL
 [ ! -z "$COLLABORA_INSTALL" ] && SUBDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 # ownCloud Main Domain
@@ -92,6 +99,10 @@ SOLR_DSCONF=/opt/solr-$SOLR_VERSION/server/solr/configsets/data_driven_schema_co
 PASSVER_FILE=passman_$PASSVER.tar.gz
 PASSVER_REPO=https://releases.passman.cc
 SHA256=/tmp/sha256
+# Preview Generator
+[ ! -z "$PREVIEW_INSTALL" ] && PREVER=$(curl -s https://api.github.com/repos/rullzer/previewgenerator/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
+PREVER_FILE=previewgenerator.tar.gz
+PREVER_REPO=https://github.com/rullzer/previewgenerator/releases/download
 # Calendar
 [ ! -z "$CALENDAR_INSTALL" ] && CALVER=$(curl -s https://api.github.com/repos/nextcloud/calendar/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
 CALVER_FILE=calendar.tar.gz
@@ -160,9 +171,109 @@ ask_yes_or_no() {
     esac
 }
 
+# Check if process is runnnig: is_process_running dpkg
+is_process_running() {
+PROCESS="$1"
+
+while :
+do
+    RESULT=$(pgrep "${PROCESS}")
+
+    if [ "${RESULT:-null}" = null ]; then
+            break
+    else
+            echo "${PROCESS} is running. Waiting for it to stop..."
+            sleep 10
+    fi
+done
+}
+
+# Install certbot (Let's Encrypt)
+install_certbot() {
+certbot --version 2> /dev/null
+LE_IS_AVAILABLE=$?
+if [ $LE_IS_AVAILABLE -eq 0 ]
+then
+    certbot --version
+else
+    echo "Installing certbot (Let's Encrypt)..."
+    apt update -q4 & spinner_loading
+    apt install software-properties-common
+    add-apt-repository ppa:certbot/certbot -y
+    apt update -q4 & spinner_loading
+    apt install certbot -y -q
+    apt update -q4 & spinner_loading
+    apt dist-upgrade -y
+fi
+}
+
+# Let's Encrypt for subdomains
+le_subdomain() {
+a2dissite 000-default.conf
+service apache2 reload
+certbot certonly --standalone --pre-hook "service apache2 stop" --post-hook "service apache2 start" --agree-tos --rsa-key-size 4096 -d "$SUBDOMAIN"
+}
+
+configure_max_upload() {
+# Increase max filesize (expects that changes are made in /etc/php/7.0/apache2/php.ini)
+# Here is a guide: https://www.techandme.se/increase-max-file-size/
+sed -i 's/  php_value upload_max_filesize.*/# php_value upload_max_filesize 511M/g' "$NCPATH"/.htaccess
+sed -i 's/  php_value post_max_size.*/# php_value post_max_size 511M/g' "$NCPATH"/.htaccess
+sed -i 's/  php_value memory_limit.*/# php_value memory_limit 512M/g' "$NCPATH"/.htaccess
+}
+
+# Check if program is installed (is_this_installed apache2)
+is_this_installed() {
+if [ "$(dpkg-query -W -f='${Status}' "${1}" 2>/dev/null | grep -c "ok installed")" == "1" ]
+then
+    echo "${1} is installed, it must be a clean server."
+    exit 1
+fi
+}
+
+# Install_if_not program
+install_if_not () {
+if [[ "$(is_this_installed "${1}")" != "${1} is installed, it must be a clean server." ]]
+then
+    apt update -q4 & spinner_loading && apt install "${1}" -y
+fi
+}
+
+# Test RAM size 
+# Call it like this: ram_check [amount of min RAM in GB] [for which program]
+# Example: ram_check 2 ownCloud
+ram_check() {
+mem_available="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+if [ "${mem_available}" -lt "$((${1}*1002400))" ]
+then
+    printf "${Red}Error: ${1} GB RAM required to install ${2}!${Color_Off}\n" >&2
+    printf "${Red}Current RAM is: ("$((mem_available/1002400))" GB)${Color_Off}\n" >&2
+    sleep 3
+    exit 1
+else
+    printf "${Green}RAM for ${2} OK! ("$((mem_available/1002400))" GB)${Color_Off}\n"
+fi
+}
+
+# Test number of CPU
+# Call it like this: cpu_check [amount of min CPU] [for which program]
+# Example: cpu_check 2 ownCloud
+cpu_check() {
+nr_cpu="$(nproc)"
+if [ "${nr_cpu}" -lt "${1}" ]
+then
+    printf "${Red}Error: ${1} CPU required to install ${2}!${Color_Off}\n" >&2
+    printf "${Red}Current CPU: ("$((nr_cpu))")${Color_Off}\n" >&2
+    sleep 3
+    exit 1
+else
+    printf "${Green}CPU for ${2} OK! ("$((nr_cpu))")${Color_Off}\n"
+fi
+}
+
 check_command() {
-  eval "$*"
-  if [ ! $? -eq 0 ]; then
+  if ! eval "$*"
+  then
      printf "${IRed}Sorry but something went wrong. Please report this issue to $ISSUES and include the output of the error message. Thank you!${Color_Off}\n"
      echo "$* failed"
     exit 1
@@ -195,15 +306,16 @@ calc_wt_size() {
     export WT_MENU_HEIGHT
 }
 
-download_verify_owncloud_stable() {
-wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
+download_verify_nextcloud_stable() {
+rm -f "$HTML/$STABLEVERSION.tar.bz2"
+wget -q -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2" -P "$HTML"
 mkdir -p "$GPGDIR"
-wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
-wget -q "https://owncloud.org/owncloud.asc" -P "$GPGDIR"
+wget -q "$NCREPO/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
 chmod -R 600 "$GPGDIR"
-gpg --import "$GPGDIR/owncloud.asc"
+gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$OpenPGP_fingerprint"
 gpg --verify "$GPGDIR/$STABLEVERSION.tar.bz2.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
+rm -f releases
 }
 
 # Initial download of script in ../static
@@ -214,8 +326,8 @@ download_static_script() {
     if ! { wget -q "${STATIC}/${1}.sh" -P "$SCRIPTS" || wget -q "${STATIC}/${1}.php" -P "$SCRIPTS" || wget -q "${STATIC}/${1}.py" -P "$SCRIPTS"; }
     then
         echo "{$1} failed to download. Please run: 'sudo wget ${STATIC}/${1}.sh|.php|.py' again."
-        echo "If you get this error when running the owncloud-startup-script then just re-run it with:"
-        echo "'sudo bash $SCRIPTS/owncloud-startup-script.sh' and all the scripts will be downloaded again"
+        echo "If you get this error when running the nextcloud-startup-script then just re-run it with:"
+        echo "'sudo bash $SCRIPTS/nextcloud-startup-script.sh' and all the scripts will be downloaded again"
         exit 1
     fi
 }
@@ -228,9 +340,32 @@ download_le_script() {
     if ! { wget -q "${LETS_ENC}/${1}.sh" -P "$SCRIPTS" || wget -q "${LETS_ENC}/${1}.php" -P "$SCRIPTS" || wget -q "${LETS_ENC}/${1}.py" -P "$SCRIPTS"; }
     then
         echo "{$1} failed to download. Please run: 'sudo wget ${STATIC}/${1}.sh|.php|.py' again."
-        echo "If you get this error when running the owncloud-startup-script then just re-run it with:"
-        echo "'sudo bash $SCRIPTS/owncloud-startup-script.sh' and all the scripts will be downloaded again"
+        echo "If you get this error when running the nextcloud-startup-script then just re-run it with:"
+        echo "'sudo bash $SCRIPTS/nextcloud-startup-script.sh' and all the scripts will be downloaded again"
         exit 1
+    fi
+}
+
+# Run any script in ../master
+# call like: run_main_script name_of_script
+run_main_script() {
+    rm -f "${SCRIPTS}/${1}.sh" "${SCRIPTS}/${1}.php" "${SCRIPTS}/${1}.py"
+    if wget -q "${GITHUB_REPO}/${1}.sh" -P "$SCRIPTS"
+    then
+        bash "${SCRIPTS}/${1}.sh"
+        rm -f "${SCRIPTS}/${1}.sh"
+    elif wget -q "${GITHUB_REPO}/${1}.php" -P "$SCRIPTS"
+    then
+        php "${SCRIPTS}/${1}.php"
+        rm -f "${SCRIPTS}/${1}.php"
+    elif wget -q "${GITHUB_REPO}/${1}.py" -P "$SCRIPTS"
+    then
+        python "${SCRIPTS}/${1}.py"
+        rm -f "${SCRIPTS}/${1}.py"
+    else
+        echo "Downloading ${1} failed"
+        echo "Script failed to download. Please run: 'sudo wget ${GITHUB_REPO}/${1}.sh|php|py' again."
+        sleep 3
     fi
 }
 
@@ -259,7 +394,7 @@ run_static_script() {
 }
 
 # Run any script in ../apps
-# call like: run_app_script collabora|nextant|passman|spreedme|contacts|calendar|webmin
+# call like: run_app_script collabora|nextant|passman|spreedme|contacts|calendar|webmin|previewgenerator
 run_app_script() {
     rm -f "${SCRIPTS}/${1}.sh" "${SCRIPTS}/${1}.php" "${SCRIPTS}/${1}.py"
     if wget -q "${APP}/${1}.sh" -P "$SCRIPTS"

@@ -1,33 +1,49 @@
 <!--
-Thanks for reporting issues back to this repository, you contributons are much appriciated! This is the issue tracker of Tech and Me's ownCloud VM, if you have any support question please check out https://shop.techandme.se/index.php/product-category/support
+Thank you for reporting your issue to us!
 
-To make it possible for us to help you please fill out below information carefully.
---> 
-
-<!--
-If you found a bug:
---> 
-### Steps to reproduce
+Please report only issues corresponding to the VM for ownCloud 9 or later. If you found a bug that is related to core, 
+you can file your report here: https://github.com/nextcloud/server
+-->
+## Steps to reproduce
 1.
 2.
 3.
 
-### Expected behaviour
+## Expected behaviour
 Tell us what should happen
 
-### Actual behaviour
+## Actual behaviour
 Tell us what happens instead
 
-### Insert printscreens here:
+## Server configuration
 
+**Server version:** (see your admin page)
 
-### Logs
-**Web server error log**
-```
-Insert your webserver log here
-```
+**VM version** (master / released version)
+
+**Updated from an older installed version or fresh install:**
+
+## Network
+**Do you use DHCP?**
+
+**Is port 80 and/or 443 open?**
+
+## Logs / Screenshots
 <!--
-If you have suggestions of enhancements
---> 
+Please use http://hastebin.com/ for long error messages or logs. Thanks!
+-->
 
-### Tell us what could be improved:
+#### Log file (/var/ncdata/nextcloud.log)
+```
+Insert your nextcloud.log file here
+```
+
+#### Installation log (command output)
+```
+Insert the CLI output here
+```
+
+#### Screenshoots
+<!--
+Please use http://imgur.com/ for screenshots. Thanks!
+-->

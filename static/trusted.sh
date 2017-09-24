@@ -21,7 +21,7 @@ then
     php $SCRIPTS/update-config.php $NCPATH/config/config.php overwrite.cli.url https://"$(hostname --fqdn)"/ >/dev/null 2>&1
 
     # Change .htaccess accordingly
-    sed -i "s|RewriteBase /owncloud|RewriteBase /|g" $NCPATH/.htaccess
+    sed -i "s|RewriteBase /nextcloud|RewriteBase /|g" $NCPATH/.htaccess
 
     # Cleanup
     rm -f $SCRIPTS/update-config.php

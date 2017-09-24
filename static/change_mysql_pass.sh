@@ -2,8 +2,8 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-CHANGE_MYSQL=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
-unset CHANGE_MYSQL
+MYCNFPW=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+unset MYCNFPW
 
 # Tech and Me © - 2017, https://www.techandme.se/
 
@@ -13,24 +13,18 @@ unset CHANGE_MYSQL
 DEBUG=0
 debug_mode
 
-# Change MySQL Password
-if mysqladmin -u root -p"$OLDMYSQL" password "$NEWMYSQLPASS" > /dev/null 2>&1
+# Change MARIADB Password
+if mysqladmin -u root -p"$MARIADBMYCNFPASS" password "$NEWMARIADBPASS" > /dev/null 2>&1
 then
-    echo -e "${Green}Your new MySQL root password is: $NEWMYSQLPASS${Color_Off}"
-    echo "$NEWMYSQLPASS" > $PW_FILE
+    echo -e "${Green}Your new MARIADB root password is: $NEWMARIADBPASS${Color_Off}"
     cat << LOGIN > "$MYCNF"
 [client]
-password='$NEWMYSQLPASS'
+password='$NEWMARIADBPASS'
 LOGIN
     chmod 0600 $MYCNF
     exit 0
 else
-    echo "Changing MySQL root password failed."
-    echo "Your old password is: $OLDMYSQL"
-    cat << LOGIN > "$MYCNF"
-[client]
-password='$OLDMYSQLPASS'
-LOGIN
-    chmod 0600 $MYCNF
+    echo "Changing MARIADB root password failed."
+    echo "Your old password is: $MARIADBMYCNFPASS"
     exit 1
 fi

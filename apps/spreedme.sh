@@ -16,7 +16,7 @@ debug_mode
 # Check if root
 if ! is_root
 then
-    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/owncloud_install_production.sh\n" "$SCRIPTS"
+    printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/nextcloud_install_production.sh\n" "$SCRIPTS"
     exit 1
 fi
 
@@ -28,11 +28,7 @@ then
 fi
 
 # Check if apache is installed
-if ! [ "$(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed")" -eq 1 ]
-then
-    echo "Apache is not installed, the script will exit."
-    exit 1
-fi
+install_if_not apache2
 
 # Install ownCloud Spreedme Snap
 if [ -d "$SNAPDIR" ]
@@ -66,6 +62,7 @@ else
     mv "nextcloud-spreedme-$SPREEDME_VER" spreedme
 fi
 check_command sudo -u www-data php "$NCPATH/occ" app:enable spreedme
+chown -R www-data:www-data $NCPATH/apps
 
 # Generate secret keys
 SHAREDSECRET=$(openssl rand -hex 32)

@@ -2,6 +2,13 @@
 
 # Tech and Me © - 2017, https://www.techandme.se/
 
+## Nextant is broken so no need to install it.
+echo "Sorry but this Nextant script is broken since Solr 7.0.0"
+echo "We will fix this as soon as possible, but until then you can't install it with this script."
+echo "Please try again later. Thank you for your patience."
+sleep 5
+exit 1
+
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
@@ -72,7 +79,7 @@ iptables -A INPUT -p tcp --dport 8983 -j DROP
 
 if service solr start
 then
-    sudo -u solr /opt/solr/bin/solr create -c nextant
+    sudo -u solr /opt/solr/bin/solr create -c nextant 
 else
     echo "Solr failed to start, something is wrong with the Solr installation"
     exit 1
@@ -92,16 +99,15 @@ check_command "echo \"SOLR_OPTS=\\\"\\\$SOLR_OPTS -Dsolr.allow.unsafe.resourcelo
 
 check_command service solr restart
 
-# Get nextant app for ownCloud
+# Get nextant app for nextcloud
 check_command wget -q -P "$NC_APPS_PATH" "$NT_DL"
 check_command cd "$NC_APPS_PATH"
 check_command tar zxf "$NT_RELEASE"
 
-# Set secure permissions
-run_static_script setup_secure_permissions_owncloud
-
 # Enable Nextant
 rm -r "$NT_RELEASE"
 check_command sudo -u www-data php $NCPATH/occ app:enable nextant
+chown -R www-data:www-data $NCPATH/apps
 check_command sudo -u www-data php $NCPATH/occ nextant:test http://127.0.0.1:8983/solr/ nextant --save
 check_command sudo -u www-data php $NCPATH/occ nextant:index
+
