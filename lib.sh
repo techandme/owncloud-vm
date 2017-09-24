@@ -312,6 +312,7 @@ calc_wt_size() {
 }
 
 download_verify_owncloud_stable() {
+rm -f "$HTML/$STABLEVERSION.tar.bz2"
 wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2" -P "$HTML"
 mkdir -p "$GPGDIR"
 wget -q -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2.asc" -P "$GPGDIR"
