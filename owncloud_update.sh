@@ -44,26 +44,6 @@ then
     service apache2 restart
 fi
 
-# Update docker images
-# This updates ALL Docker images:
-if [ "$(docker ps -a >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
-then
-docker images | grep -v REPOSITORY | awk '{print $1}' | xargs -L1 docker pull
-fi
-
-## OLD WAY ##
-#if [ "$(docker image inspect onlyoffice/documentserver >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
-#then
-#    echo "Updating Docker container for OnlyOffice..."
-#    docker pull onlyoffice/documentserver
-#fi
-#
-#if [ "$(docker image inspect collabora/code >/dev/null 2>&1 && echo yes || echo no)" == "yes" ]
-#then
-#    echo "Updating Docker container for Collabora..."
-#    docker pull collabora/code
-#fi
-
 # Cleanup un-used packages
 apt autoremove -y
 apt autoclean
@@ -78,7 +58,7 @@ rm /var/lib/apt/lists/* -r
 if [ ! -f "$SECURE" ]
 then
     mkdir -p "$SCRIPTS"
-    download_static_script setup_secure_permissions_nextcloud
+    download_static_script "$SECURE"
     chmod +x "$SECURE"
 fi
 
@@ -147,7 +127,7 @@ fi
 
 # Upgrade ownCloud
 echo "Checking latest released version on the ownCloud download server and if it's possible to download..."
-if ! wget -q --show-progress -T 10 -t 2 "$NCREPO/$STABLEVERSION.tar.bz2"
+if ! wget -q --show-progress -T 10 -t 2 "$ocdownloadrepo/$STABLEVERSION.tar.bz2"
 then
     echo
     printf "${IRed}ownCloud %s doesn't exist.${Color_Off}\n" "$NCVERSION"
@@ -196,7 +176,7 @@ fi
 if mysql -u root -p"$MARIADBMYCNFPASS" -e "SHOW DATABASES LIKE '$NCCONFIGDB'" > /dev/null
 then
     echo "Doing mysqldump of $NCCONFIGDB..."
-    check_command mysqldump -u root -p"$MARIADBMYCNFPASS" -d "$NCCONFIGDB" > "$BACKUP"/nextclouddb.sql
+    check_command mysqldump -u root -p"$MARIADBMYCNFPASS" -d "$NCCONFIGDB" > "$BACKUP"/ownclouddb.sql
 else
     echo "Doing mysqldump of all databases..."
     check_command mysqldump -u root -p"$MARIADBMYCNFPASS" -d --all-databases > "$BACKUP"/alldatabases.sql
@@ -217,7 +197,7 @@ if [ -d $BACKUP/config/ ]
 then
     echo "$BACKUP/config/ exists"
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if config/ folder exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if config/ folder exist."
     exit 1
 fi
 
@@ -225,7 +205,7 @@ if [ -d $BACKUP/apps/ ]
 then
     echo "$BACKUP/apps/ exists"
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if apps/ folder exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if apps/ folder exist."
     exit 1
 fi
 
@@ -245,7 +225,7 @@ then
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --off
     sudo -u www-data php "$NCPATH"/occ upgrade --no-app-disable
 else
-    echo "Something went wrong with backing up your old nextcloud instance, please check in $BACKUP if the folders exist."
+    echo "Something went wrong with backing up your old owncloud instance, please check in $BACKUP if the folders exist."
     exit 1
 fi
 
@@ -288,7 +268,7 @@ then
     echo
     echo "Latest version is: $NCVERSION. Current version is: $CURRENTVERSION_after."
     echo "UPGRADE SUCCESS!"
-    echo "NEXTCLOUD UPDATE success-$(date +"%Y%m%d")" >> /var/log/cronjobs_success.log
+    echo "OWNCLOUD UPDATE success-$(date +"%Y%m%d")" >> /var/log/cronjobs_success.log
     sudo -u www-data php "$NCPATH"/occ status
     sudo -u www-data php "$NCPATH"/occ maintenance:mode --off
     echo
