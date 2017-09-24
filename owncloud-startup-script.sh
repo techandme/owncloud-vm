@@ -2,7 +2,7 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
 unset FIRST_IFACE
 unset CHECK_CURRENT_REPO
 
@@ -52,7 +52,7 @@ else
     mv /etc/network/interfaces.new /etc/network/interfaces
     service networking restart
     # shellcheck source=lib.sh
-    CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/nextcloud/vm/master/lib.sh)
+    CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
     unset CHECK_CURRENT_REPO
 fi
 
@@ -71,6 +71,10 @@ else
     echo "Please report this issue here: $ISSUES"
     exit 1
 fi
+
+# Check if dpkg or apt is running
+is_process_running dpkg
+is_process_running apt
 
 # Check where the best mirrors are and update
 printf "\nTo make downloads as fast as possible when updating you should have mirrors that are as close to you as possible.\n"
@@ -112,21 +116,7 @@ download_static_script change_mysql_pass
 download_static_script owncloud
 download_static_script update-config
 download_static_script index
-
-# Lets Encrypt
-if [ -f "$SCRIPTS"/activate-ssl.sh ]
-then
-    rm "$SCRIPTS"/activate-ssl.sh
-    wget -q $LETS_ENC/activate-ssl.sh -P "$SCRIPTS"
-else
-    wget -q $LETS_ENC/activate-ssl.sh -P "$SCRIPTS"
-fi
-if [ ! -f "$SCRIPTS"/activate-ssl.sh ]
-then
-    echo "activate-ssl failed"
-    echo "Script failed to download. Please run: 'sudo bash $SCRIPTS/owncloud-startup-script.sh' again."
-    exit 1
-fi
+download_le_script activate-ssl
 
 mv $SCRIPTS/index.php $HTML/index.php && rm -f $HTML/html/index.html
 chmod 750 $HTML/index.php && chown www-data:www-data $HTML/index.php
@@ -143,18 +133,17 @@ chown "$UNIXUSER":"$UNIXUSER" "$SCRIPTS/owncloud.sh"
 
 clear
 echo "+--------------------------------------------------------------------+"
-echo "| This script will configure your ownCloud and activate SSL.         |"
+echo "| This script will configure your ownCloud and activate SSL.        |"
 echo "| It will also do the following:                                     |"
 echo "|                                                                    |"
 echo "| - Generate new SSH keys for the server                             |"
-echo "| - Generate new MySQL password                                      |"
-echo "| - Configure UTF8mb4 (4-byte support for MySQL)                     |"
+echo "| - Generate new MARIADB password                                    |"
 echo "| - Install phpMyadmin and make it secure                            |"
 echo "| - Install selected apps and automatically configure them           |"
 echo "| - Detect and set hostname                                          |"
-echo "| - Upgrade your system and ownCloud to latest version               |"
-echo "| - Set secure permissions to ownCloud                               |"
-echo "| - Set new passwords to Linux and ownCloud                          |"
+echo "| - Upgrade your system and ownCloud to latest version              |"
+echo "| - Set secure permissions to ownCloud                              |"
+echo "| - Set new passwords to Linux and ownCloud                         |"
 echo "| - Set new keyboard layout                                          |"
 echo "| - Change timezone                                                  |"
 echo "| - Set static IP to the system (you have to set the same IP in      |"
@@ -253,36 +242,12 @@ printf "\nGenerating new SSH keys for the server...\n"
 rm -v /etc/ssh/ssh_host_*
 dpkg-reconfigure openssh-server
 
-# Generate new MySQL password
-echo "Generating new MySQL password..."
+# Generate new MARIADB password
+echo "Generating new MARIADB password..."
 if bash "$SCRIPTS/change_mysql_pass.sh" && wait
 then
-   rm "$SCRIPTS/change_mysql_pass.sh"
-   {
-   echo "[mysqld]"
-   echo "innodb_large_prefix=on"
-   echo "innodb_file_format=barracuda"
-   echo "innodb_file_per_table=1"
-   } >> /root/.my.cnf
+    rm "$SCRIPTS/change_mysql_pass.sh"
 fi
-
-# Enable UTF8mb4 (4-byte support)
-NCDB=owncloud_db
-PW_FILE=/var/mysql_password.txt
-printf "\nEnabling UTF8mb4 support on $NCDB....\n"
-echo "Please be patient, it may take a while."
-sudo /etc/init.d/mysql restart & spinner_loading
-RESULT="mysqlshow --user=root --password=$(cat $PW_FILE) $NCDB| grep -v Wildcard | grep -o $NCDB"
-if [ "$RESULT" == "$NCDB" ]; then
-    check_command mysql -u root -e "ALTER DATABASE $NCDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-    wait
-fi
-check_command sudo -u www-data $NCPATH/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
-check_command sudo -u www-data $NCPATH/occ maintenance:repair
-
-# Install phpMyadmin
-run_app_script phpmyadmin_install_ubuntu16
-clear
 
 cat << LETSENC
 +-----------------------------------------------+
@@ -302,29 +267,27 @@ else
 fi
 clear
 
+# Change Timezone
+echo "Current timezone is $(cat /etc/timezone)"
+echo "You must change it to your timezone"
+any_key "Press any key to change timezone..."
+dpkg-reconfigure tzdata
+sleep 3
+clear
+
 whiptail --title "Which apps do you want to install?" --checklist --separate-output "Automatically configure and install selected apps\nSelect by pressing the spacebar" "$WT_HEIGHT" "$WT_WIDTH" 4 \
-"Collabora" "(Online editing)   " OFF \
-"Nextant" "(Full text search)   " OFF \
-"Passman" "(Password storage)   " OFF \
-"Spreed.ME" "(Video calls)   " OFF 2>results
+"Fail2ban" "(Extra Bruteforce protection)   " OFF \
+"phpMyadmin" "(*SQL GUI)       " OFF 2>results
 
 while read -r -u 9 choice
 do
     case $choice in
-        Collabora)
-            run_app_script collabora
+        Fail2ban)
+            run_app_script fail2ban
+            
         ;;
-
-        Nextant)
-            run_app_script nextant
-        ;;
-
-        Passman)
-            run_app_script passman
-        ;;
-
-        Spreed.ME)
-            run_app_script spreedme
+        phpMyadmin)
+            run_app_script phpmyadmin_install_ubuntu16
         ;;
 
         *)
@@ -332,6 +295,7 @@ do
     esac
 done 9< results
 rm -f results
+clear
 clear
 
 # Add extra security
@@ -346,14 +310,6 @@ else
 fi
 clear
 
-# Change Timezone
-echo "Current timezone is $(cat /etc/timezone)"
-echo "You must change it to your timezone"
-any_key "Press any key to change timezone..."
-dpkg-reconfigure tzdata
-sleep 3
-clear
-
 # Change password
 printf "${Color_Off}\n"
 echo "For better security, change the system user password for [$UNIXUSER]"
@@ -364,8 +320,7 @@ do
 done
 echo
 clear
-#NCADMIN=$(sudo -u www-data php $NCPATH/occ user:list | awk '{print $3}')
-NCADMIN="ocadmin"
+NCADMIN=$(sudo -u www-data php $NCPATH/occ user:list | awk '{print $3}')
 printf "${Color_Off}\n"
 echo "For better security, change the ownCloud password for [$NCADMIN]"
 echo "The current password for $NCADMIN is [$NCPASS]"
@@ -376,7 +331,7 @@ do
 done
 clear
 
-# Fixes https://github.com/nextcloud/vm/issues/58
+# Fixes https://github.com/owncloud/vm/issues/58
 a2dismod status
 service apache2 reload
 
@@ -385,9 +340,9 @@ service apache2 reload
 VALUE="# php_value upload_max_filesize 513M"
 if ! grep -Fxq "$VALUE" $NCPATH/.htaccess
 then
-        sed -i 's/  php_value upload_max_filesize 513M/# php_value upload_max_filesize 513M/g' $NCPATH/.htaccess
-        sed -i 's/  php_value post_max_size 513M/# php_value post_max_size 513M/g' $NCPATH/.htaccess
-        sed -i 's/  php_value memory_limit 512M/# php_value memory_limit 512M/g' $NCPATH/.htaccess
+    sed -i 's/  php_value upload_max_filesize 513M/# php_value upload_max_filesize 511M/g' "$NCPATH"/.htaccess
+    sed -i 's/  php_value post_max_size 513M/# php_value post_max_size 511M/g' "$NCPATH"/.htaccess
+    sed -i 's/  php_value memory_limit 512M/# php_value memory_limit 512M/g' "$NCPATH"/.htaccess
 fi
 
 # Add temporary fix if needed
@@ -448,13 +403,13 @@ ADDRESS2=$(grep "address" /etc/network/interfaces | awk '$1 == "address" { print
 clear
 printf "%s\n""${Green}"
 echo    "+--------------------------------------------------------------------+"
-echo    "|      Congratulations! You have successfully installed ownCloud!    |"
+echo    "|      Congratulations! You have successfully installed ownCloud!   |"
 echo    "|                                                                    |"
-printf "|         ${Color_Off}Login to ownCloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}          |\n"
+printf "|         ${Color_Off}Login to ownCloud in your browser: ${Cyan}\"$ADDRESS2\"${Green}         |\n"
 echo    "|                                                                    |"
 printf "|         ${Color_Off}Publish your server online! ${Cyan}https://goo.gl/iUGE2U${Green}          |\n"
 echo    "|                                                                    |"
-printf "|         ${Color_Off}To login to MySQL just type: ${Cyan}'mysql -u root'${Green}               |\n"
+printf "|         ${Color_Off}To login to MARIADB just type: ${Cyan}'mysql -u root'${Green}             |\n"
 echo    "|                                                                    |"
 printf "|   ${Color_Off}To update this VM just type: ${Cyan}'sudo bash /var/scripts/update.sh'${Green}  |\n"
 echo    "|                                                                    |"
@@ -463,13 +418,22 @@ echo    "+--------------------------------------------------------------------+"
 printf "${Color_Off}\n"
 
 # Set trusted domain in config.php
-bash "$SCRIPTS"/trusted.sh
-rm -f "$SCRIPTS"/trusted.sh
+if [ -f "$SCRIPTS"/trusted.sh ] 
+then
+    bash "$SCRIPTS"/trusted.sh
+    rm -f "$SCRIPTS"/trusted.sh
+fi
 
 # Prefer IPv6
 sed -i "s|precedence ::ffff:0:0/96  100|#precedence ::ffff:0:0/96  100|g" /etc/gai.conf
 
+# Shutdown MariaDB gracefully
+echo "Shutting down MariaDB..."
+check_command sudo systemctl stop mariadb.service
+rm -f /var/lib/mysql/ib_logfile[01]
+echo
+
 # Reboot
-rm -f "$SCRIPTS/owncloud-startup-script.sh"
 any_key "Installation finished, press any key to reboot system..."
+rm -f "$SCRIPTS/owncloud-startup-script.sh"
 reboot

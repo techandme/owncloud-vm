@@ -10,7 +10,6 @@ SCRIPTS=/var/scripts
 NCPATH=/var/www/owncloud
 HTML=/var/www
 NCDATA=/var/ocdata
-SNAPDIR=/var/snap/spreedme
 GPGDIR=/tmp/gpg
 BACKUP=/var/OCBACKUP
 # Ubuntu OS
@@ -43,67 +42,32 @@ NCUSER=ocadmin
 UNIXUSER=$SUDO_USER
 UNIXUSER_PROFILE="/home/$UNIXUSER/.bash_profile"
 ROOT_PROFILE="/root/.bash_profile"
-# Passwords
+# MARIADB
 SHUF=$(shuf -i 25-29 -n 1)
-MYSQL_PASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
-NEWMYSQLPASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+MARIADB_PASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+NEWMARIADBPASS=$(tr -dc "a-zA-Z0-9@#*=" < /dev/urandom | fold -w "$SHUF" | head -n 1)
+[ ! -z "$NCDB" ] && NCCONFIGDB=$(grep "dbname" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
+ETCMYCNF=/etc/mysql/my.cnf
+MYCNF=/root/.my.cnf
+[ ! -z "$MYCNFPW" ] && MARIADBMYCNFPASS=$(grep "password" $MYCNF | sed -n "/password/s/^password='\(.*\)'$/\1/p")
+[ ! -z "$NCDB" ] && NCCONFIGDB=$(grep "dbname" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
+[ ! -z "$NCDBPASS" ] && NCCONFIGDBPASS=$(grep "dbpassword" $NCPATH/config/config.php | awk '{print $3}' | sed "s/[',]//g")
 # Path to specific files
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
 SECURE="$SCRIPTS/setup_secure_permissions_owncloud.sh"
 SSL_CONF="/etc/apache2/sites-available/owncloud_ssl_domain_self_signed.conf"
 HTTP_CONF="/etc/apache2/sites-available/owncloud_http_domain_self_signed.conf"
-PW_FILE=/var/mysql_password.txt
-MYCNF=/root/.my.cnf
-[ ! -z "$CHANGE_MYSQL" ] && OLDMYSQL=$(cat $PW_FILE)
+HTTP2_CONF="/etc/apache2/mods-available/http2.conf"
 # ownCloud version
 [ ! -z "$NC_UPDATE" ] && CURRENTVERSION=$(sudo -u www-data php $NCPATH/occ status | grep "versionstring" | awk '{print $3}')
 NCVERSION=$(curl -s -m 900 $NCREPO/Packages | awk '$1 == "Package:" { pkg = $2 } $1 == "Version:" && pkg == "owncloud" { print $2 }' | cut -d "-" -f1 && rm -f Ubuntu_16.04)
 STABLEVERSION="owncloud-$NCVERSION"
 NCMAJOR="${NCVERSION%%.*}"
 NCBAD=$((NCMAJOR-2))
-# Keys
-OpenPGP_fingerprint='28806A878AE423A28372792ED75899B9A724937A'
-# Collabora Docker URL
-[ ! -z "$COLLABORA_INSTALL" ] && SUBDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
-# ownCloud Main Domain
-[ ! -z "$COLLABORA_INSTALL" ] && NCDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "ownCloud url, make sure it looks like this: cloud\\.yourdomain\\.com" "$WT_HEIGHT" "$WT_WIDTH" cloud\\.yourdomain\\.com 3>&1 1>&2 2>&3)
-# Letsencrypt
+# Lets Encrypt
 LETSENCRYPTPATH="/etc/letsencrypt"
 CERTFILES="$LETSENCRYPTPATH/live"
 DHPARAMS="$CERTFILES/$SUBDOMAIN/dhparam.pem"
-# Collabora App
-[ ! -z "$COLLABORA_INSTALL" ] && COLLVER=$(curl -s https://api.github.com/repos/nextcloud/richdocuments/releases/latest | grep "tag_name" | cut -d\" -f4)
-COLLVER_FILE=richdocuments.tar.gz
-COLLVER_REPO=https://github.com/nextcloud/richdocuments/releases/download
-HTTPS_CONF="/etc/apache2/sites-available/$SUBDOMAIN.conf"
-# Nextant
-SOLR_VERSION=$(curl -s https://github.com/apache/lucene-solr/tags | grep -o "release.*</span>$" | grep -o '[0-9].[0-9].[0-9]' | sort -t. -k1,1n -k2,2n -k3,3n | tail -n1)
-[ ! -z "$NEXTANT_INSTALL" ] && NEXTANT_VERSION=$(curl -s https://api.github.com/repos/nextcloud/nextant/releases/latest | grep 'tag_name' | cut -d\" -f4 | sed -e "s|v||g")
-NT_RELEASE=nextant-$NEXTANT_VERSION.tar.gz
-NT_DL=https://github.com/nextcloud/nextant/releases/download/v$NEXTANT_VERSION/$NT_RELEASE
-SOLR_RELEASE=solr-$SOLR_VERSION.tgz
-SOLR_DL=http://www-eu.apache.org/dist/lucene/solr/$SOLR_VERSION/$SOLR_RELEASE
-NC_APPS_PATH=$NCPATH/apps/
-SOLR_HOME=/home/$SUDO_USER/solr_install/
-SOLR_JETTY=/opt/solr/server/etc/jetty-http.xml
-SOLR_DSCONF=/opt/solr-$SOLR_VERSION/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml
-# Passman
-[ ! -z "$PASSMAN_INSTALL" ] && PASSVER=$(curl -s https://api.github.com/repos/nextcloud/passman/releases/latest | grep "tag_name" | cut -d\" -f4)
-PASSVER_FILE=passman_$PASSVER.tar.gz
-PASSVER_REPO=https://releases.passman.cc
-SHA256=/tmp/sha256
-# Calendar
-[ ! -z "$CALENDAR_INSTALL" ] && CALVER=$(curl -s https://api.github.com/repos/nextcloud/calendar/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
-CALVER_FILE=calendar.tar.gz
-CALVER_REPO=https://github.com/nextcloud/calendar/releases/download
-# Contacts
-[ ! -z "$CONTACTS_INSTALL" ] && CONVER=$(curl -s https://api.github.com/repos/nextcloud/contacts/releases/latest | grep "tag_name" | cut -d\" -f4 | sed -e "s|v||g")
-CONVER_FILE=contacts.tar.gz
-CONVER_REPO=https://github.com/nextcloud/contacts/releases/download
-# Spreed.ME
-SPREEDME_VER=$(wget -q https://raw.githubusercontent.com/strukturag/nextcloud-spreedme/master/appinfo/info.xml && grep -Po "(?<=<version>)[^<]*(?=</version>)" info.xml && rm info.xml)
-SPREEDME_FILE="v$SPREEDME_VER.tar.gz"
-SPREEDME_REPO=https://github.com/strukturag/nextcloud-spreedme/archive
 # phpMyadmin
 PHPMYADMINDIR=/usr/share/phpmyadmin
 PHPMYADMIN_CONF="/etc/apache2/conf-available/phpmyadmin.conf"
@@ -160,9 +124,161 @@ ask_yes_or_no() {
     esac
 }
 
+# Check if process is runnnig: is_process_running dpkg
+is_process_running() {
+PROCESS="$1"
+
+while :
+do
+    RESULT=$(pgrep "${PROCESS}")
+
+    if [ "${RESULT:-null}" = null ]; then
+            break
+    else
+            echo "${PROCESS} is running. Waiting for it to stop..."
+            sleep 10
+    fi
+done
+}
+
+# Install certbot (Let's Encrypt)
+install_certbot() {
+certbot --version 2> /dev/null
+LE_IS_AVAILABLE=$?
+if [ $LE_IS_AVAILABLE -eq 0 ]
+then
+    certbot --version
+else
+    echo "Installing certbot (Let's Encrypt)..."
+    apt update -q4 & spinner_loading
+    apt install software-properties-common
+    add-apt-repository ppa:certbot/certbot -y
+    apt update -q4 & spinner_loading
+    apt install certbot -y -q
+    apt update -q4 & spinner_loading
+    apt dist-upgrade -y
+fi
+}
+
+# Let's Encrypt for subdomains
+le_subdomain() {
+a2dissite 000-default.conf
+service apache2 reload
+certbot certonly --standalone --pre-hook "service apache2 stop" --post-hook "service apache2 start" --agree-tos --rsa-key-size 4096 -d "$SUBDOMAIN"
+}
+
+# Check if port is open # check_open_port 443
+check_open_port() {
+# Check to see if user already has nmap installed on their system
+if [ "$(dpkg-query -s nmap 2> /dev/null | grep -c "ok installed")" == "1" ]
+then
+    NMAPSTATUS=preinstalled
+fi
+
+apt update -q4 & spinner_loading
+if [ "$NMAPSTATUS" = "preinstalled" ]
+then
+      echo "nmap is already installed..."
+else
+    apt install nmap -y
+fi
+
+# Check if $1 is open using nmap, if not notify the user
+if [ "$(nmap -sS -p "$1" "$WANIP4" | grep -c "open")" == "1" ]
+then
+  printf "${Green}Port $1 is open on $WANIP4!${Color_Off}\n"
+  if [ "$NMAPSTATUS" = "preinstalled" ]
+  then
+    echo "nmap was previously installed, not removing"
+  else
+    apt remove --purge nmap -y
+  fi
+else
+  echo "Port $1 is not open on $WANIP4. We will do a second try on $SUBDOMAIN instead."
+  any_key "Press any key to test $SUBDOMAIN... "
+  if [[ "$(nmap -sS -PN -p "$1" "$SUBDOMAIN" | grep -m 1 "open" | awk '{print $2}')" = "open" ]]
+  then
+      printf "${Green}Port $1 is open on $SUBDOMAIN!${Color_Off}\n"
+      if [ "$NMAPSTATUS" = "preinstalled" ]
+      then
+        echo "nmap was previously installed, not removing"
+      else
+        apt remove --purge nmap -y
+      fi
+  else
+      whiptail --msgbox "Port $1 is not open on $SUBDOMAIN. Please follow this guide to open ports in your router: https://www.techandme.se/open-port-80-443/" "$WT_HEIGHT" "$WT_WIDTH"
+      any_key "Press any key to exit... "
+      if [ "$NMAPSTATUS" = "preinstalled" ]
+      then
+        echo "nmap was previously installed, not removing"
+      else
+        apt remove --purge nmap -y
+      fi
+      exit 1
+  fi
+fi
+}
+
+configure_max_upload() {
+# Increase max filesize (expects that changes are made in /etc/php/7.0/apache2/php.ini)
+# Here is a guide: https://www.techandme.se/increase-max-file-size/
+sed -i 's/  php_value upload_max_filesize.*/# php_value upload_max_filesize 511M/g' "$NCPATH"/.htaccess
+sed -i 's/  php_value post_max_size.*/# php_value post_max_size 511M/g' "$NCPATH"/.htaccess
+sed -i 's/  php_value memory_limit.*/# php_value memory_limit 512M/g' "$NCPATH"/.htaccess
+}
+
+# Check if program is installed (is_this_installed apache2)
+is_this_installed() {
+if [ "$(dpkg-query -W -f='${Status}' "${1}" 2>/dev/null | grep -c "ok installed")" == "1" ]
+then
+    echo "${1} is installed, it must be a clean server."
+    exit 1
+fi
+}
+
+# Install_if_not program
+install_if_not () {
+if [[ "$(is_this_installed "${1}")" != "${1} is installed, it must be a clean server." ]]
+then
+    apt update -q4 & spinner_loading && apt install "${1}" -y
+fi
+}
+
+# Test RAM size 
+# Call it like this: ram_check [amount of min RAM in GB] [for which program]
+# Example: ram_check 2 ownCloud
+ram_check() {
+mem_available="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+if [ "${mem_available}" -lt "$((${1}*1002400))" ]
+then
+    printf "${Red}Error: ${1} GB RAM required to install ${2}!${Color_Off}\n" >&2
+    printf "${Red}Current RAM is: ("$((mem_available/1002400))" GB)${Color_Off}\n" >&2
+    sleep 3
+    exit 1
+else
+    printf "${Green}RAM for ${2} OK! ("$((mem_available/1002400))" GB)${Color_Off}\n"
+fi
+}
+
+# Test number of CPU
+# Call it like this: cpu_check [amount of min CPU] [for which program]
+# Example: cpu_check 2 ownCloud
+cpu_check() {
+nr_cpu="$(nproc)"
+if [ "${nr_cpu}" -lt "${1}" ]
+then
+    printf "${Red}Error: ${1} CPU required to install ${2}!${Color_Off}\n" >&2
+    printf "${Red}Current CPU: ("$((nr_cpu))")${Color_Off}\n" >&2
+    sleep 3
+    exit 1
+else
+    printf "${Green}CPU for ${2} OK! ("$((nr_cpu))")${Color_Off}\n"
+fi
+}
+
 check_command() {
-  eval "$*"
-  if [ ! $? -eq 0 ]; then
+  if ! eval "$*"
+  then
      printf "${IRed}Sorry but something went wrong. Please report this issue to $ISSUES and include the output of the error message. Thank you!${Color_Off}\n"
      echo "$* failed"
     exit 1
@@ -204,6 +320,7 @@ chmod -R 600 "$GPGDIR"
 gpg --import "$GPGDIR/owncloud.asc"
 gpg --verify "$GPGDIR/$STABLEVERSION.tar.bz2.asc" "$HTML/$STABLEVERSION.tar.bz2"
 rm -r "$GPGDIR"
+rm -f releases
 }
 
 # Initial download of script in ../static
@@ -234,6 +351,29 @@ download_le_script() {
     fi
 }
 
+# Run any script in ../master
+# call like: run_main_script name_of_script
+run_main_script() {
+    rm -f "${SCRIPTS}/${1}.sh" "${SCRIPTS}/${1}.php" "${SCRIPTS}/${1}.py"
+    if wget -q "${GITHUB_REPO}/${1}.sh" -P "$SCRIPTS"
+    then
+        bash "${SCRIPTS}/${1}.sh"
+        rm -f "${SCRIPTS}/${1}.sh"
+    elif wget -q "${GITHUB_REPO}/${1}.php" -P "$SCRIPTS"
+    then
+        php "${SCRIPTS}/${1}.php"
+        rm -f "${SCRIPTS}/${1}.php"
+    elif wget -q "${GITHUB_REPO}/${1}.py" -P "$SCRIPTS"
+    then
+        python "${SCRIPTS}/${1}.py"
+        rm -f "${SCRIPTS}/${1}.py"
+    else
+        echo "Downloading ${1} failed"
+        echo "Script failed to download. Please run: 'sudo wget ${GITHUB_REPO}/${1}.sh|php|py' again."
+        sleep 3
+    fi
+}
+
 # Run any script in ../static
 # call like: run_static_script name_of_script
 run_static_script() {
@@ -259,7 +399,7 @@ run_static_script() {
 }
 
 # Run any script in ../apps
-# call like: run_app_script collabora|nextant|passman|spreedme|contacts|calendar|webmin
+# call like: run_app_script collabora|nextant|passman|spreedme|contacts|calendar|webmin|previewgenerator
 run_app_script() {
     rm -f "${SCRIPTS}/${1}.sh" "${SCRIPTS}/${1}.php" "${SCRIPTS}/${1}.py"
     if wget -q "${APP}/${1}.sh" -P "$SCRIPTS"

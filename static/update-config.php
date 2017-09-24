@@ -20,7 +20,7 @@ if ($argc < 3)
 if (!is_file($argv[1]))
   {
     # do not create the file, if missing.
-    # Wrong permissions are deadly for ownCloud.
+    # Wrong permissions are deadly for owncloud.
     ## FIXME: get some proper errno or strerror() please?
     print($argv[1] . ": \$CONFIG cannot be loaded?\n");
     return;

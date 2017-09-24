@@ -5,7 +5,7 @@
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-FIRST_IFACE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+FIRST_IFACE=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
 unset FIRST_IFACE
 
 # Check for errors + debug code and abort if something isn't right
@@ -25,7 +25,7 @@ iface lo inet loopback
 iface $IFACE inet static
 pre-up /sbin/ethtool -K $IFACE tso off
 pre-up /sbin/ethtool -K $IFACE gso off
-# Fixes https://github.com/nextcloud/vm/issues/92:
+# Fixes https://github.com/owncloud/vm/issues/92:
 pre-up ip link set dev $IFACE mtu 1430
 
 # Best practice is to change the static address

@@ -8,7 +8,7 @@ sed -i "s|#precedence ::ffff:0:0/96  100|precedence ::ffff:0:0/96  100|g" /etc/g
 # shellcheck disable=2034,2059
 true
 # shellcheck source=lib.sh
-FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/refactor/lib.sh)
+FIRST_IFACE=1 && CHECK_CURRENT_REPO=1 . <(curl -sL https://raw.githubusercontent.com/techandme/owncloud-vm/master/lib.sh)
 unset FIRST_IFACE
 unset CHECK_CURRENT_REPO
 
@@ -24,6 +24,10 @@ then
     printf "\n${Red}Sorry, you are not root.\n${Color_Off}You must type: ${Cyan}sudo ${Color_Off}bash %s/owncloud_install_production.sh\n" "$SCRIPTS"
     exit 1
 fi
+
+# Test RAM size (2GB min) + CPUs (min 1)
+ram_check 2 ownCloud
+cpu_check 1 ownCloud
 
 # Show current user
 echo
@@ -44,7 +48,6 @@ then
     exit 1
 fi
 
-
 if ! version 16.04 "$DISTRO" 16.04.4; then
     echo "Ubuntu version $DISTRO must be between 16.04 - 16.04.4"
     exit
@@ -58,24 +61,11 @@ then
 fi
 
 # Check if it's a clean server
-echo "Checking if it's a clean server..."
-if [ "$(dpkg-query -W -f='${Status}' mysql-common 2>/dev/null | grep -c "ok installed")" == "1" ]
-then
-    echo "MySQL is installed, it must be a clean server."
-    exit 1
-fi
-
-if [ "$(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed")" == "1" ]
-then
-    echo "Apache2 is installed, it must be a clean server."
-    exit 1
-fi
-
-if [ "$(dpkg-query -W -f='${Status}' php 2>/dev/null | grep -c "ok installed")" == "1" ]
-then
-    echo "PHP is installed, it must be a clean server."
-    exit 1
-fi
+is_this_installed postgresql
+is_this_installed apache2
+is_this_installed php
+is_this_installed mysql-common
+is_this_installed mariadb-server
 
 # Create $SCRIPTS dir
 if [ ! -d "$SCRIPTS" ]
@@ -89,7 +79,6 @@ then
     apt install resolvconf -y -q
     dpkg-reconfigure resolvconf
 fi
-
 echo "nameserver 8.8.8.8" > /etc/resolvconf/resolv.conf.d/base
 echo "nameserver 8.8.4.4" >> /etc/resolvconf/resolv.conf.d/base
 
@@ -151,27 +140,37 @@ fi
 # Update system
 apt update -q4 & spinner_loading
 
-# Write MySQL pass to file and keep it safe
-echo "$MYSQL_PASS" > $PW_FILE
-chmod 600 $PW_FILE
-chown root:root $PW_FILE
+# Write MARIADB pass to file and keep it safe
+{
+echo "[client]"
+echo "password='$MARIADB_PASS'"
+} > "$MYCNF"
+chmod 0600 $MYCNF
+chown root:root $MYCNF
 
-# Install MYSQL 5.7
+# Install MARIADB
 apt install software-properties-common -y
-echo "mysql-server-5.7 mysql-server/root_password password $MYSQL_PASS" | debconf-set-selections
-echo "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_PASS" | debconf-set-selections
-check_command apt install mysql-server-5.7 -y
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ftp.ddg.lth.se/mariadb/repo/10.2/ubuntu xenial main'
+sudo debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password password $MARIADB_PASS"
+sudo debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password_again password $MARIADB_PASS"
+apt update -q4 & spinner_loading
+check_command apt install mariadb-server-10.2 -y
+
+# Prepare for ownCloud installation
+# https://blog.v-gar.de/2017/02/en-solved-error-1698-28000-in-mysqlmariadb/
+mysql -u root mysql -p"$MARIADB_PASS" -e "UPDATE user SET plugin='' WHERE user='root';"
+mysql -u root mysql -p"$MARIADB_PASS" -e "UPDATE user SET password=PASSWORD('$MARIADB_PASS') WHERE user='root';"
+mysql -u root -p"$MARIADB_PASS" -e "flush privileges;"
 
 # mysql_secure_installation
 apt -y install expect
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
-expect \"Enter current password for root:\"
-send \"$MYSQL_PASS\r\"
-expect \"Would you like to setup VALIDATE PASSWORD plugin?\"
-send \"n\r\"
-expect \"Change the password for root ?\"
+expect \"Enter current password for root (enter for none):\"
+send \"$MARIADB_PASS\r\"
+expect \"Change the root password?\"
 send \"n\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
@@ -185,6 +184,9 @@ expect eof
 ")
 echo "$SECURE_MYSQL"
 apt -y purge expect
+
+# Write a new MariaDB config
+run_static_script new_etc_mycnf
 
 # Install Apache
 check_command apt install apache2 -y
@@ -241,6 +243,9 @@ rm "$HTML/$STABLEVERSION.tar.bz2"
 download_static_script setup_secure_permissions_owncloud
 bash $SECURE & spinner_loading
 
+# Create database owncloud_db
+mysql -u root -p"$MARIADB_PASS" -e "CREATE DATABASE IF NOT EXISTS owncloud_db;"
+
 # Install ownCloud
 cd "$NCPATH"
 check_command sudo -u www-data php occ maintenance:install \
@@ -248,7 +253,7 @@ check_command sudo -u www-data php occ maintenance:install \
     --database "mysql" \
     --database-name "owncloud_db" \
     --database-user "root" \
-    --database-pass "$MYSQL_PASS" \
+    --database-pass "$MARIADB_PASS" \
     --admin-user "$NCUSER" \
     --admin-pass "$NCPASS"
 echo
@@ -257,30 +262,65 @@ sudo -u www-data php "$NCPATH"/occ status
 sleep 3
 echo
 
+# Enable UTF8mb4 (4-byte support)
+databases=$(mysql -u root -p"$MARIADB_PASS" -e "SHOW DATABASES;" | tr -d "| " | grep -v Database)
+for db in $databases; do
+    if [[ "$db" != "performance_schema" ]] && [[ "$db" != _* ]] && [[ "$db" != "information_schema" ]];
+    then
+        echo "Changing to UTF8mb4 on: $db"
+        mysql -u root -p"$MARIADB_PASS" -e "ALTER DATABASE $db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    fi
+done
+#if [ $? -ne 0 ]
+#then
+#    echo "UTF8mb4 was not set. Something is wrong."
+#    echo "Please report this bug to $ISSUES. Thank you!"
+#    exit 1
+#fi
+
+# Repair and set ownCloud config values
+mysqlcheck -u root -p"$MARIADB_PASS" --auto-repair --optimize --all-databases
+check_command sudo -u www-data $NCPATH/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
+check_command sudo -u www-data $NCPATH/occ maintenance:repair
+
 # Prepare cron.php to be run every 15 minutes
 crontab -u www-data -l | { cat; echo "*/15  *  *  *  * php -f $NCPATH/cron.php > /dev/null 2>&1"; } | crontab -u www-data -
 
 # Change values in php.ini (increase max file size)
 # max_execution_time
-sed -i "s|max_execution_time = 30|max_execution_time = 3500|g" /etc/php/7.0/apache2/php.ini
+sed -i "s|max_execution_time =.*|max_execution_time = 3500|g" /etc/php/7.0/apache2/php.ini
 # max_input_time
-sed -i "s|max_input_time = 60|max_input_time = 3600|g" /etc/php/7.0/apache2/php.ini
+sed -i "s|max_input_time =.*|max_input_time = 3600|g" /etc/php/7.0/apache2/php.ini
 # memory_limit
-sed -i "s|memory_limit = 128M|memory_limit = 512M|g" /etc/php/7.0/apache2/php.ini
+sed -i "s|memory_limit =.*|memory_limit = 512M|g" /etc/php/7.0/apache2/php.ini
 # post_max
-sed -i "s|post_max_size = 8M|post_max_size = 1100M|g" /etc/php/7.0/apache2/php.ini
+sed -i "s|post_max_size =.*|post_max_size = 1100M|g" /etc/php/7.0/apache2/php.ini
 # upload_max
-sed -i "s|upload_max_filesize = 2M|upload_max_filesize = 1000M|g" /etc/php/7.0/apache2/php.ini
+sed -i "s|upload_max_filesize =.*|upload_max_filesize = 1000M|g" /etc/php/7.0/apache2/php.ini
 
-# Increase max filesize (expects that changes are made in /etc/php/7.0/apache2/php.ini)
-# Here is a guide: https://www.techandme.se/increase-max-file-size/
-VALUE="# php_value upload_max_filesize 511M"
-if ! grep -Fxq "$VALUE" "$NCPATH"/.htaccess
-then
-        sed -i 's/  php_value upload_max_filesize 511M/# php_value upload_max_filesize 511M/g' "$NCPATH"/.htaccess
-        sed -i 's/  php_value post_max_size 511M/# php_value post_max_size 511M/g' "$NCPATH"/.htaccess
-        sed -i 's/  php_value memory_limit 512M/# php_value memory_limit 512M/g' "$NCPATH"/.htaccess
-fi
+# Set max upload in ownCloud .htaccess
+configure_max_upload
+
+# Set SMTP mail
+sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpmode --value="smtp"
+
+# Set logrotate
+sudo -u www-data php "$NCPATH"/occ config:system:set log_rotate_size --value="10485760"
+
+# Enable OPCache for PHP 
+# https://docs.owncloud.com/server/12/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
+phpenmod opcache
+{
+echo "# OPcache settings for ownCloud"
+echo "opcache.enable=1"
+echo "opcache.enable_cli=1"
+echo "opcache.interned_strings_buffer=8"
+echo "opcache.max_accelerated_files=10000"
+echo "opcache.memory_consumption=128"
+echo "opcache.save_comments=1"
+echo "opcache.revalidate_freq=1"
+echo "opcache.validate_timestamps=1"
+} >> /etc/php/7.0/apache2/php.ini
 
 # Install Figlet
 apt install figlet -y
@@ -372,26 +412,35 @@ fi
 a2ensite owncloud_ssl_domain_self_signed.conf
 a2ensite owncloud_http_domain_self_signed.conf
 a2dissite default-ssl
+
+# Enable HTTP/2 server wide, if user decides to
+echo
+echo "Your official package repository does not provide an Apache2 package with HTTP/2 module included."
+echo "If you like to enable HTTP/2 nevertheless, we can upgrade your Apache2 from Ondrejs PPA:"
+echo "https://launchpad.net/~ondrej/+archive/ubuntu/apache2"
+echo "Enabling HTTP/2 can bring a performance advantage, but may also have some compatibility issues."
+echo "E.g. the ownCloud Spreed video calls app does not yet work with HTTP/2 enabled."
+echo
+if [[ "yes" == $(ask_yes_or_no "Do you want to enable HTTP/2 system wide?") ]]
+then
+    # Adding PPA
+    add-apt-repository ppa:ondrej/apache2 -y
+    apt update -q4 & spinner_loading
+    apt upgrade apache2 -y
+    
+    # Enable HTTP/2 module & protocol
+    cat << HTTP2_ENABLE > "$HTTP2_CONF"
+<IfModule http2_module>
+    Protocols h2 h2c http/1.1
+    H2Direct on
+</IfModule>
+HTTP2_ENABLE
+    echo "$HTTP2_CONF was successfully created"
+    a2enmod http2
+fi
+
+# Restart Apache2 to enable new config
 service apache2 restart
-
-## Set config values
-# Experimental apps
-sudo -u www-data php "$NCPATH"/occ config:system:set appstore.experimental.enabled --value="true"
-# Default mail server as an example (make this user configurable?)
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpmode --value="smtp"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpauth --value="1"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpport --value="465"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtphost --value="smtp.gmail.com"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpauthtype --value="LOGIN"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_from_address --value="www.techandme.se"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_domain --value="gmail.com"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpsecure --value="ssl"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtpname --value="www.techandme.se@gmail.com"
-sudo -u www-data php "$NCPATH"/occ config:system:set mail_smtppassword --value="vinr vhpa jvbh hovy"
-
-# Install Libreoffice Writer to be able to read MS documents.
-sudo apt install --no-install-recommends libreoffice-writer -y
-sudo -u www-data php "$NCPATH"/occ config:system:set preview_libreoffice_path --value="/usr/bin/libreoffice"
 
 whiptail --title "Which apps/programs do you want to install?" --checklist --separate-output "" 10 40 3 \
 "Calendar" "              " on \
@@ -449,15 +498,20 @@ apt autoremove -y
 apt autoclean
 find /root "/home/$UNIXUSER" -type f \( -name '*.sh*' -o -name '*.html*' -o -name '*.tar*' -o -name '*.zip*' \) -delete
 
-# Install virtual kernels for Hyper-V, and extra for UTF8 kernel module + Collabora
-apt-get install --install-recommends -y \
+# Install virtual kernels for Hyper-V, and extra for UTF8 kernel module + Collabora and OnlyOffice
+# Kernel 4.4
+apt install --install-recommends -y \
 linux-virtual-lts-xenial \
 linux-tools-virtual-lts-xenial \
 linux-cloud-tools-virtual-lts-xenial \
+linux-image-virtual-lts-xenial \
 linux-image-extra-"$(uname -r)"
 
 # Set secure permissions final (./data/.htaccess has wrong permissions otherwise)
 bash $SECURE & spinner_loading
+
+# Force MOTD to show correct number of updates
+sudo /usr/lib/update-notifier/update-motd-updates-available --force
 
 # Reboot
 echo "Installation done, system will now reboot..."
