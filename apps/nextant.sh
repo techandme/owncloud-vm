@@ -99,7 +99,7 @@ check_command "echo \"SOLR_OPTS=\\\"\\\$SOLR_OPTS -Dsolr.allow.unsafe.resourcelo
 
 check_command service solr restart
 
-# Get nextant app for nextcloud
+# Get nextant app for ownCloud
 check_command wget -q -P "$NC_APPS_PATH" "$NT_DL"
 check_command cd "$NC_APPS_PATH"
 check_command tar zxf "$NT_RELEASE"
