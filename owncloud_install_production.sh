@@ -447,28 +447,8 @@ fi
 # Restart Apache2 to enable new config
 service apache2 restart
 
-whiptail --title "Which apps/programs do you want to install?" --checklist --separate-output "" 10 40 3 \
-"Calendar" "              " on \
-"Contacts" "              " on \
-"Webmin" "              " on 2>results
-
-while read -r -u 9 choice
-do
-    case "$choice" in
-        Calendar)
-            run_app_script calendar
-        ;;
-        Contacts)
-            run_app_script contacts
-        ;;
-        Webmin)
-            run_app_script webmin
-        ;;
-        *)
-        ;;
-    esac
-done 9< results
-rm -f results
+# Install Webmin
+run_app_script webmin
 
 # Get needed scripts for first bootup
 if [ ! -f "$SCRIPTS"/owncloud-startup-script.sh ]
