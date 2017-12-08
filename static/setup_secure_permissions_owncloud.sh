@@ -31,7 +31,7 @@ chown -R ${rootuser}:${htgroup} ${NCPATH}/
 chown -R ${htuser}:${htgroup} ${NCPATH}/apps/
 chown -R ${htuser}:${htgroup} ${NCPATH}/config/
 chown -R ${htuser}:${htgroup} ${NCDATA}/
-chown -R ${htuser}:${htgroup} ${NCPATH}/themes/
+# chown -R ${htuser}:${htgroup} ${NCPATH}/themes/
 chown -R ${htuser}:${htgroup} ${NCPATH}/updater/
 
 chmod +x ${NCPATH}/occ

@@ -246,11 +246,6 @@ bash $SECURE & spinner_loading
 # Create database owncloud_db
 mysql -u root -p"$MARIADB_PASS" -e "CREATE DATABASE IF NOT EXISTS owncloud_db;"
 
-# Apply MariaDB 10.2 patch (temporary fix)
-cd "$NCPATH"
-wget https://gist.github.com/VicDeo/bb0689104baeb5ad2371d3fdb1a013ac/raw/04bb98e08719a04322ea883bcce7c3e778e3afe1/DoctrineMariaDB102.patch
-patch -p0 < DoctrineMariaDB102.patch
-
 # Install ownCloud
 cd "$NCPATH"
 check_command sudo -u www-data php occ maintenance:install \
