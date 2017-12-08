@@ -49,7 +49,7 @@ fi
 
 # Set values in config.php
 sudo -u www-data php "$NCPATH/occ" config:system:set loglevel --value=2
-sudo -u www-data php "$NCPATH/occ" config:system:set log_type --value=file
+sudo -u www-data php "$NCPATH/occ" config:system:set log_type --value=owncloud
 sudo -u www-data php "$NCPATH/occ" config:system:set logfile  --value="$NCLOG"
 sudo -u www-data php "$NCPATH/occ" config:system:set logtimezone  --value="$(cat /etc/timezone)"
 
